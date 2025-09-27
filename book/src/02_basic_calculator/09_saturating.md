@@ -1,13 +1,12 @@
-# Case-by-case behavior
+# 경우별 동작
 
-`overflow-checks` is a blunt tool: it's a global setting that affects the whole program.\
-It often happens that you want to handle integer overflows differently depending on the context: sometimes
-wrapping is the right choice, other times panicking is preferable.
+`overflow-checks`는 무딘 도구입니다. 전체 프로그램에 영향을 미치는 전역 설정입니다.
+컨텍스트에 따라 정수 오버플로를 다르게 처리하고 싶을 때가 종종 있습니다. 때로는 래핑이 올바른 선택이고, 다른 때는 패닉이 더 좋습니다.
 
-## `wrapping_` methods
+## `wrapping_` 메소드
 
-You can opt into wrapping arithmetic on a per-operation basis by using the `wrapping_` methods[^method].\
-For example, you can use `wrapping_add` to add two integers with wrapping:
+`wrapping_` 메소드[^method]를 사용하여 연산별로 래핑 산술을 선택할 수 있습니다.
+예를 들어, `wrapping_add`를 사용하여 래핑으로 두 정수를 더할 수 있습니다:
 
 ```rust
 let x = 255u8;
@@ -16,11 +15,11 @@ let sum = x.wrapping_add(y);
 assert_eq!(sum, 0);
 ```
 
-## `saturating_` methods
+## `saturating_` 메소드
 
-Alternatively, you can opt into **saturating arithmetic** by using the `saturating_` methods.\
-Instead of wrapping around, saturating arithmetic will return the maximum or minimum value for the integer type.
-For example:
+또는 `saturating_` 메소드를 사용하여 **포화 산술**을 선택할 수 있습니다.
+래핑하는 대신 포화 산술은 정수 타입의 최대값 또는 최소값을 반환합니다.
+예를 들어:
 
 ```rust
 let x = 255u8;
@@ -29,11 +28,10 @@ let sum = x.saturating_add(y);
 assert_eq!(sum, 255);
 ```
 
-Since `255 + 1` is `256`, which is bigger than `u8::MAX`, the result is `u8::MAX` (255).\
-The opposite happens for underflows: `0 - 1` is `-1`, which is smaller than `u8::MIN`, so the result is `u8::MIN` (0).
+`255 + 1`은 `256`이고, 이는 `u8::MAX`보다 크므로 결과는 `u8::MAX`(255)입니다.
+언더플로의 경우 반대 현상이 발생합니다: `0 - 1`은 `-1`이고, 이는 `u8::MIN`보다 작으므로 결과는 `u8::MIN`(0)입니다.
 
-You can't get saturating arithmetic via the `overflow-checks` profile setting—you have to explicitly opt into it
-when performing the arithmetic operation.
+`overflow-checks` 프로필 설정을 통해서는 포화 연산을 얻을 수 없습니다. 산술 연산을 수행할 때 명시적으로 선택해야 합니다.
 
-[^method]: You can think of methods as functions that are "attached" to a specific type.
-We'll cover methods (and how to define them) in the next chapter.
+[^method]: 메소드를 특정 타입에 "연결된" 함수로 생각할 수 있습니다.
+메소드(및 정의 방법)는 다음 장에서 다룰 것입니다.

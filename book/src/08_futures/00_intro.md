@@ -1,11 +1,11 @@
-# Async Rust
+# 비동기 Rust
 
-Threads are not the only way to write concurrent programs in Rust.\
-In this chapter we'll explore another approach: **asynchronous programming**.
+스레드만이 Rust에서 동시 프로그램을 작성하는 유일한 방법은 아닙니다.
+이 챕터에서는 또 다른 접근 방식인 **비동기 프로그래밍**을 탐색할 것입니다.
 
-In particular, you'll get an introduction to:
+특히, 다음을 소개할 것입니다:
 
-- The `async`/`.await` keywords, to write asynchronous code effortlessly
-- The `Future` trait, to represent computations that may not be complete yet
-- `tokio`, the most popular runtime for running asynchronous code
-- The cooperative nature of Rust asynchronous model, and how this affects your code
+- `async`/`.await` 키워드, 비동기 코드를 손쉽게 작성하기 위해
+- `Future` 트레이트, 아직 완료되지 않았을 수 있는 계산을 나타내기 위해
+- `tokio`, 비동기 코드를 실행하기 위한 가장 인기 있는 런타임
+- Rust 비동기 모델의 협력적 특성, 그리고 이것이 코드에 미치는 영향

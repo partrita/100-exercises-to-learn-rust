@@ -1,111 +1,103 @@
-# Types, part 1
+# 타입, 파트 1
 
-In the ["Syntax" section](../01_intro/01_syntax.md) `compute`'s input parameters were of type `u32`.\
-Let's unpack what that _means_.
+["구문" 섹션](../01_intro/01_syntax.md)에서 `compute`의 입력 매개변수는 `u32` 타입이었습니다.\
+그것이 무엇을 _의미_하는지 풀어봅시다.
 
-## Primitive types
+## 기본 타입
 
-`u32` is one of Rust's **primitive types**. Primitive types are the most basic building blocks of a language.
-They're built into the language itself—i.e. they are not defined in terms of other types.
+`u32`는 Rust의 **기본 타입** 중 하나입니다. 기본 타입은 언어의 가장 기본적인 구성 요소입니다.
+이들은 언어 자체에 내장되어 있습니다. 즉, 다른 타입으로 정의되지 않습니다.
 
-You can combine these primitive types to create more complex types. We'll see how soon enough.
+이러한 기본 타입을 조합하여 더 복잡한 타입을 만들 수 있습니다. 곧 방법을 보게 될 것입니다.
 
-## Integers
+## 정수
 
-`u32`, in particular, is an **unsigned 32-bit integer**.
+`u32`는 특히 **부호 없는 32비트 정수**입니다.
 
-An integer is a number that can be written without a fractional component. E.g. `1` is an integer, while `1.2` is not.
+정수는 소수 부분 없이 쓸 수 있는 숫자입니다. 예를 들어 `1`은 정수이지만 `1.2`는 아닙니다.
 
-### Signed vs. unsigned
+### 부호 있는 정수 vs. 부호 없는 정수
 
-An integer can be **signed** or **unsigned**.\
-An unsigned integer can only represent non-negative numbers (i.e. `0` or greater).
-A signed integer can represent both positive and negative numbers (e.g. `-1`, `12`, etc.).
+정수는 **부호 있거나** **부호 없을** 수 있습니다.\
+부호 없는 정수는 음수가 아닌 숫자(즉, `0` 이상)만 나타낼 수 있습니다.
+부호 있는 정수는 양수와 음수 모두를 나타낼 수 있습니다(예: `-1`, `12` 등).
 
-The `u` in `u32` stands for **unsigned**.\
-The equivalent type for signed integer is `i32`, where the `i` stands for integer (i.e. any integer, positive or
-negative).
+`u32`의 `u`는 **unsigned(부호 없는)**를 의미합니다.\
+부호 있는 정수에 해당하는 타입은 `i32`이며, 여기서 `i`는 정수(즉, 양수 또는 음수인 모든 정수)를 의미합니다.
 
-### Bit width
+### 비트 너비
 
-The `32` in `u32` refers to the **number of bits[^bit]** used to represent the number in memory.\
-The more bits, the larger the range of numbers that can be represented.
+`u32`의 `32`는 메모리에서 숫자를 나타내는 데 사용되는 **비트 수[^bit]**를 나타냅니다.\
+비트가 많을수록 나타낼 수 있는 숫자의 범위가 커집니다.
 
-Rust supports multiple bit widths for integers: `8`, `16`, `32`, `64`, `128`.
+Rust는 정수에 대해 `8`, `16`, `32`, `64`, `128`의 여러 비트 너비를 지원합니다.
 
-With 32 bits, `u32` can represent numbers from `0` to `2^32 - 1` (a.k.a. [`u32::MAX`](https://doc.rust-lang.org/std/primitive.u32.html#associatedconstant.MAX)).\
-With the same number of bits, a signed integer (`i32`) can represent numbers from `-2^31` to `2^31 - 1`
-(i.e. from [`i32::MIN`](https://doc.rust-lang.org/std/primitive.i32.html#associatedconstant.MIN)
-to [`i32::MAX`](https://doc.rust-lang.org/std/primitive.i32.html#associatedconstant.MAX)).\
-The maximum value for `i32` is smaller than the maximum value for `u32` because one bit is used to represent
-the sign of the number. Check out the [two's complement](https://en.wikipedia.org/wiki/Two%27s_complement)
-representation for more details on how signed integers are represented in memory.
+32비트를 사용하면 `u32`는 `0`에서 `2^32 - 1`(일명 [`u32::MAX`](https://doc.rust-lang.org/std/primitive.u32.html#associatedconstant.MAX))까지의 숫자를 나타낼 수 있습니다.\
+같은 수의 비트를 사용하는 부호 있는 정수(`i32`)는 `-2^31`에서 `2^31 - 1`(즉, [`i32::MIN`](https://doc.rust-lang.org/std/primitive.i32.html#associatedconstant.MIN)에서 [`i32::MAX`](https://doc.rust-lang.org/std/primitive.i32.html#associatedconstant.MAX)까지)의 숫자를 나타낼 수 있습니다.\
+`i32`의 최댓값은 `u32`의 최댓값보다 작습니다. 왜냐하면 한 비트가 숫자의 부호를 나타내는 데 사용되기 때문입니다. 부호 있는 정수가 메모리에서 어떻게 표현되는지에 대한 자세한 내용은 [2의 보수](https://en.wikipedia.org/wiki/Two%27s_complement) 표현을 확인하세요.
 
-### Summary
+### 요약
 
-Combining the two variables (signed/unsigned and bit width), we get the following integer types:
+두 변수(부호 있는/부호 없는 및 비트 너비)를 결합하면 다음과 같은 정수 타입을 얻을 수 있습니다:
 
-| Bit width | Signed | Unsigned |
+| 비트 너비 | 부호 있음 | 부호 없음 |
 | --------- | ------ | -------- |
-| 8-bit     | `i8`   | `u8`     |
-| 16-bit    | `i16`  | `u16`    |
-| 32-bit    | `i32`  | `u32`    |
-| 64-bit    | `i64`  | `u64`    |
-| 128-bit   | `i128` | `u128`   |
+| 8비트     | `i8`   | `u8`     |
+| 16비트    | `i16`  | `u16`    |
+| 32비트    | `i32`  | `u32`    |
+| 64비트    | `i64`  | `u64`    |
+| 128비트   | `i128` | `u128`   |
 
-## Literals
+## 리터럴
 
-A **literal** is a notation for representing a fixed value in source code.\
-For example, `42` is a Rust literal for the number forty-two.
+**리터럴**은 소스 코드에서 고정된 값을 나타내는 표기법입니다.\
+예를 들어, `42`는 숫자 42에 대한 Rust 리터럴입니다.
 
-### Type annotations for literals
+### 리터럴에 대한 타입 어노테이션
 
-But all values in Rust have a type, so... what's the type of `42`?
+하지만 Rust의 모든 값에는 타입이 있으므로... `42`의 타입은 무엇일까요?
 
-The Rust compiler will try to infer the type of a literal based on how it's used.\
-If you don't provide any context, the compiler will default to `i32` for integer literals.\
-If you want to use a different type, you can add the desired integer type as a suffix—e.g. `2u64` is a 2 that's
-explicitly typed as a `u64`.
+Rust 컴파일러는 리터럴이 사용되는 방식에 따라 타입을 추론하려고 시도합니다.\
+컨텍스트를 제공하지 않으면 컴파일러는 정수 리터럴에 대해 기본적으로 `i32`를 사용합니다.\
+다른 타입을 사용하려면 원하는 정수 타입을 접미사로 추가할 수 있습니다. 예를 들어 `2u64`는 `u64`로 명시적으로 타입이 지정된 2입니다.
 
-### Underscores in literals
+### 리터럴의 밑줄
 
-You can use underscores `_` to improve the readability of large numbers.\
-For example, `1_000_000` is the same as `1000000`.
+큰 숫자의 가독성을 높이기 위해 밑줄 `_`을 사용할 수 있습니다.\
+예를 들어, `1_000_000`은 `1000000`과 같습니다.
 
-## Arithmetic operators
+## 산술 연산자
 
-Rust supports the following arithmetic operators[^traits] for integers:
+Rust는 정수에 대해 다음과 같은 산술 연산자[^traits]를 지원합니다:
 
-- `+` for addition
-- `-` for subtraction
-- `*` for multiplication
-- `/` for division
-- `%` for remainder
+- `+` 덧셈
+- `-` 뺄셈
+- `*` 곱셈
+- `/` 나눗셈
+- `%` 나머지
 
-Precedence and associativity rules for these operators are the same as in mathematics.\
-You can use parentheses to override the default precedence. E.g. `2 * (3 + 4)`.
+이러한 연산자의 우선 순위 및 결합 규칙은 수학에서와 동일합니다.\
+괄호를 사용하여 기본 우선 순위를 재정의할 수 있습니다. 예: `2 * (3 + 4)`.
 
-> ⚠️ **Warning**
->
-> The division operator `/` performs integer division when used with integer types.
-> I.e. the result is truncated towards zero. For example, `5 / 2` is `2`, not `2.5`.
+> ⚠️ **경고**
+> 
+> 나눗셈 연산자 `/`는 정수 타입과 함께 사용될 때 정수 나눗셈을 수행합니다.
+> 즉, 결과는 0을 향해 잘립니다. 예를 들어, `5 / 2`는 `2.5`가 아니라 `2`입니다.
 
-## No automatic type coercion
+## 자동 타입 강제 변환 없음
 
-As we discussed in the previous exercise, Rust is a statically typed language.\
-In particular, Rust is quite strict about type coercion. It won't automatically convert a value from one type to
-another[^coercion],
-even if the conversion is lossless. You have to do it explicitly.
+이전 연습 문제에서 논의했듯이 Rust는 정적 타입 언어입니다.\
+특히 Rust는 타입 강제 변환에 대해 매우 엄격합니다. 변환이 무손실인 경우에도 값을 한 타입에서 다른 타입으로 자동으로 변환하지 않습니다[^coercion].
+명시적으로 수행해야 합니다.
 
-For example, you can't assign a `u8` value to a variable with type `u32`, even though all `u8` values are valid `u32`
-values:
+예를 들어, 모든 `u8` 값이 유효한 `u32` 값임에도 불구하고 `u8` 값을 `u32` 타입의 변수에 할당할 수 없습니다:
 
 ```rust
 let b: u8 = 100;
 let a: u32 = b;
 ```
 
-It'll throw a compilation error:
+컴파일 오류가 발생합니다:
 
 ```text
 error[E0308]: mismatched types
@@ -117,18 +109,16 @@ error[E0308]: mismatched types
   |
 ```
 
-We'll see how to convert between types [later in this course](../04_traits/09_from.md).
+타입 간 변환 방법은 [이 과정의 뒷부분](../04_traits/09_from.md)에서 배우게 됩니다.
 
-## Further reading
+## 추가 자료
 
-- [The integer types section](https://doc.rust-lang.org/book/ch03-02-data-types.html#integer-types) in the official Rust book
+- 공식 Rust 책의 [정수 타입 섹션](https://doc.rust-lang.org/book/ch03-02-data-types.html#integer-types)
 
-[^bit]: A bit is the smallest unit of data in a computer. It can only have two values: `0` or `1`.
+[^bit]: 비트는 컴퓨터에서 데이터의 가장 작은 단위입니다. `0` 또는 `1`의 두 가지 값만 가질 수 있습니다.
 
-[^traits]: Rust doesn't let you define custom operators, but it puts you in control of how the built-in operators
-behave.
-We'll talk about operator overloading [later in the course](../04_traits/03_operator_overloading.md), after we've covered traits.
+[^traits]: Rust에서는 사용자 정의 연산자를 정의할 수 없지만, 내장 연산자의 동작 방식을 제어할 수 있습니다.
+연산자 오버로딩에 대해서는 특성을 다룬 후 [과정의 뒷부분](../04_traits/03_operator_overloading.md)에서 이야기할 것입니다.
 
-[^coercion]: There are some exceptions to this rule, mostly related to references, smart pointers and ergonomics. We'll
-cover those [later on](../04_traits/07_deref.md).
-A mental model of "all conversions are explicit" will serve you well in the meantime.
+[^coercion]: 이 규칙에는 몇 가지 예외가 있으며, 대부분 참조, 스마트 포인터 및 인체공학과 관련이 있습니다. 이에 대해서는 [나중에](../04_traits/07_deref.md) 다룰 것입니다.
+"모든 변환은 명시적이다"라는 정신 모델은 그동안 잘 작동할 것입니다.

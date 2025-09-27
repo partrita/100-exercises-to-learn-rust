@@ -1,7 +1,7 @@
 # `match`
 
-You may be wondering—what can you actually **do** with an enum?\
-The most common operation is to **match** on it.
+궁금할 수 있습니다. 열거형으로 실제로 무엇을 **할 수** 있을까요?
+가장 일반적인 작업은 **매칭**하는 것입니다.
 
 ```rust
 enum Status {
@@ -14,24 +14,23 @@ impl Status {
     fn is_done(&self) -> bool {
         match self {
             Status::Done => true,
-            // The `|` operator lets you match multiple patterns.
-            // It reads as "either `Status::ToDo` or `Status::InProgress`".
+            // `|` 연산자를 사용하면 여러 패턴을 매칭할 수 있습니다.
+            // "`Status::ToDo` 또는 `Status::InProgress`"로 읽습니다.
             Status::InProgress | Status::ToDo => false
         }
     }
 }
 ```
 
-A `match` statement that lets you compare a Rust value against a series of **patterns**.\
-You can think of it as a type-level `if`. If `status` is a `Done` variant, execute the first block;
-if it's a `InProgress` or `ToDo` variant, execute the second block.
+A `match` 문은 Rust 값을 일련의 **패턴**과 비교할 수 있게 해줍니다.
+타입 수준의 `if`라고 생각할 수 있습니다. `status`가 `Done` 베리언트이면 첫 번째 블록을 실행하고, `InProgress` 또는 `ToDo` 베리언트이면 두 번째 블록을 실행합니다.
 
-## Exhaustiveness
+## 완전성
 
-There's one key detail here: `match` is **exhaustive**. You must handle all enum variants.\
-If you forget to handle a variant, Rust will stop you **at compile-time** with an error.
+여기에 한 가지 핵심 세부 사항이 있습니다: `match`는 **완전**합니다. 모든 열거형 베리언트를 처리해야 합니다.
+베리언트 처리를 잊어버리면 Rust는 **컴파일 타임**에 오류로 여러분을 막을 것입니다.
 
-E.g. if we forget to handle the `ToDo` variant:
+예를 들어, `ToDo` 베리언트 처리를 잊어버리면:
 
 ```rust
 match self {
@@ -40,7 +39,7 @@ match self {
 }
 ```
 
-the compiler will complain:
+컴파일러는 다음과 같이 불평할 것입니다:
 
 ```text
 error[E0004]: non-exhaustive patterns: `ToDo` not covered
@@ -50,15 +49,13 @@ error[E0004]: non-exhaustive patterns: `ToDo` not covered
   |     ^^^^^^^^^^^^ pattern `ToDo` not covered
 ```
 
-This is a big deal!\
-Codebases evolve over time—you might add a new status down the line, e.g. `Blocked`. The Rust compiler
-will emit an error for every single `match` statement that's missing logic for the new variant.
-That's why Rust developers often sing the praises of "compiler-driven refactoring"—the compiler tells you
-what to do next, you just have to fix what it reports.
+이것은 큰 문제입니다!
+코드베이스는 시간이 지남에 따라 진화합니다. 나중에 새로운 상태(예: `Blocked`)를 추가할 수 있습니다. Rust 컴파일러는 새로운 베리언트에 대한 로직이 누락된 모든 `match` 문에 대해 오류를 발생시킵니다.
+이것이 Rust 개발자들이 종종 "컴파일러 주도 리팩토링"을 칭찬하는 이유입니다. 컴파일러가 다음에 무엇을 해야 할지 알려주고, 여러분은 보고된 것을 수정하기만 하면 됩니다.
 
-## Catch-all
+## 모두 잡기
 
-If you don't care about one or more variants, you can use the `_` pattern as a catch-all:
+하나 이상의 베리언트에 신경 쓰지 않는 경우, `_` 패턴을 모두 잡는 용도로 사용할 수 있습니다:
 
 ```rust
 match status {
@@ -67,12 +64,12 @@ match status {
 }
 ```
 
-The `_` pattern matches anything that wasn't matched by the previous patterns.
+`_` 패턴은 이전 패턴에서 매칭되지 않은 모든 것을 매칭합니다.
 
 <div class="warning">
-By using this catch-all pattern, you _won't_ get the benefits of compiler-driven refactoring.
-If you add a new enum variant, the compiler _won't_ tell you that you're not handling it.
+이 모두 잡기 패턴을 사용하면 컴파일러 주도 리팩토링의 이점을 얻을 수 _없습니다_.
+새로운 열거형 베리언트를 추가하면 컴파일러는 여러분이 그것을 처리하지 않고 있다는 것을 알려주지 _않을_ 것입니다.
 
-If you're keen on correctness, avoid using catch-alls. Leverage the compiler to re-examine all matching sites and determine how new enum variants should be handled.
+정확성에 관심이 있다면 모두 잡기를 피하십시오. 컴파일러를 활용하여 모든 매칭 사이트를 다시 검토하고 새로운 열거형 베리언트를 어떻게 처리해야 할지 결정하십시오.
 
 </div>

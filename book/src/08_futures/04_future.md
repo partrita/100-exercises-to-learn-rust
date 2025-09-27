@@ -1,8 +1,8 @@
-# The `Future` trait
+# `Future` 트레이트
 
-## The local `Rc` problem
+## 로컬 `Rc` 문제
 
-Let's go back to `tokio::spawn`'s signature:
+`tokio::spawn`의 시그니처로 돌아가 봅시다:
 
 ```rust
 pub fn spawn<F>(future: F) -> JoinHandle<F::Output>
@@ -12,12 +12,11 @@ pub fn spawn<F>(future: F) -> JoinHandle<F::Output>
 { /* */ }
 ```
 
-What does it _actually_ mean for `F` to be `Send`?\
-It implies, as we saw in the previous section, that whatever value it captures from the
-spawning environment has to be `Send`. But it goes further than that.
+`F`가 `Send`라는 것이 _실제로_ 무엇을 의미할까요?
+이전 섹션에서 보았듯이, 생성 환경에서 캡처하는 모든 값은 `Send`여야 함을 의미합니다. 하지만 그 이상입니다.
 
-Any value that's _held across a .await point_ has to be `Send`.\
-Let's look at an example:
+`.await` 지점을 넘어 유지되는 모든 값은 `Send`여야 합니다.
+예제를 살펴봅시다:
 
 ```rust
 use std::rc::Rc;
@@ -28,64 +27,62 @@ fn spawner() {
 }
 
 async fn example() {
-    // A value that's not `Send`,
-    // created _inside_ the async function
+    // `Send`가 아닌 값,
+    // 비동기 함수 _내부_에서 생성됨
     let non_send = Rc::new(1);
     
-    // A `.await` point that does nothing
+    // 아무것도 하지 않는 `.await` 지점
     yield_now().await;
 
-    // The local non-`Send` value is still needed
-    // after the `.await`
+    // 로컬 `Send`가 아닌 값은
+    // `.await` 후에도 여전히 필요합니다
     println!("{}", non_send);
 }
 ```
 
-The compiler will reject this code:
+컴파일러는 이 코드를 거부할 것입니다:
 
 ```text
 error: future cannot be sent between threads safely
     |
 5   |     tokio::spawn(example());
     |                  ^^^^^^^^^ 
-    | future returned by `example` is not `Send`
+    | `example`가 반환하는 퓨처는 `Send`가 아닙니다
     |
-note: future is not `Send` as this value is used across an await
+note: 이 값이 await를 넘어 사용되므로 퓨처는 `Send`가 아닙니다
     |
 11  |     let non_send = Rc::new(1);
-    |         -------- has type `Rc<i32>` which is not `Send`
-12  |     // A `.await` point
+    |         -------- `Rc<i32>` 타입이며 `Send`가 아닙니다
+12  |     // `.await` 지점
 13  |     yield_now().await;
     |                 ^^^^^ 
-    |   await occurs here, with `non_send` maybe used later
-note: required by a bound in `tokio::spawn`
+    |   `non_send`가 나중에 사용될 수 있으므로 여기서 await가 발생합니다
+note: `tokio::spawn`의 바운드에 의해 요구됨
     |
 164 |     pub fn spawn<F>(future: F) -> JoinHandle<F::Output>
-    |            ----- required by a bound in this function
+    |            ----- 이 함수에서 바운드에 의해 요구됨
 165 |     where
 166 |         F: Future + Send + 'static,
-    |                     ^^^^ required by this bound in `spawn`
+    |                     ^^^^ `spawn`의 이 바운드에 의해 요구됨
 ```
 
-To understand why that's the case, we need to refine our understanding of
-Rust's asynchronous model.
+이것이 왜 그런지 이해하려면 Rust의 비동기 모델에 대한 이해를 다듬어야 합니다.
 
-## The `Future` trait
+## `Future` 트레이트
 
-We stated early on that `async` functions return **futures**, types that implement
-the `Future` trait. You can think of a future as a **state machine**.
-It's in one of two states:
+`async` 함수는 `Future` 트레이트를 구현하는 타입인 **퓨처**를 반환한다고 일찍이 언급했습니다. 퓨처를 **상태 머신**으로 생각할 수 있습니다.
+두 가지 상태 중 하나에 있습니다:
 
-- **pending**: the computation has not finished yet.
-- **ready**: the computation has finished, here's the output.
+- **대기 중**: 계산이 아직 완료되지 않았습니다.
+- **준비 완료**: 계산이 완료되었으며, 여기에 출력이 있습니다.
 
-This is encoded in the trait definition:
+이것은 트레이트 정의에 인코딩되어 있습니다:
 
 ```rust
 trait Future {
     type Output;
     
-    // Ignore `Pin` and `Context` for now
+    // 지금은 `Pin`과 `Context`를 무시하세요
     fn poll(
       self: Pin<&mut Self>, 
       cx: &mut Context<'_>
@@ -95,36 +92,33 @@ trait Future {
 
 ### `poll`
 
-The `poll` method is the heart of the `Future` trait.\
-A future on its own doesn't do anything. It needs to be **polled** to make progress.\
-When you call `poll`, you're asking the future to do some work.
-`poll` tries to make progress, and then returns one of the following:
+`poll` 메소드는 `Future` 트레이트의 핵심입니다.
+퓨처는 자체적으로 아무것도 하지 않습니다. 진행하려면 **폴링**되어야 합니다.
+`poll`을 호출하면 퓨처에게 작업을 수행하도록 요청하는 것입니다.
+`poll`은 진행하려고 시도한 다음 다음 중 하나를 반환합니다:
 
-- `Poll::Pending`: the future is not ready yet. You need to call `poll` again later.
-- `Poll::Ready(value)`: the future has finished. `value` is the result of the computation,
-  of type `Self::Output`.
+- `Poll::Pending`: 퓨처가 아직 준비되지 않았습니다. 나중에 다시 `poll`을 호출해야 합니다.
+- `Poll::Ready(value)`: 퓨처가 완료되었습니다. `value`는 `Self::Output` 타입의 계산 결과입니다.
 
-Once `Future::poll` returns `Poll::Ready`, it should not be polled again: the future has
-completed, there's nothing left to do.
+`Future::poll`이 `Poll::Ready`를 반환하면 다시 폴링해서는 안 됩니다: 퓨처가 완료되었으므로 더 이상 할 일이 없습니다.
 
-### The role of the runtime
+### 런타임의 역할
 
-You'll rarely, if ever, be calling poll directly.\
-That's the job of your async runtime: it has all the required information (the `Context`
-in `poll`'s signature) to ensure that your futures are making progress whenever they can.
+`poll`을 직접 호출하는 경우는 거의 없을 것입니다.
+그것은 비동기 런타임의 역할입니다: 퓨처가 가능할 때마다 진행되도록 보장하는 데 필요한 모든 정보(`poll`의 시그니처에 있는 `Context`)를 가지고 있습니다.
 
-## `async fn` and futures
+## `async fn`과 퓨처
 
-We've worked with the high-level interface, asynchronous functions.\
-We've now looked at the low-level primitive, the `Future trait`.
+우리는 고수준 인터페이스인 비동기 함수로 작업했습니다.
+이제 저수준 프리미티브인 `Future` 트레이트를 살펴보았습니다.
 
-How are they related?
+이들은 어떻게 관련되어 있을까요?
 
-Every time you mark a function as asynchronous, that function will return a future.
-The compiler will transform the body of your asynchronous function into a **state machine**:
-one state for each `.await` point.
+함수를 비동기로 표시할 때마다 해당 함수는 퓨처를 반환합니다.
+컴파일러는 비동기 함수의 본문을 **상태 머신**으로 변환합니다:
+각 `.await` 지점마다 하나의 상태를 가집니다.
 
-Going back to our `Rc` example:
+`Rc` 예제로 돌아가 봅시다:
 
 ```rust
 use std::rc::Rc;
@@ -137,7 +131,7 @@ async fn example() {
 }
 ```
 
-The compiler would transform it into an enum that looks somewhat like this:
+컴파일러는 이를 다음과 유사한 열거형으로 변환할 것입니다:
 
 ```rust
 pub enum ExampleFuture {
@@ -147,24 +141,19 @@ pub enum ExampleFuture {
 }
 ```
 
-When `example` is called, it returns `ExampleFuture::NotStarted`. The future has never
-been polled yet, so nothing has happened.\
-When the runtime polls it the first time, `ExampleFuture` will advance until the next
-`.await` point: it'll stop at the `ExampleFuture::YieldNow(Rc<i32>)` stage of the state
-machine, returning `Poll::Pending`.\
-When it's polled again, it'll execute the remaining code (`println!`) and
-return `Poll::Ready(())`.
+`example`이 호출되면 `ExampleFuture::NotStarted`를 반환합니다. 퓨처는 아직 폴링된 적이 없으므로 아무 일도 일어나지 않았습니다.
+런타임이 처음 폴링하면 `ExampleFuture`는 다음 `.await` 지점까지 진행됩니다: 상태 머신의 `ExampleFuture::YieldNow(Rc<i32>)` 단계에서 멈추고 `Poll::Pending`을 반환합니다.
+다시 폴링되면 나머지 코드(`println!`)를 실행하고
+`Poll::Ready(())`를 반환합니다.
 
-When you look at its state machine representation, `ExampleFuture`,
-it is now clear why `example` is not `Send`: it holds an `Rc`, therefore
-it cannot be `Send`.
+상태 머신 표현인 `ExampleFuture`를 보면,
+`example`이 `Send`가 아닌 이유가 이제 명확합니다: `Rc`를 가지고 있으므로
+`Send`가 될 수 없습니다.
 
-## Yield points
+## 양보 지점
 
-As you've just seen with `example`, every `.await` point creates a new intermediate
-state in the lifecycle of a future.\
-That's why `.await` points are also known as **yield points**: your future _yields control_
-back to the runtime that was polling it, allowing the runtime to pause it and (if necessary)
-schedule another task for execution, thus making progress on multiple fronts concurrently.
+`example`에서 보았듯이, 모든 `.await` 지점은 퓨처의 라이프사이클에서 새로운 중간 상태를 생성합니다.
+이것이 `.await` 지점이 **양보 지점**이라고도 불리는 이유입니다: 퓨처는 자신을 폴링하던 런타임에게 제어를 _양보_하여 런타임이 이를 일시 중지하고 (필요한 경우)
+다른 태스크를 실행하도록 스케줄링하여 여러 전선에서 동시에 진행할 수 있도록 합니다.
 
-We'll come back to the importance of yielding in a later section.
+양보의 중요성에 대해서는 나중에 다시 다룰 것입니다.

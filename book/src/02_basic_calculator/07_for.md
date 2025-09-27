@@ -1,25 +1,24 @@
-# Loops, part 2: `for`
+# 루프, 2부: `for`
 
-Having to manually increment a counter variable is somewhat tedious. The pattern is also extremely common!\
-To make this easier, Rust provides a more concise way to iterate over a range of values: the `for` loop.
+카운터 변수를 수동으로 증가시켜야 하는 것은 다소 지루합니다. 이 패턴은 또한 매우 일반적입니다! 이를 더 쉽게 만들기 위해 Rust는 값의 범위에 대해 반복하는 더 간결한 방법인 `for` 루프를 제공합니다.
 
-## The `for` loop
+## `for` 루프
 
-A `for` loop is a way to execute a block of code for each element in an iterator[^iterator].
+`for` 루프는 반복자[^iterator]의 각 요소에 대해 코드 블록을 실행하는 방법입니다.
 
-Here's the general syntax:
+일반적인 구문은 다음과 같습니다:
 
 ```rust
-for <element> in <iterator> {
-    // code to execute
+for <요소> in <반복자> {
+    // 실행할 코드
 }
 ```
 
-## Ranges
+## 범위
 
-Rust's standard library provides **range** type that can be used to iterate over a sequence of numbers[^weird-ranges].
+Rust의 표준 라이브러리는 숫자 시퀀스를 반복하는 데 사용할 수 있는 **범위** 타입을 제공합니다[^weird-ranges].
 
-For example, if we want to sum the numbers from 1 to 5:
+예를 들어, 1부터 5까지의 숫자를 더하고 싶다면:
 
 ```rust
 let mut sum = 0;
@@ -28,22 +27,21 @@ for i in 1..=5 {
 }
 ```
 
-Every time the loop runs, `i` will be assigned the next value in the range before executing the block of code.
+루프가 실행될 때마다 `i`는 코드 블록을 실행하기 전에 범위의 다음 값에 할당됩니다.
 
-There are five kinds of ranges in Rust:
+Rust에는 다섯 가지 종류의 범위가 있습니다:
 
-- `1..5`: A (half-open) range. It includes all numbers from 1 to 4. It doesn't include the last value, 5.
-- `1..=5`: An inclusive range. It includes all numbers from 1 to 5. It includes the last value, 5.
-- `1..`: An open-ended range. It includes all numbers from 1 to infinity (well, until the maximum value of the integer type).
-- `..5`: A range that starts at the minimum value for the integer type and ends at 4. It doesn't include the last value, 5.
-- `..=5`: A range that starts at the minimum value for the integer type and ends at 5. It includes the last value, 5.
+- `1..5`: (반개) 범위. 1부터 4까지의 모든 숫자를 포함합니다. 마지막 값인 5는 포함하지 않습니다.
+- `1..=5`: 포함 범위. 1부터 5까지의 모든 숫자를 포함합니다. 마지막 값인 5를 포함합니다.
+- `1..`: 무한 범위. 1부터 무한대까지의 모든 숫자를 포함합니다(정수 타입의 최대값까지).
+- `..5`: 정수 타입의 최소값에서 시작하여 4에서 끝나는 범위. 마지막 값인 5는 포함하지 않습니다.
+- `..=5`: 정수 타입의 최소값에서 시작하여 5에서 끝나는 범위. 마지막 값인 5를 포함합니다.
 
-You can use a `for` loop with the first three kinds of ranges, where the starting point
-is explicitly specified. The last two range types are used in other contexts, that we'll cover later.
+시작점이 명시적으로 지정된 처음 세 종류의 범위와 함께 `for` 루프를 사용할 수 있습니다. 마지막 두 범위 타입은 나중에 다룰 다른 컨텍스트에서 사용됩니다.
 
-The extreme values of a range don't have to be integer literals—they can be variables or expressions too!
+범위의 극단값은 정수 리터럴일 필요는 없습니다. 변수나 표현식일 수도 있습니다!
 
-For example:
+예를 들어:
 
 ```rust
 let end = 5;
@@ -54,11 +52,10 @@ for i in 1..(end + 1) {
 }
 ```
 
-## Further reading
+## 추가 자료
 
-- [`for` loop documentation](https://doc.rust-lang.org/std/keyword.for.html)
+- [`for` 루프 문서](https://doc.rust-lang.org/std/keyword.for.html)
 
-[^iterator]: Later in the course we'll give a precise definition of what counts as an "iterator".
-For now, think of it as a sequence of values that you can loop over.
-[^weird-ranges]: You can use ranges with other types too (e.g. characters and IP addresses),
-but integers are definitely the most common case in day-to-day Rust programming.
+[^iterator]: 과정의 뒷부분에서 "반복자"로 간주되는 것에 대한 정확한 정의를 제공할 것입니다.
+지금은 반복할 수 있는 값의 시퀀스로 생각하세요.
+[^weird-ranges]: 다른 타입(예: 문자 및 IP 주소)과 함께 범위를 사용할 수도 있지만, 일상적인 Rust 프로그래밍에서는 정수가 가장 일반적인 경우입니다.

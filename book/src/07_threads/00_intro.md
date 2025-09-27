@@ -1,15 +1,15 @@
-# Intro
+# 소개
 
-One of Rust's big promises is _fearless concurrency_: making it easier to write safe, concurrent programs.
-We haven't seen much of that yet. All the work we've done so far has been single-threaded.
-Time to change that!
+Rust의 큰 약속 중 하나는 _두려움 없는 동시성_입니다: 안전하고 동시적인 프로그램을 더 쉽게 작성할 수 있도록 하는 것입니다.
+아직 많은 것을 보지 못했습니다. 지금까지 우리가 한 모든 작업은 단일 스레드였습니다.
+이제 그것을 바꿀 시간입니다!
 
-In this chapter we'll make our ticket store multithreaded.\
-We'll have the opportunity to touch most of Rust's core concurrency features, including:
+이 챕터에서는 티켓 저장소를 다중 스레드로 만들 것입니다.
+다음과 같은 Rust의 핵심 동시성 기능 대부분을 다룰 기회를 가질 것입니다:
 
-- Threads, using the `std::thread` module
-- Message passing, using channels
-- Shared state, using `Arc`, `Mutex` and `RwLock`
-- `Send` and `Sync`, the traits that encode Rust's concurrency guarantees
+- `std::thread` 모듈을 사용하는 스레드
+- 채널을 사용하는 메시지 전달
+- `Arc`, `Mutex` 및 `RwLock`을 사용하는 공유 상태
+- Rust의 동시성 보장을 인코딩하는 트레이트인 `Send` 및 `Sync`
 
-We'll also discuss various design patterns for multithreaded systems and some of their trade-offs.
+또한 다중 스레드 시스템을 위한 다양한 설계 패턴과 그 장단점에 대해서도 논의할 것입니다.

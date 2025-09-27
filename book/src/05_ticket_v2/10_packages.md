@@ -1,48 +1,45 @@
-# Libraries and binaries
+# 라이브러리와 바이너리
 
-It took a bit of code to implement the `Error` trait for `TicketNewError`, didn't it?\
-A manual `Display` implementation, plus an `Error` impl block.
+`TicketNewError`에 대해 `Error` 트레이트를 구현하는 데 약간의 코드가 필요했습니다, 그렇지 않나요?
+수동 `Display` 구현과 `Error` impl 블록이 필요했습니다.
 
-We can remove some of the boilerplate by using [`thiserror`](https://docs.rs/thiserror/latest/thiserror/),
-a Rust crate that provides a **procedural macro** to simplify the creation of custom error types.\
-But we're getting ahead of ourselves: `thiserror` is a third-party crate, it'd be our first dependency!
+사용자 정의 오류 타입 생성을 단순화하는 **절차적 매크로**를 제공하는 Rust 크레이트인 [`thiserror`](https://docs.rs/thiserror/latest/thiserror/)를 사용하여 일부 상용구를 제거할 수 있습니다.
+하지만 너무 앞서가고 있습니다: `thiserror`는 타사 크레이트이며, 우리의 첫 번째 의존성이 될 것입니다!
 
-Let's take a step back to talk about Rust's packaging system before we dive into dependencies.
+의존성에 대해 알아보기 전에 Rust의 패키징 시스템에 대해 잠시 이야기해 봅시다.
 
-## What is a package?
+## 패키지란 무엇인가요?
 
-A Rust package is defined by the `[package]` section in a `Cargo.toml` file, also known as its **manifest**.
-Within `[package]` you can set the package's metadata, such as its name and version.
+Rust 패키지는 `Cargo.toml` 파일의 `[package]` 섹션(해당 **매니페스트**라고도 함)에 의해 정의됩니다.
+`[package]` 내에서 패키지의 이름 및 버전과 같은 메타데이터를 설정할 수 있습니다.
 
-Go check the `Cargo.toml` file in the directory of this section's exercise!
+이 섹션의 연습 문제 디렉토리에 있는 `Cargo.toml` 파일을 확인하십시오!
 
-## What is a crate?
+## 크레이트란 무엇인가요?
 
-Inside a package, you can have one or more **crates**, also known as **targets**.\
-The two most common crate types are **binary crates** and **library crates**.
+패키지 내에는 **타겟**이라고도 하는 하나 이상의 **크레이트**가 있을 수 있습니다.
+가장 일반적인 두 가지 크레이트 타입은 **바이너리 크레이트**와 **라이브러리 크레이트**입니다.
 
-### Binaries
+### 바이너리
 
-A binary is a program that can be compiled to an **executable file**.\
-It must include a function named `main`—the program's entry point. `main` is invoked when the program is executed.
+바이너리는 **실행 파일**로 컴파일할 수 있는 프로그램입니다.
+`main`이라는 함수를 포함해야 합니다. 이 함수는 프로그램의 진입점이며 프로그램이 실행될 때 호출됩니다.
 
-### Libraries
+### 라이브러리
 
-Libraries, on the other hand, are not executable on their own. You can't _run_ a library,
-but you can _import its code_ from another package that depends on it.\
-A library groups together code (i.e. functions, types, etc.) that can be leveraged by other packages as a **dependency**.
+반면에 라이브러리는 자체적으로 실행할 수 없습니다. 라이브러리를 _실행_할 수는 없지만, 의존하는 다른 패키지에서 _코드를 가져올_ 수 있습니다.
+라이브러리는 다른 패키지에서 **의존성**으로 활용할 수 있는 코드(즉, 함수, 타입 등)를 함께 그룹화합니다.
 
-All the exercises you've solved so far have been structured as libraries, with a test suite attached to them.
+지금까지 해결한 모든 연습 문제는 테스트 스위트가 첨부된 라이브러리로 구성되었습니다.
 
-### Conventions
+### 관례
 
-There are some conventions around Rust packages that you need to keep in mind:
+명심해야 할 Rust 패키지에 대한 몇 가지 관례가 있습니다:
 
-- The package's source code is usually located in the `src` directory.
-- If there's a `src/lib.rs` file, `cargo` will infer that the package contains a library crate.
-- If there's a `src/main.rs` file, `cargo` will infer that the package contains a binary crate.
+- 패키지의 소스 코드는 일반적으로 `src` 디렉토리에 있습니다.
+- `src/lib.rs` 파일이 있으면 `cargo`는 패키지에 라이브러리 크레이트가 포함되어 있다고 추론합니다.
+- `src/main.rs` 파일이 있으면 `cargo`는 패키지에 바이너리 크레이트가 포함되어 있다고 추론합니다.
 
-You can override these defaults by explicitly declaring your targets in the `Cargo.toml` file—see
-[`cargo`'s documentation](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#cargo-targets) for more details.
+`Cargo.toml` 파일에서 타겟을 명시적으로 선언하여 이러한 기본값을 재정의할 수 있습니다. 자세한 내용은 [`cargo`의 문서](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#cargo-targets)를 참조하십시오.
 
-Keep in mind that while a package can contain multiple crates, it can only contain one library crate.
+패키지에 여러 크레이트가 포함될 수 있지만 라이브러리 크레이트는 하나만 포함될 수 있다는 점을 명심하십시오.

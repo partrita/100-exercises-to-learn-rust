@@ -1,30 +1,29 @@
-# Mutable slices
+# 가변 슬라이스
 
-Every time we've talked about slice types (like `str` and `[T]`), we've used their immutable borrow form (`&str` and `&[T]`).\
-But slices can also be mutable!
+슬라이스 타입(`str` 및 `[T]`)에 대해 이야기할 때마다 불변 빌림 형태(`&str` 및 `&[T]`)를 사용했습니다.
+하지만 슬라이스도 가변일 수 있습니다!
 
-Here's how you create a mutable slice:
+가변 슬라이스를 만드는 방법은 다음과 같습니다:
 
 ```rust
 let mut numbers = vec![1, 2, 3];
 let slice: &mut [i32] = &mut numbers;
 ```
 
-You can then modify the elements in the slice:
+그런 다음 슬라이스의 요소를 수정할 수 있습니다:
 
 ```rust
 slice[0] = 42;
 ```
 
-This will change the first element of the `Vec` to `42`.
+이렇게 하면 `Vec`의 첫 번째 요소가 `42`로 변경됩니다.
 
-## Limitations
+## 제한 사항
 
-When working with immutable borrows, the recommendation was clear: prefer slice references over references to
-the owned type (e.g. `&[T]` over `&Vec<T>`).\
-That's **not** the case with mutable borrows.
+불변 빌림으로 작업할 때, 권장 사항은 명확했습니다: 소유된 타입에 대한 참조보다 슬라이스 참조를 선호하십시오(예: `&Vec<T>`보다 `&[T]`).
+가변 빌림의 경우는 **그렇지 않습니다**.
 
-Consider this scenario:
+다음 시나리오를 고려해 보십시오:
 
 ```rust
 let mut numbers = Vec::with_capacity(2);
@@ -32,10 +31,8 @@ let mut slice: &mut [i32] = &mut numbers;
 slice.push(1);
 ```
 
-It won't compile!\
-`push` is a method on `Vec`, not on slices. This is the manifestation of a more general principle: Rust won't
-allow you to add or remove elements from a slice. You will only be able to modify/replace the elements that are
-already there.
+컴파일되지 않습니다!
+`push`는 슬라이스의 메소드가 아니라 `Vec`의 메소드입니다. 이것은 더 일반적인 원칙의 표현입니다: Rust는 슬라이스에서 요소를 추가하거나 제거하는 것을 허용하지 않습니다. 이미 있는 요소만 수정/교체할 수 있습니다.
 
-In this regard, a `&mut Vec` or a `&mut String` are strictly more powerful than a `&mut [T]` or a `&mut str`.\
-Choose the type that best fits based on the operations you need to perform.
+이와 관련하여 `&mut Vec` 또는 `&mut String`은 `&mut [T]` 또는 `&mut str`보다 엄격하게 더 강력합니다.
+수행해야 하는 작업에 따라 가장 적합한 타입을 선택하십시오.

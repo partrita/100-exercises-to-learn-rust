@@ -1,18 +1,15 @@
-# Wrapping up
+# 마무리
 
-When it comes to domain modelling, the devil is in the details.\
-Rust offers a wide range of tools to help you represent the constraints of your domain directly in the type system,
-but it takes some practice to get it right and write code that looks idiomatic.
+도메인 모델링에 있어서는 세부 사항이 중요합니다.
+Rust는 도메인의 제약 조건을 타입 시스템에 직접 표현하는 데 도움이 되는 다양한 도구를 제공하지만, 올바르게 사용하고 관용적으로 보이는 코드를 작성하려면 약간의 연습이 필요합니다.
 
-Let's close the chapter with one final refinement of our `Ticket` model.\
-We'll introduce a new type for each of the fields in `Ticket` to encapsulate the respective constraints.\
-Every time someone accesses a `Ticket` field, they'll get back a value that's guaranteed to be valid—i.e. a
-`TicketTitle` instead of a `String`. They won't have to worry about the title being empty elsewhere in the code:
-as long as they have a `TicketTitle`, they know it's valid **by construction**.
+`Ticket` 모델의 마지막 개선 사항으로 이 챕터를 마무리하겠습니다.
+`Ticket`의 각 필드에 대한 새로운 타입을 도입하여 각각의 제약 조건을 캡슐화할 것입니다.
+누군가 `Ticket` 필드에 접근할 때마다 유효성이 보장된 값, 즉 `String` 대신 `TicketTitle`을 받게 됩니다. 코드의 다른 곳에서 제목이 비어 있는지 걱정할 필요가 없습니다. `TicketTitle`을 가지고 있는 한, **구조상** 유효하다는 것을 압니다.
 
-This is just an example of how you can use Rust's type system to make your code safer and more expressive.
+이것은 Rust의 타입 시스템을 사용하여 코드를 더 안전하고 표현력 있게 만드는 방법에 대한 한 예일 뿐입니다.
 
-## Further reading
+## 추가 자료
 
-- [Parse, don't validate](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/)
-- [Using types to guarantee domain invariants](https://www.lpalmieri.com/posts/2020-12-11-zero-to-production-6-domain-modelling/)
+- [유효성 검사하지 말고 파싱하세요](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/)
+- [타입을 사용하여 도메인 불변성 보장하기](https://www.lpalmieri.com/posts/2020-12-11-zero-to-production-6-domain-modelling/)

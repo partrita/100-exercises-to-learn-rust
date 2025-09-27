@@ -1,72 +1,67 @@
-# Memory layout
+# 메모리 레이아웃
 
-We've looked at ownership and references from an operational point of view—what you can and can't do with them.
-Now it's a good time to take a look under the hood: let's talk about **memory**.
+우리는 소유권과 참조를 운영적인 관점에서 살펴보았습니다. 즉, 무엇을 할 수 있고 무엇을 할 수 없는지에 대해서입니다.
+이제 내부를 들여다볼 좋은 시간입니다. **메모리**에 대해 이야기해 봅시다.
 
-## Stack and heap
+## 스택과 힙
 
-When discussing memory, you'll often hear people talk about the **stack** and the **heap**.\
-These are two different memory regions used by programs to store data.
+메모리에 대해 이야기할 때 종종 **스택**과 **힙**에 대해 이야기하는 것을 들을 수 있습니다.\
+이들은 프로그램이 데이터를 저장하는 데 사용하는 두 가지 다른 메모리 영역입니다.
 
-Let's start with the stack.
+스택부터 시작하겠습니다.
 
-## Stack
+## 스택
 
-The **stack** is a **LIFO** (Last In, First Out) data structure.\
-When you call a function, a new **stack frame** is added on top of the stack. That stack frame stores
-the function's arguments, local variables and a few "bookkeeping" values.\
-When the function returns, the stack frame is popped off the stack[^stack-overflow].
+**스택**은 **LIFO**(Last In, First Out) 데이터 구조입니다.\
+함수를 호출하면 스택 위에 새로운 **스택 프레임**이 추가됩니다. 해당 스택 프레임은 함수의 인수, 지역 변수 및 몇 가지 "장부" 값을 저장합니다.\
+함수가 반환되면 스택 프레임이 스택에서 제거됩니다[^stack-overflow].
 
 ```text
 +-----------------+
-| frame for func1 |
+| func1용 프레임  |
 +-----------------+
         |
-        | func2 is 
-        | called
+        | func2가
+        | 호출됨
         v
 +-----------------+
-| frame for func2 |
+| func2용 프레임  |
 +-----------------+
-| frame for func1 |
+| func1용 프레임  |
 +-----------------+
         |
-        | func2  
-        | returns
+        | func2가
+        | 반환됨
         v
 +-----------------+
-| frame for func1 |
+| func1용 프레임  |
 +-----------------+
 ```
 
-From an operational point of view, stack allocation/de-allocation is **very fast**.\
-We are always pushing and popping data from the top of the stack, so we don't need to search for free memory.
-We also don't have to worry about fragmentation: the stack is a single contiguous block of memory.
+운영적인 관점에서 스택 할당/해제는 **매우 빠릅니다**.\
+우리는 항상 스택의 맨 위에서 데이터를 푸시하고 팝하므로 여유 메모리를 검색할 필요가 없습니다.
+또한 조각화에 대해 걱정할 필요가 없습니다. 스택은 단일 연속 메모리 블록입니다.
 
 ### Rust
 
-Rust will often allocate data on the stack.\
-You have a `u32` input argument in a function? Those 32 bits will be on the stack.\
-You define a local variable of type `i64`? Those 64 bits will be on the stack.\
-It all works quite nicely because the size of those integers is known at compile time, therefore
-the compiled program knows how much space it needs to reserve on the stack for them.
+Rust는 종종 스택에 데이터를 할당합니다.\
+함수에 `u32` 입력 인수가 있습니까? 해당 32비트는 스택에 있습니다.\
+`i64` 타입의 지역 변수를 정의합니까? 해당 64비트는 스택에 있습니다.\
+이러한 정수의 크기는 컴파일 타임에 알려져 있으므로 컴파일된 프로그램은 스택에 예약해야 하는 공간의 양을 알고 있기 때문에 모두 잘 작동합니다.
 
 ### `std::mem::size_of`
 
-You can verify how much space a type would take on the stack
-using the [`std::mem::size_of`](https://doc.rust-lang.org/std/mem/fn.size_of.html) function.
+[`std::mem::size_of`](https://doc.rust-lang.org/std/mem/fn.size_of.html) 함수를 사용하여 타입이 스택에서 차지하는 공간의 양을 확인할 수 있습니다.
 
-For a `u8`, for example:
+예를 들어 `u8`의 경우:
 
 ```rust
-// We'll explain this funny-looking syntax (`::<u8>`) later on.
-// Ignore it for now.
+// 이 재미있게 생긴 구문(`::<u8>`)은 나중에 설명하겠습니다.
+// 지금은 무시하세요.
 assert_eq!(std::mem::size_of::<u8>(), 1);
 ```
 
-1 makes sense, because a `u8` is 8 bits long, or 1 byte.
+1은 `u8`이 8비트 또는 1바이트이기 때문에 의미가 있습니다.
 
-[^stack-overflow]: If you have nested function calls, each function pushes its data onto the stack when it's called but
-it doesn't pop it off until the innermost function returns.
-If you have too many nested function calls, you can run out of stack space—the stack is not infinite!
-That's called a [**stack overflow**](https://en.wikipedia.org/wiki/Stack_overflow).
+[^stack-overflow]: 중첩된 함수 호출이 있는 경우 각 함수는 호출될 때 스택에 데이터를 푸시하지만 가장 안쪽 함수가 반환될 때까지 팝하지 않습니다.
+이를 [**스택 오버플로**](https://en.wikipedia.org/wiki/Stack_overflow)라고 합니다.

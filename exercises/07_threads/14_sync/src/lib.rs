@@ -1,6 +1,6 @@
-// Not much to be exercised on `Sync`, just a thing to remember.
+// `Sync`에 대해서는 연습할 것이 많지 않으니, 그냥 기억해두세요.
 fn outro() -> &'static str {
-    "I have a good understanding of __!"
+    "I have a good understanding of Send and Sync!"
 }
 
 #[cfg(test)]

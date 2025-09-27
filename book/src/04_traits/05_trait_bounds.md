@@ -1,20 +1,18 @@
-# Trait bounds
+# 트레이트 바운드
 
-We've seen two use cases for traits so far:
+지금까지 트레이트의 두 가지 사용 사례를 보았습니다:
 
-- Unlocking "built-in" behaviour (e.g. operator overloading)
-- Adding new behaviour to existing types (i.e. extension traits)
+- "내장된" 동작 잠금 해제 (예: 연산자 오버로딩)
+- 기존 타입에 새로운 동작 추가 (즉, 확장 트레이트)
 
-There's a third use case: **generic programming**.
+세 번째 사용 사례가 있습니다: **제네릭 프로그래밍**입니다.
 
-## The problem
+## 문제점
 
-All our functions and methods, so far, have been working with **concrete types**.\
-Code that operates on concrete types is usually straightforward to write and understand. But it's also
-limited in its reusability.\
-Let's imagine, for example, that we want to write a function that returns `true` if an integer is even.
-Working with concrete types, we'd have to write a separate function for each integer type we want to
-support:
+지금까지 우리의 모든 함수와 메소드는 **구체적인 타입**으로 작업했습니다.
+구체적인 타입으로 작동하는 코드는 일반적으로 작성하고 이해하기 쉽습니다. 하지만 재사용성에는 한계가 있습니다.
+예를 들어, 정수가 짝수인지 확인하는 함수를 작성하고 싶다고 상상해 봅시다.
+구체적인 타입으로 작업하면 지원하려는 각 정수 타입에 대해 별도의 함수를 작성해야 합니다:
 
 ```rust
 fn is_even_i32(n: i32) -> bool {
@@ -25,10 +23,10 @@ fn is_even_i64(n: i64) -> bool {
     n % 2 == 0
 }
 
-// Etc.
+// 등등.
 ```
 
-Alternatively, we could write a single extension trait and then different implementations for each integer type:
+또는 단일 확장 트레이트를 작성한 다음 각 정수 타입에 대해 다른 구현을 작성할 수 있습니다:
 
 ```rust
 trait IsEven {
@@ -47,15 +45,15 @@ impl IsEven for i64 {
     }
 }
 
-// Etc.
+// 등등.
 ```
 
-The duplication remains.
+중복은 여전히 남아 있습니다.
 
-## Generic programming
+## 제네릭 프로그래밍
 
-We can do better using **generics**.\
-Generics allow us to write code that works with a **type parameter** instead of a concrete type:
+**제네릭**을 사용하면 더 잘할 수 있습니다.
+제네릭을 사용하면 구체적인 타입 대신 **타입 매개변수**로 작동하는 코드를 작성할 수 있습니다:
 
 ```rust
 fn print_if_even<T>(n: T)
@@ -68,20 +66,19 @@ where
 }
 ```
 
-`print_if_even` is a **generic function**.\
-It isn't tied to a specific input type. Instead, it works with any type `T` that:
+`print_if_even`은 **제네릭 함수**입니다.
+특정 입력 타입에 묶여 있지 않습니다. 대신 다음을 만족하는 모든 타입 `T`와 함께 작동합니다:
 
-- Implements the `IsEven` trait.
-- Implements the `Debug` trait.
+- `IsEven` 트레이트를 구현합니다.
+- `Debug` 트레이트를 구현합니다.
 
-This contract is expressed with a **trait bound**: `T: IsEven + Debug`.\
-The `+` symbol is used to require that `T` implements multiple traits. `T: IsEven + Debug` is equivalent to
-"where `T` implements `IsEven` **and** `Debug`".
+이 계약은 **트레이트 바운드**로 표현됩니다: `T: IsEven + Debug`.
+`+` 기호는 `T`가 여러 트레이트를 구현하도록 요구하는 데 사용됩니다. `T: IsEven + Debug`는 "`T`가 `IsEven` **그리고** `Debug`를 구현하는 곳"과 동일합니다.
 
-## Trait bounds
+## 트레이트 바운드
 
-What purpose do trait bounds serve in `print_if_even`?\
-To find out, let's try to remove them:
+`print_if_even`에서 트레이트 바운드는 어떤 목적을 수행합니까?
+알아보기 위해 제거해 봅시다:
 
 ```rust
 fn print_if_even<T>(n: T) {
@@ -91,7 +88,7 @@ fn print_if_even<T>(n: T) {
 }
 ```
 
-This code won't compile:
+이 코드는 컴파일되지 않습니다:
 
 ```text
 error[E0599]: no method named `is_even` found for type parameter `T` 
@@ -118,42 +115,40 @@ help: consider restricting type parameter `T`
   |                   +++++++++++++++++
 ```
 
-Without trait bounds, the compiler doesn't know what `T` **can do**.\
-It doesn't know that `T` has an `is_even` method, and it doesn't know how to format `T` for printing.
-From the compiler point of view, a bare `T` has no behaviour at all.\
-Trait bounds restrict the set of types that can be used by ensuring that the behaviour required by the function
-body is present.
+트레이트 바운드가 없으면 컴파일러는 `T`가 **무엇을 할 수 있는지** 알지 못합니다.
+`T`에 `is_even` 메소드가 있다는 것을 모르고, `T`를 출력용으로 포맷하는 방법도 모릅니다.
+컴파일러의 관점에서 볼 때, 순수한 `T`는 전혀 동작이 없습니다.
+트레이트 바운드는 함수 본문에서 요구하는 동작이 존재하도록 보장하여 사용할 수 있는 타입 집합을 제한합니다.
 
-## Syntax: inlining trait bounds
+## 구문: 인라인 트레이트 바운드
 
-All the examples above used a **`where` clause** to specify trait bounds:
+위의 모든 예제는 트레이트 바운드를 지정하기 위해 **`where` 절**을 사용했습니다:
 
 ```rust
 fn print_if_even<T>(n: T)
 where
     T: IsEven + Debug
 //  ^^^^^^^^^^^^^^^^^
-//  This is a `where` clause
+//  이것은 `where` 절입니다
 {
     // [...]
 }
 ```
 
-If the trait bounds are simple, you can **inline** them directly next to the type parameter:
+트레이트 바운드가 간단하다면 타입 매개변수 바로 옆에 **인라인**으로 지정할 수 있습니다:
 
 ```rust
 fn print_if_even<T: IsEven + Debug>(n: T) {
     //           ^^^^^^^^^^^^^^^^^
-    //           This is an inline trait bound
+    //           이것은 인라인 트레이트 바운드입니다
     // [...]
 }
 ```
 
-## Syntax: meaningful names
+## 구문: 의미 있는 이름
 
-In the examples above, we used `T` as the type parameter name. This is a common convention when a function has
-only one type parameter.\
-Nothing stops you from using a more meaningful name, though:
+위의 예에서는 타입 매개변수 이름으로 `T`를 사용했습니다. 이것은 함수에 타입 매개변수가 하나만 있을 때 일반적인 관례입니다.
+하지만 더 의미 있는 이름을 사용하는 것을 막는 것은 없습니다:
 
 ```rust
 fn print_if_even<Number: IsEven + Debug>(n: Number) {
@@ -161,16 +156,14 @@ fn print_if_even<Number: IsEven + Debug>(n: Number) {
 }
 ```
 
-It is actually **desirable** to use meaningful names when there are multiple type parameters at play or when the name
-`T` doesn't convey enough information about the type's role in the function.
-Maximize clarity and readability when naming type parameters, just as you would with variables or function parameters.
-Follow Rust's conventions, though: use [upper camel case for type parameter names](https://rust-lang.github.io/api-guidelines/naming.html#casing-conforms-to-rfc-430-c-case).
+여러 타입 매개변수가 있거나 `T`라는 이름이 타입의 역할에 대한 충분한 정보를 전달하지 않을 때 의미 있는 이름을 사용하는 것이 실제로 **바람직합니다**.
+변수나 함수 매개변수와 마찬가지로 타입 매개변수의 이름을 지정할 때 명확성과 가독성을 극대화하십시오.
+하지만 Rust의 관례를 따르십시오: [타입 매개변수 이름에는 위쪽 카멜 케이스를 사용하십시오](https://rust-lang.github.io/api-guidelines/naming.html#casing-conforms-to-rfc-430-c-case).
 
-## The function signature is king
+## 함수 시그니처가 왕입니다
 
-You may wonder why we need trait bounds at all. Can't the compiler infer the required traits from the function's body?\
-It could, but it won't.\
-The rationale is the same as for [explicit type annotations on function parameters](../02_basic_calculator/02_variables.md#function-arguments-are-variables):
-each function signature is a contract between the caller and the callee, and the terms must be explicitly stated.
-This allows for better error messages, better documentation, less unintentional breakages across versions,
-and faster compilation times.
+트레이트 바운드가 왜 필요한지 궁금할 수 있습니다. 컴파일러가 함수 본문에서 필요한 트레이트를 추론할 수 없나요?
+할 수는 있지만, 하지 않을 것입니다.
+근거는 [함수 매개변수에 대한 명시적 타입 어노테이션](../02_basic_calculator/02_variables.md#function-arguments-are-variables)과 동일합니다:
+각 함수 시그니처는 호출자와 피호출자 간의 계약이며, 조건은 명시적으로 명시되어야 합니다.
+이를 통해 더 나은 오류 메시지, 더 나은 문서, 버전 간의 의도하지 않은 손상 감소 및 더 빠른 컴파일 시간을 얻을 수 있습니다.

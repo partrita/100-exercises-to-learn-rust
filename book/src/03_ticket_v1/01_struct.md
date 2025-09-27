@@ -1,20 +1,18 @@
-# Structs
+# 구조체
 
-We need to keep track of three pieces of information for each ticket:
+각 티켓에 대해 세 가지 정보를 추적해야 합니다:
 
-- A title
-- A description
-- A status
+- 제목
+- 설명
+- 상태
 
-We can start by using a [`String`](https://doc.rust-lang.org/std/string/struct.String.html)
-to represent them. `String` is the type defined in Rust's standard library to represent
-[UTF-8 encoded](https://en.wikipedia.org/wiki/UTF-8) text.
+이를 나타내기 위해 [`String`](https://doc.rust-lang.org/std/string/struct.String.html)을 사용하여 시작할 수 있습니다. `String`은 Rust의 표준 라이브러리에 정의된 타입으로, [UTF-8 인코딩된](https://en.wikipedia.org/wiki/UTF-8) 텍스트를 나타냅니다.
 
-But how do we **combine** these three pieces of information into a single entity?
+하지만 이 세 가지 정보를 단일 엔티티로 **결합**하려면 어떻게 해야 할까요?
 
-## Defining a `struct`
+## `struct` 정의하기
 
-A `struct` defines a **new Rust type**.
+`struct`는 **새로운 Rust 타입**을 정의합니다.
 
 ```rust
 struct Ticket {
@@ -24,14 +22,13 @@ struct Ticket {
 }
 ```
 
-A struct is quite similar to what you would call a class or an object in other programming languages.
+구조체는 다른 프로그래밍 언어에서 클래스나 객체라고 부르는 것과 매우 유사합니다.
 
-## Defining fields
+## 필드 정의하기
 
-The new type is built by combining other types as **fields**.\
-Each field must have a name and a type, separated by a colon, `:`. If there are multiple fields, they are separated by a comma, `,`.
+새로운 타입은 다른 타입을 **필드**로 결합하여 만들어집니다. 각 필드는 이름과 타입을 가져야 하며, 콜론 `:`으로 구분됩니다. 필드가 여러 개인 경우 쉼표 `,`로 구분됩니다.
 
-Fields don't have to be of the same type, as you can see in the `Configuration` struct below:
+아래 `Configuration` 구조체에서 볼 수 있듯이 필드는 동일한 타입일 필요가 없습니다:
 
 ```rust
 struct Configuration {
@@ -40,12 +37,12 @@ struct Configuration {
 }
 ```
 
-## Instantiation
+## 인스턴스화
 
-You can create an instance of a struct by specifying the values for each field:
+각 필드의 값을 지정하여 구조체의 인스턴스를 만들 수 있습니다:
 
 ```rust
-// Syntax: <StructName> { <field_name>: <value>, ... }
+// 구문: <구조체이름> { <필드_이름>: <값>, ... }
 let ticket = Ticket {
     title: "Build a ticket system".into(),
     description: "A Kanban board".into(),
@@ -53,19 +50,18 @@ let ticket = Ticket {
 };
 ```
 
-## Accessing fields
+## 필드 접근하기
 
-You can access the fields of a struct using the `.` operator:
+`.` 연산자를 사용하여 구조체의 필드에 접근할 수 있습니다:
 
 ```rust
-// Field access
+// 필드 접근
 let x = ticket.description;
 ```
 
-## Methods
+## 메소드
 
-We can attach behaviour to our structs by defining **methods**.\
-Using the `Ticket` struct as an example:
+**메소드**를 정의하여 구조체에 동작을 첨부할 수 있습니다. `Ticket` 구조체를 예로 들어 보겠습니다:
 
 ```rust
 impl Ticket {
@@ -74,35 +70,33 @@ impl Ticket {
     }
 }
 
-// Syntax:
-// impl <StructName> {
-//    fn <method_name>(<parameters>) -> <return_type> {
-//        // Method body
+// 구문:
+// impl <구조체이름> {
+//    fn <메소드_이름>(<매개변수>) -> <반환_타입> {
+//        // 메소드 본문
 //    }
 // }
 ```
 
-Methods are pretty similar to functions, with two key differences:
+메소드는 함수와 매우 유사하지만 두 가지 주요 차이점이 있습니다:
 
-1. methods must be defined inside an **`impl` block**
-2. methods may use `self` as their first parameter.
-   `self` is a keyword and represents the instance of the struct the method is being called on.
+1. 메소드는 **`impl` 블록** 내부에 정의되어야 합니다.
+2. 메소드는 첫 번째 매개변수로 `self`를 사용할 수 있습니다. `self`는 키워드이며 메소드가 호출되는 구조체의 인스턴스를 나타냅니다.
 
 ### `self`
 
-If a method takes `self` as its first parameter, it can be called using the **method call syntax**:
+메소드가 첫 번째 매개변수로 `self`를 사용하는 경우 **메소드 호출 구문**을 사용하여 호출할 수 있습니다:
 
 ```rust
-// Method call syntax: <instance>.<method_name>(<parameters>)
+// 메소드 호출 구문: <인스턴스>.<메소드_이름>(<매개변수>)
 let is_open = ticket.is_open();
 ```
 
-This is the same calling syntax you used to perform saturating arithmetic operations on `u32` values
-in [the previous chapter](../02_basic_calculator/09_saturating.md).
+이것은 [이전 장](../02_basic_calculator/09_saturating.md)에서 `u32` 값에 대해 포화 산술 연산을 수행하는 데 사용한 것과 동일한 호출 구문입니다.
 
-### Static methods
+### 정적 메소드
 
-If a method doesn't take `self` as its first parameter, it's a **static method**.
+메소드가 첫 번째 매개변수로 `self`를 사용하지 않으면 **정적 메소드**입니다.
 
 ```rust
 struct Configuration {
@@ -111,29 +105,28 @@ struct Configuration {
 }
 
 impl Configuration {
-    // `default` is a static method on `Configuration`
+    // `default`는 `Configuration`의 정적 메소드입니다.
     fn default() -> Configuration {
         Configuration { version: 0, active: false }
     }
 }
 ```
 
-The only way to call a static method is by using the **function call syntax**:
+정적 메소드를 호출하는 유일한 방법은 **함수 호출 구문**을 사용하는 것입니다:
 
 ```rust
-// Function call syntax: <StructName>::<method_name>(<parameters>)
+// 함수 호출 구문: <구조체이름>::<메소드_이름>(<매개변수>)
 let default_config = Configuration::default();
 ```
 
-### Equivalence
+### 동등성
 
-You can use the function call syntax even for methods that take `self` as their first parameter:
+첫 번째 매개변수로 `self`를 사용하는 메소드에도 함수 호출 구문을 사용할 수 있습니다:
 
 ```rust
-// Function call syntax:
-//   <StructName>::<method_name>(<instance>, <parameters>)
+// 함수 호출 구문:
+//   <구조체이름>::<메소드_이름>(<인스턴스>, <매개변수>)
 let is_open = Ticket::is_open(ticket);
 ```
 
-The function call syntax makes it quite clear that `ticket` is being used as `self`, the first parameter of the method,
-but it's definitely more verbose. Prefer the method call syntax when possible.
+함수 호출 구문은 `ticket`이 메소드의 첫 번째 매개변수인 `self`로 사용되고 있음을 매우 명확하게 하지만, 확실히 더 장황합니다. 가능하면 메소드 호출 구문을 선호하십시오.

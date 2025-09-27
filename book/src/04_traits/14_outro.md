@@ -1,27 +1,21 @@
-# Wrapping up
+# 마무리
 
-We've covered quite a few different traits in this chapter—and we've only scratched the surface!
-It may feel like you have a lot to remember, but don't worry: you'll bump into these traits
-so often when writing Rust code that they'll soon become second nature.
+이 챕터에서 꽤 많은 다른 트레이트를 다루었습니다. 그리고 우리는 이제 막 표면을 긁었을 뿐입니다!
+기억해야 할 것이 많다고 느낄 수 있지만, 걱정하지 마세요: Rust 코드를 작성할 때 이 트레이트들을 너무 자주 만나게 되어 곧 제2의 천성이 될 것입니다.
 
-## Closing thoughts
+## 맺음말
 
-Traits are powerful, but don't overuse them.\
-A few guidelines to keep in mind:
+트레이트는 강력하지만, 남용하지 마세요.
+명심해야 할 몇 가지 지침:
 
-- Don't make a function generic if it is always invoked with a single type. It introduces indirection in your
-  codebase, making it harder to understand and maintain.
-- Don't create a trait if you only have one implementation. It's a sign that the trait is not needed.
-- Implement standard traits for your types (`Debug`, `PartialEq`, etc.) whenever it makes sense.
-  It will make your types more idiomatic and easier to work with, unlocking a lot of functionality provided
-  by the standard library and ecosystem crates.
-- Implement traits from third-party crates if you need the functionality they unlock within their ecosystem.
-- Beware of making code generic solely to use mocks in your tests. The maintainability cost of this approach
-  can be high, and it's often better to use a different testing strategy. Check out the
-  [testing masterclass](https://github.com/mainmatter/rust-advanced-testing-workshop)
-  for details on high-fidelity testing.
+- 함수가 항상 단일 타입으로 호출된다면 제네릭으로 만들지 마세요. 코드베이스에 간접성을 도입하여 이해하고 유지 관리하기 더 어렵게 만듭니다.
+- 구현이 하나뿐이라면 트레이트를 만들지 마세요. 트레이트가 필요 없다는 신호입니다.
+- 의미가 있을 때마다 타입에 대해 표준 트레이트(`Debug`, `PartialEq` 등)를 구현하십시오.
+  타입을 더 관용적이고 작업하기 쉽게 만들어 표준 라이브러리 및 생태계 크레이트에서 제공하는 많은 기능을 잠금 해제할 수 있습니다.
+- 생태계 내에서 잠금 해제하는 기능이 필요한 경우 타사 크레이트의 트레이트를 구현하십시오.
+- 테스트에서 모의 객체를 사용하기 위해 코드를 제네릭으로 만드는 것을 주의하십시오. 이 접근 방식의 유지 관리 비용은 높을 수 있으며, 다른 테스트 전략을 사용하는 것이 더 나은 경우가 많습니다. 고충실도 테스트에 대한 자세한 내용은 [테스팅 마스터클래스](https://github.com/mainmatter/rust-advanced-testing-workshop)를 확인하십시오.
 
-## Testing your knowledge
+## 지식 테스트
 
-Before moving on, let's go through one last exercise to consolidate what we've learned.
-You'll have minimal guidance this time—just the exercise description and the tests to guide you.
+넘어가기 전에, 배운 것을 통합하기 위해 마지막 연습 문제를 하나 더 풀어봅시다.
+이번에는 최소한의 안내만 제공됩니다. 연습 문제 설명과 테스트만으로 안내를 받게 됩니다.

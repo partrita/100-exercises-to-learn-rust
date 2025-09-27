@@ -1,59 +1,54 @@
-# Don't block the runtime
+# 런타임을 차단하지 마세요
 
-Let's circle back to yield points.\
-Unlike threads, **Rust tasks cannot be preempted**.
+양보 지점으로 돌아가 봅시다.
+스레드와 달리, **Rust 태스크는 선점될 수 없습니다**.
 
-`tokio` cannot, on its own, decide to pause a task and run another one in its place.
-The control goes back to the executor **exclusively** when the task yields—i.e.
-when `Future::poll` returns `Poll::Pending` or, in the case of `async fn`, when
-you `.await` a future.
+`tokio`는 자체적으로 태스크를 일시 중지하고 다른 태스크를 대신 실행하도록 결정할 수 없습니다.
+제어는 태스크가 양보할 때 **독점적으로** 실행기로 돌아갑니다. 즉,
+`Future::poll`이 `Poll::Pending`을 반환하거나, `async fn`의 경우,
+퓨처를 `.await`할 때입니다.
 
-This exposes the runtime to a risk: if a task never yields, the runtime will never
-be able to run another task. This is called **blocking the runtime**.
+이것은 런타임에 위험을 노출합니다: 태스크가 절대 양보하지 않으면 런타임은 절대
+다른 태스크를 실행할 수 없을 것입니다. 이것을 **런타임 차단**이라고 합니다.
 
-## What is blocking?
+## 차단이란 무엇인가요?
 
-How long is too long? How much time can a task spend without yielding before it
-becomes a problem?
+얼마나 오래 걸려야 너무 오래 걸리는 것일까요? 태스크가 양보하지 않고 얼마나 많은 시간을 보낼 수 있어야
+문제가 될까요?
 
-It depends on the runtime, the application, the number of in-flight tasks, and
-many other factors. But, as a general rule of thumb, try to spend less than 100
-microseconds between yield points.
+이는 런타임, 애플리케이션, 진행 중인 태스크 수 및
+다른 많은 요인에 따라 달라집니다. 하지만 일반적인 경험칙으로, 양보 지점 사이에 100
+마이크로초 미만을 소비하도록 노력하십시오.
 
-## Consequences
+## 결과
 
-Blocking the runtime can lead to:
+런타임을 차단하면 다음으로 이어질 수 있습니다:
 
-- **Deadlocks**: if the task that's not yielding is waiting for another task to
-  complete, and that task is waiting for the first one to yield, you have a deadlock.
-  No progress can be made, unless the runtime is able to schedule the other task on
-  a different thread.
-- **Starvation**: other tasks might not be able to run, or might run after a long
-  delay, which can lead to poor performances (e.g. high tail latencies).
+- **교착 상태**: 양보하지 않는 태스크가 다른 태스크가
+  완료되기를 기다리고 있고, 그 태스크가 첫 번째 태스크가 양보하기를 기다리고 있다면 교착 상태가 발생합니다.
+  런타임이 다른 태스크를 다른 스레드에서 스케줄링할 수 없는 한 진행할 수 없습니다.
+- **기아**: 다른 태스크가 실행되지 못하거나 오랜 지연 후에 실행될 수 있으며, 이는
+  성능 저하(예: 높은 테일 지연 시간)로 이어질 수 있습니다.
 
-## Blocking is not always obvious
+## 차단은 항상 명확하지 않습니다
 
-Some types of operations should generally be avoided in async code, like:
+일부 유형의 작업은 일반적으로 비동기 코드에서 피해야 합니다. 예를 들어:
 
-- Synchronous I/O. You can't predict how long it will take, and it's likely to be
-  longer than 100 microseconds.
-- Expensive CPU-bound computations.
+- 동기 I/O. 얼마나 오래 걸릴지 예측할 수 없으며, 100 마이크로초보다
+  오래 걸릴 가능성이 높습니다.
+- 비용이 많이 드는 CPU 바운드 계산.
 
-The latter category is not always obvious though. For example, sorting a vector with
-a few elements is not a problem; that evaluation changes if the vector has billions
-of entries.
+후자 범주는 항상 명확하지는 않습니다. 예를 들어, 몇 개의 요소가 있는 벡터를 정렬하는 것은 문제가 되지 않습니다.
+벡터에 수십억 개의 항목이 있는 경우 그 평가는 달라집니다.
 
-## How to avoid blocking
+## 차단을 피하는 방법
 
-OK, so how do you avoid blocking the runtime assuming you _must_ perform an operation
-that qualifies or risks qualifying as blocking?\
-You need to move the work to a different thread. You don't want to use the so-called
-runtime threads, the ones used by `tokio` to run tasks.
+좋습니다. 그렇다면 차단으로 분류되거나 차단으로 분류될 위험이 있는 작업을 _반드시_ 수행해야 한다고 가정할 때 런타임을 차단하는 것을 어떻게 피할 수 있을까요?
+작업을 다른 스레드로 이동해야 합니다. 소위
+런타임 스레드, 즉 `tokio`가 태스크를 실행하는 데 사용하는 스레드를 사용하고 싶지 않을 것입니다.
 
-`tokio` provides a dedicated threadpool for this purpose, called the **blocking pool**.
-You can spawn a synchronous operation on the blocking pool using the
-`tokio::task::spawn_blocking` function. `spawn_blocking` returns a future that resolves
-to the result of the operation when it completes.
+`tokio`는 이 목적을 위해 **차단 풀**이라고 하는 전용 스레드 풀을 제공합니다.
+`tokio::task::spawn_blocking` 함수를 사용하여 차단 풀에서 동기 작업을 생성할 수 있습니다. `spawn_blocking`은 작업이 완료될 때 작업 결과로 해결되는 퓨처를 반환합니다.
 
 ```rust
 use tokio::task;
@@ -64,16 +59,15 @@ fn expensive_computation() -> u64 {
 
 async fn run() {
     let handle = task::spawn_blocking(expensive_computation);
-    // Do other stuff in the meantime
+    // 그 동안 다른 작업 수행
     let result = handle.await.unwrap();
 }
 ```
 
-The blocking pool is long-lived. `spawn_blocking` should be faster
-than creating a new thread directly via `std::thread::spawn`
-because the cost of thread initialization is amortized over multiple calls.
+차단 풀은 장기 실행됩니다. `spawn_blocking`은
+`std::thread::spawn`을 통해 직접 새 스레드를 생성하는 것보다 빨라야 합니다.
+스레드 초기화 비용이 여러 호출에 걸쳐 상각되기 때문입니다.
 
-## Further reading
+## 추가 자료
 
-- Check out [Alice Ryhl's blog post](https://ryhl.io/blog/async-what-is-blocking/)
-  on the topic.
+- 이 주제에 대한 [Alice Ryhl의 블로그 게시물](https://ryhl.io/blog/async-what-is-blocking/)을 확인하십시오.

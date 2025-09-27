@@ -1,6 +1,6 @@
-# Mutable references
+# 가변 참조
 
-Your accessor methods should look like this now:
+이제 접근자 메소드는 다음과 같을 것입니다:
 
 ```rust
 impl Ticket {
@@ -18,36 +18,33 @@ impl Ticket {
 }
 ```
 
-A sprinkle of `&` here and there did the trick!\
-We now have a way to access the fields of a `Ticket` instance without consuming it in the process.
-Let's see how we can enhance our `Ticket` struct with **setter methods** next.
+여기저기 `&`를 뿌려주니 문제가 해결되었습니다!\n이제 `Ticket` 인스턴스를 소비하지 않고도 필드에 접근할 수 있는 방법이 생겼습니다.
+다음으로 `Ticket` 구조체를 **setter 메소드**로 향상시키는 방법을 알아봅시다.
 
 ## Setters
 
-Setter methods allow users to change the values of `Ticket`'s private fields while making sure that its invariants
-are respected (i.e. you can't set a `Ticket`'s title to an empty string).
+Setter 메소드를 사용하면 사용자가 `Ticket`의 비공개 필드 값을 변경하면서도 불변성이 존중되도록 할 수 있습니다(즉, `Ticket`의 제목을 빈 문자열로 설정할 수 없습니다).
 
-There are two common ways to implement setters in Rust:
+Rust에서 setter를 구현하는 두 가지 일반적인 방법이 있습니다:
 
-- Taking `self` as input.
-- Taking `&mut self` as input.
+- `self`를 입력으로 받기.
+- `&mut self`를 입력으로 받기.
 
-### Taking `self` as input
+### `self`를 입력으로 받기
 
-The first approach looks like this:
+첫 번째 접근 방식은 다음과 같습니다:
 
 ```rust
 impl Ticket {
     pub fn set_title(mut self, new_title: String) -> Self {
-        // Validate the new title [...]
+        // 새 제목 유효성 검사 [...] 
         self.title = new_title;
         self
     }
 }
 ```
 
-It takes ownership of `self`, changes the title, and returns the modified `Ticket` instance.\
-This is how you'd use it:
+`self`의 소유권을 가져와서 제목을 변경하고 수정된 `Ticket` 인스턴스를 반환합니다.\n사용 방법은 다음과 같습니다:
 
 ```rust
 let ticket = Ticket::new(
@@ -58,12 +55,10 @@ let ticket = Ticket::new(
 let ticket = ticket.set_title("New title".into());
 ```
 
-Since `set_title` takes ownership of `self` (i.e. it **consumes it**), we need to reassign the result to a variable.
-In the example above we take advantage of **variable shadowing** to reuse the same variable name: when
-you declare a new variable with the same name as an existing one, the new variable **shadows** the old one. This
-is a common pattern in Rust code.
+`set_title`은 `self`의 소유권을 가져가므로(**소비**하므로) 결과를 변수에 다시 할당해야 합니다.
+위 예에서는 **변수 섀도잉**을 활용하여 동일한 변수 이름을 재사용합니다. 기존 변수와 동일한 이름으로 새 변수를 선언하면 새 변수가 이전 변수를 **가립니다**. 이것은 Rust 코드에서 일반적인 패턴입니다.
 
-`self`-setters work quite nicely when you need to change multiple fields at once: you can chain multiple calls together!
+`self`-setter는 한 번에 여러 필드를 변경해야 할 때 매우 잘 작동합니다. 여러 호출을 함께 연결할 수 있습니다!
 
 ```rust
 let ticket = ticket
@@ -72,24 +67,24 @@ let ticket = ticket
     .set_status("In Progress".into());
 ```
 
-### Taking `&mut self` as input
+### `&mut self`를 입력으로 받기
 
-The second approach to setters, using `&mut self`, looks like this instead:
+`&mut self`를 사용하는 두 번째 setter 접근 방식은 다음과 같습니다:
 
 ```rust
 impl Ticket {
     pub fn set_title(&mut self, new_title: String) {
-        // Validate the new title [...]
+        // 새 제목 유효성 검사 [...] 
         
         self.title = new_title;
     }
 }
 ```
 
-This time the method takes a mutable reference to `self` as input, changes the title, and that's it.
-Nothing is returned.
+이번에는 메소드가 `self`에 대한 가변 참조를 입력으로 받아 제목을 변경하고 그것으로 끝입니다.
+아무것도 반환되지 않습니다.
 
-You'd use it like this:
+사용 방법은 다음과 같습니다:
 
 ```rust
 let mut ticket = Ticket::new(
@@ -99,15 +94,15 @@ let mut ticket = Ticket::new(
 );
 ticket.set_title("New title".into());
 
-// Use the modified ticket
+// 수정된 티켓 사용
 ```
 
-Ownership stays with the caller, so the original `ticket` variable is still valid. We don't need to reassign the result.
-We need to mark `ticket` as mutable though, because we're taking a mutable reference to it.
+소유권은 호출자에게 있으므로 원래 `ticket` 변수는 여전히 유효합니다. 결과를 다시 할당할 필요가 없습니다.
+하지만 `ticket`에 대한 가변 참조를 사용하고 있으므로 `ticket`을 가변으로 표시해야 합니다.
 
-`&mut`-setters have a downside: you can't chain multiple calls together.
-Since they don't return the modified `Ticket` instance, you can't call another setter on the result of the first one.
-You have to call each setter separately:
+`&mut`-setter에는 단점이 있습니다. 여러 호출을 함께 연결할 수 없습니다.
+수정된 `Ticket` 인스턴스를 반환하지 않으므로 첫 번째 setter의 결과에 다른 setter를 호출할 수 없습니다.
+각 setter를 개별적으로 호출해야 합니다:
 
 ```rust
 ticket.set_title("New title".into());

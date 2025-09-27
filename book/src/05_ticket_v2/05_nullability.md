@@ -1,12 +1,12 @@
-# Nullability
+# 널 허용성
 
-Our implementation of the `assigned` method is fairly blunt: panicking for to-do and done tickets is far from ideal.\
-We can do better using **Rust's `Option` type**.
+`assigned` 메소드의 구현은 상당히 무뚝뚝합니다: 할 일 및 완료된 티켓에 대해 패닉을 일으키는 것은 이상적이지 않습니다.
+**Rust의 `Option` 타입**을 사용하면 더 잘할 수 있습니다.
 
 ## `Option`
 
-`Option` is a Rust type that represents **nullable values**.\
-It is an enum, defined in Rust's standard library:
+`Option`은 **널 허용 값**을 나타내는 Rust 타입입니다.
+이것은 Rust의 표준 라이브러리에 정의된 열거형입니다:
 
 ```rust
 enum Option<T> {
@@ -15,33 +15,30 @@ enum Option<T> {
 }
 ```
 
-`Option` encodes the idea that a value might be present (`Some(T)`) or absent (`None`).\
-It also forces you to **explicitly handle both cases**. You'll get a compiler error if you are working with
-a nullable value and you forget to handle the `None` case.\
-This is a significant improvement over "implicit" nullability in other languages, where you can forget to check
-for `null` and thus trigger a runtime error.
+`Option`은 값이 존재할 수도 있고(`Some(T)`) 없을 수도 있다(`None`)는 아이디어를 인코딩합니다.
+또한 **두 경우를 모두 명시적으로 처리**하도록 강제합니다. 널 허용 값으로 작업하면서 `None` 케이스 처리를 잊어버리면 컴파일러 오류가 발생합니다.
+이것은 다른 언어의 "암시적" 널 허용성에 비해 상당한 개선입니다. 다른 언어에서는 `null` 확인을 잊어버려 런타임 오류를 유발할 수 있습니다.
 
-## `Option`'s definition
+## `Option`의 정의
 
-`Option`'s definition uses a Rust construct that you haven't seen before: **tuple-like variants**.
+`Option`의 정의는 이전에 보지 못했던 Rust 구문을 사용합니다: **튜플과 유사한 베리언트**입니다.
 
-### Tuple-like variants
+### 튜플과 유사한 베리언트
 
-`Option` has two variants: `Some(T)` and `None`.\
-`Some` is a **tuple-like variant**: it's a variant that holds **unnamed fields**.
+`Option`에는 `Some(T)`와 `None` 두 가지 베리언트가 있습니다.
+`Some`은 **튜플과 유사한 베리언트**입니다: **이름 없는 필드**를 가지는 베리언트입니다.
 
-Tuple-like variants are often used when there is a single field to store, especially when we're looking at a
-"wrapper" type like `Option`.
+튜플과 유사한 베리언트는 저장할 필드가 하나만 있을 때, 특히 `Option`과 같은 "래퍼" 타입을 볼 때 자주 사용됩니다.
 
-### Tuple-like structs
+### 튜플과 유사한 구조체
 
-They're not specific to enums—you can define tuple-like structs too:
+열거형에만 국한된 것은 아닙니다. 튜플과 유사한 구조체도 정의할 수 있습니다:
 
 ```rust
 struct Point(i32, i32);
 ```
 
-You can then access the two fields of a `Point` instance using their positional index:
+그런 다음 위치 인덱스를 사용하여 `Point` 인스턴스의 두 필드에 접근할 수 있습니다:
 
 ```rust
 let point = Point(3, 4);
@@ -49,21 +46,21 @@ let x = point.0;
 let y = point.1;
 ```
 
-### Tuples
+### 튜플
 
-It's weird to say that something is tuple-like when we haven't seen tuples yet!\
-Tuples are another example of a primitive Rust type.
-They group together a fixed number of values with (potentially different) types:
+아직 튜플을 보지 않았는데 무언가가 튜플과 유사하다고 말하는 것은 이상합니다!
+튜플은 원시 Rust 타입의 또 다른 예입니다.
+(잠재적으로 다른) 타입을 가진 고정된 수의 값을 함께 그룹화합니다:
 
 ```rust
-// Two values, same type
+// 두 값, 동일한 타입
 let first: (i32, i32) = (3, 4);
-// Three values, different types
+// 세 값, 다른 타입
 let second: (i32, u32, u8) = (-42, 3, 8);
 ```
 
-The syntax is simple: you list the types of the values between parentheses, separated by commas.
-You can access the fields of a tuple using the dot notation and the field index:
+구문은 간단합니다: 괄호 사이에 값의 타입을 쉼표로 구분하여 나열합니다.
+점 표기법과 필드 인덱스를 사용하여 튜플의 필드에 접근할 수 있습니다:
 
 ```rust
 assert_eq!(second.0, -42);
@@ -71,4 +68,4 @@ assert_eq!(second.1, 3);
 assert_eq!(second.2, 8);
 ```
 
-Tuples are a convenient way of grouping values together when you can't be bothered to define a dedicated struct type.
+튜플은 전용 구조체 타입을 정의하기 귀찮을 때 값을 함께 그룹화하는 편리한 방법입니다.

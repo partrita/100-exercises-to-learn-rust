@@ -1,54 +1,43 @@
-# Design review
+# 설계 검토
 
-Let's take a moment to review the journey we've been through.
+우리가 거쳐온 여정을 잠시 검토해 봅시다.
 
-## Lockless with channel serialization
+## 채널 직렬화를 통한 잠금 없음
 
-Our first implementation of a multithreaded ticket store used:
+다중 스레드 티켓 저장소의 첫 번째 구현은 다음을 사용했습니다:
 
-- a single long-lived thread (server), to hold the shared state
-- multiple clients sending requests to it via channels from their own threads.
+- 공유 상태를 유지하는 단일 장기 실행 스레드 (서버)
+- 자체 스레드에서 채널을 통해 요청을 보내는 여러 클라이언트.
 
-No locking of the state was necessary, since the server was the only one modifying the state. That's because
-the "inbox" channel naturally **serialized** incoming requests: the server would process them one by one.\
-We've already discussed the limitations of this approach when it comes to patching behaviour, but we didn't
-discuss the performance implications of the original design: the server could only process one request at a time,
-including reads.
+서버가 상태를 수정하는 유일한 주체였기 때문에 상태 잠금은 필요하지 않았습니다. 이는 "수신함" 채널이 들어오는 요청을 자연스럽게 **직렬화**했기 때문입니다: 서버는 요청을 하나씩 처리했습니다.
+패치 동작과 관련하여 이 접근 방식의 한계에 대해서는 이미 논의했지만, 원래 설계의 성능 영향에 대해서는 논의하지 않았습니다: 서버는 읽기를 포함하여 한 번에 하나의 요청만 처리할 수 있었습니다.
 
-## Fine-grained locking
+## 세분화된 잠금
 
-We then moved to a more sophisticated design, where each ticket was protected by its own lock and
-clients could independently decide if they wanted to read or atomically modify a ticket, acquiring the appropriate lock.
+그런 다음 각 티켓이 자체 잠금으로 보호되고 클라이언트가 적절한 잠금을 획득하여 티켓을 읽거나 원자적으로 수정할지 독립적으로 결정할 수 있는 더 정교한 설계로 이동했습니다.
 
-This design allows for better parallelism (i.e. multiple clients can read tickets at the same time), but it is
-still fundamentally **serial**: the server processes commands one by one. In particular, it hands out locks to clients
-one by one.
+이 설계는 더 나은 병렬 처리(즉, 여러 클라이언트가 동시에 티켓을 읽을 수 있음)를 허용하지만, 여전히 근본적으로 **직렬적**입니다: 서버는 명령을 하나씩 처리합니다. 특히, 클라이언트에게 잠금을 하나씩 할당합니다.
 
-Could we remove the channels entirely and allow clients to directly access the `TicketStore`, relying exclusively on
-locks to synchronize access?
+채널을 완전히 제거하고 클라이언트가 `TicketStore`에 직접 접근하도록 허용하여 접근을 동기화하기 위해 잠금에만 의존할 수 있을까요?
 
-## Removing channels
+## 채널 제거
 
-We have two problems to solve:
+해결해야 할 두 가지 문제가 있습니다:
 
-- Sharing `TicketStore` across threads
-- Synchronizing access to the store
+- 스레드 간 `TicketStore` 공유
+- 저장소 접근 동기화
 
-### Sharing `TicketStore` across threads
+### 스레드 간 `TicketStore` 공유
 
-We want all threads to refer to the same state, otherwise we don't really have a multithreaded system—we're just
-running multiple single-threaded systems in parallel.\
-We've already encountered this problem when we tried to share a lock across threads: we can use an `Arc`.
+모든 스레드가 동일한 상태를 참조하기를 원합니다. 그렇지 않으면 실제로 다중 스레드 시스템이 아니라 병렬로 여러 단일 스레드 시스템을 실행하는 것과 같습니다.
+스레드 간에 잠금을 공유하려고 할 때 이미 이 문제에 직면했습니다: `Arc`를 사용할 수 있습니다.
 
-### Synchronizing access to the store
+### 저장소 접근 동기화
 
-There is one interaction that's still lockless thanks to the serialization provided by the channels: inserting
-(or removing) a ticket from the store.\
-If we remove the channels, we need to introduce (another) lock to synchronize access to the `TicketStore` itself.
+채널이 제공하는 직렬화 덕분에 여전히 잠금 없는 상호 작용이 하나 있습니다: 저장소에서 티켓을 삽입(또는 제거)하는 것입니다.
+채널을 제거하면 `TicketStore` 자체에 대한 접근을 동기화하기 위해 (또 다른) 잠금을 도입해야 합니다.
 
-If we use a `Mutex`, then it makes no sense to use an additional `RwLock` for each ticket: the `Mutex` will
-already serialize access to the entire store, so we wouldn't be able to read tickets in parallel anyway.\
-If we use a `RwLock`, instead, we can read tickets in parallel. We just need to pause all reads while inserting
-or removing a ticket.
+`Mutex`를 사용하면 각 티켓에 대해 추가 `RwLock`을 사용하는 것은 의미가 없습니다: `Mutex`는 이미 전체 저장소에 대한 접근을 직렬화할 것이므로 어쨌든 티켓을 병렬로 읽을 수 없을 것입니다.
+대신 `RwLock`을 사용하면 티켓을 병렬로 읽을 수 있습니다. 티켓을 삽입하거나 제거하는 동안 모든 읽기를 일시 중지하기만 하면 됩니다.
 
-Let's go down this path and see where it leads us.
+이 경로를 따라가서 어디로 이어지는지 봅시다.

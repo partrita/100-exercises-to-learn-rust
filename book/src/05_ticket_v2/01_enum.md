@@ -1,9 +1,7 @@
-# Enumerations
+# 열거형
 
-Based on the validation logic you wrote [in a previous chapter](../03_ticket_v1/02_validation.md),
-there are only a few valid statuses for a ticket: `To-Do`, `InProgress` and `Done`.\
-This is not obvious if we look at the `status` field in the `Ticket` struct or at the type of the `status`
-parameter in the `new` method:
+[이전 챕터](../03_ticket_v1/02_validation.md)에서 작성한 유효성 검사 로직에 따르면, 티켓에 대한 유효한 상태는 `To-Do`, `InProgress`, `Done` 몇 가지뿐입니다.
+`Ticket` 구조체의 `status` 필드나 `new` 메소드의 `status` 매개변수 타입을 보면 이것이 명확하지 않습니다:
 
 ```rust
 #[derive(Debug, PartialEq)]
@@ -24,17 +22,15 @@ impl Ticket {
 }
 ```
 
-In both cases we're using `String` to represent the `status` field.
-`String` is a very general type—it doesn't immediately convey the information that the `status` field
-has a limited set of possible values. Even worse, the caller of `Ticket::new` will only find out **at runtime**
-if the status they provided is valid or not.
+두 경우 모두 `status` 필드를 나타내기 위해 `String`을 사용하고 있습니다.
+`String`은 매우 일반적인 타입이며, `status` 필드가 제한된 값 집합을 가지고 있다는 정보를 즉시 전달하지 않습니다. 더 나쁜 것은, `Ticket::new`의 호출자는 제공한 상태가 유효한지 여부를 **런타임에만** 알게 된다는 것입니다.
 
-We can do better than that with **enumerations**.
+**열거형**을 사용하면 이보다 더 잘할 수 있습니다.
 
 ## `enum`
 
-An enumeration is a type that can have a fixed set of values, called **variants**.\
-In Rust, you define an enumeration using the `enum` keyword:
+열거형은 **베리언트**라고 하는 고정된 값 집합을 가질 수 있는 타입입니다.
+Rust에서는 `enum` 키워드를 사용하여 열거형을 정의합니다:
 
 ```rust
 enum Status {
@@ -44,4 +40,4 @@ enum Status {
 }
 ```
 
-`enum`, just like `struct`, defines **a new Rust type**.
+`enum`은 `struct`와 마찬가지로 **새로운 Rust 타입**을 정의합니다.

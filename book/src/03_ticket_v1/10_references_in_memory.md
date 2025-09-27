@@ -1,50 +1,48 @@
-# References
+# 참조
 
-What about references, like `&String` or `&mut String`? How are they represented in memory?
+`&String`이나 `&mut String`과 같은 참조는 어떻습니까? 메모리에서는 어떻게 표현될까요?
 
-Most references[^fat] in Rust are represented, in memory, as a pointer to a memory location.\
-It follows that their size is the same as the size of a pointer, a `usize`.
+Rust의 대부분의 참조[^fat]는 메모리에서 메모리 위치에 대한 포인터로 표현됩니다.\
+따라서 크기는 포인터의 크기인 `usize`와 동일합니다.
 
-You can verify this using `std::mem::size_of`:
+`std::mem::size_of`를 사용하여 이를 확인할 수 있습니다:
 
 ```rust
 assert_eq!(std::mem::size_of::<&String>(), 8);
 assert_eq!(std::mem::size_of::<&mut String>(), 8);
 ```
 
-A `&String`, in particular, is a pointer to the memory location where the `String`'s metadata is stored.\
-If you run this snippet:
+`&String`은 특히 `String`의 메타데이터가 저장된 메모리 위치에 대한 포인터입니다.\
+이 코드 조각을 실행하면:
 
 ```rust
 let s = String::from("Hey");
 let r = &s;
 ```
 
-you'll get something like this in memory:
+메모리에서 다음과 같은 것을 얻게 됩니다:
 
 ```
            --------------------------------------
            |                                    |
       +----v----+--------+----------+      +----|----+
-Stack | pointer | length | capacity |      | pointer |
+스택  | 포인터  | 길이   | 용량     |      | 포인터  |
       |  |      |   3    |    5     |      |         |
       +--|  ----+--------+----------+      +---------+
          |          s                           r
          |
          v
        +---+---+---+---+---+
-Heap   | H | e | y | ? | ? |
+힙     | H | e | y | ? | ? |
        +---+---+---+---+---+
 ```
 
-It's a pointer to a pointer to the heap-allocated data, if you will.
-The same goes for `&mut String`.
+힙 할당 데이터에 대한 포인터에 대한 포인터라고 할 수 있습니다.
+`&mut String`도 마찬가지입니다.
 
-## Not all pointers point to the heap
+## 모든 포인터가 힙을 가리키는 것은 아닙니다
 
-The example above should clarify one thing: not all pointers point to the heap.\
-They just point to a memory location, which _may_ be on the heap, but doesn't have to be.
+위의 예는 한 가지를 명확히 해야 합니다: 모든 포인터가 힙을 가리키는 것은 아닙니다.\
+그들은 단지 메모리 위치를 가리킬 뿐이며, 이는 힙에 있을 수도 있지만 반드시 그럴 필요는 없습니다.
 
-[^fat]: [Later in the course](../04_traits/06_str_slice.md) we'll talk about **fat pointers**,
-i.e. pointers with additional metadata. As the name implies, they are larger than
-the pointers we discussed in this chapter, also known as **thin pointers**.
+[^fat]: [과정의 뒷부분](../04_traits/06_str_slice.md)에서는 **팻 포인터**, 즉 추가 메타데이터가 있는 포인터에 대해 이야기할 것입니다. 이름에서 알 수 있듯이 이 장에서 논의한 포인터(일명 **씬 포인터**)보다 큽니다.

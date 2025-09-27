@@ -1,6 +1,6 @@
-# Slices
+# 슬라이스
 
-Let's go back to the memory layout of a `Vec`:
+`Vec`의 메모리 레이아웃으로 돌아가 봅시다:
 
 ```rust
 let mut numbers = Vec::with_capacity(3);
@@ -10,78 +10,76 @@ numbers.push(2);
 
 ```text
       +---------+--------+----------+
-Stack | pointer | length | capacity | 
+스택  | 포인터  | 길이   | 용량     | 
       |  |      |   2    |    3     |
       +--|------+--------+----------+
          |
          |
          v
        +---+---+---+
-Heap:  | 1 | 2 | ? |
+힙:   | 1 | 2 | ? |
        +---+---+---+
 ```
 
-We already remarked how `String` is just a `Vec<u8>` in disguise.\
-The similarity should prompt you to ask: "What's the equivalent of `&str` for `Vec`?"
+우리는 `String`이 위장한 `Vec<u8>`에 불과하다는 것을 이미 언급했습니다.
+이 유사성은 "Vec에 대한 `&str`의 등가물은 무엇일까?"라고 묻게 할 것입니다.
 
 ## `&[T]`
 
-`[T]` is a **slice** of a contiguous sequence of elements of type `T`.\
-It's most commonly used in its borrowed form, `&[T]`.
+`[T]`는 타입 `T`의 연속적인 요소 시퀀스의 **슬라이스**입니다.
+가장 일반적으로 빌린 형태인 `&[T]`로 사용됩니다.
 
-There are various ways to create a slice reference from a `Vec`:
+`Vec`에서 슬라이스 참조를 만드는 다양한 방법이 있습니다:
 
 ```rust
 let numbers = vec![1, 2, 3];
-// Via index syntax
+// 인덱스 구문을 통해
 let slice: &[i32] = &numbers[..];
-// Via a method
+// 메소드를 통해
 let slice: &[i32] = numbers.as_slice();
-// Or for a subset of the elements
+// 또는 요소의 하위 집합에 대해
 let slice: &[i32] = &numbers[1..];
 ```
 
-`Vec` implements the `Deref` trait using `[T]` as the target type, so you can use slice methods on a `Vec` directly
-thanks to deref coercion:
+`Vec`은 `[T]`를 대상 타입으로 사용하여 `Deref` 트레이트를 구현하므로, 역참조 강제 변환 덕분에 `Vec`에서 직접 슬라이스 메소드를 사용할 수 있습니다:
 
 ```rust
 let numbers = vec![1, 2, 3];
-// Surprise, surprise: `iter` is not a method on `Vec`!
-// It's a method on `&[T]`, but you can call it on a `Vec` 
-// thanks to deref coercion.
+// 놀랍게도: `iter`는 `Vec`의 메소드가 아닙니다!
+// `&[T]`의 메소드이지만, 역참조 강제 변환 덕분에 `Vec`에서 호출할 수 있습니다.
 let sum: i32 = numbers.iter().sum();
 ```
 
-### Memory layout
+### 메모리 레이아웃
 
-A `&[T]` is a **fat pointer**, just like `&str`.\
-It consists of a pointer to the first element of the slice and the length of the slice.
+`&[T]`는 `&str`과 마찬가지로 **팻 포인터**입니다.
+슬라이스의 첫 번째 요소를 가리키는 포인터와 슬라이스의 길이로 구성됩니다.
 
-If you have a `Vec` with three elements:
+세 개의 요소를 가진 `Vec`이 있다면:
 
 ```rust
 let numbers = vec![1, 2, 3];
 ```
 
-and then create a slice reference:
+그리고 슬라이스 참조를 생성하면:
 
 ```rust
 let slice: &[i32] = &numbers[1..];
 ```
 
-you'll get this memory layout:
+다음과 같은 메모리 레이아웃을 얻게 됩니다:
 
 ```text
                   numbers                          slice
       +---------+--------+----------+      +---------+--------+
-Stack | pointer | length | capacity |      | pointer | length |
+스택  | 포인터  | 길이   | 용량     |      | 포인터  | 길이   |
       |    |    |   3    |    4     |      |    |    |   2    |
       +----|----+--------+----------+      +----|----+--------+
            |                                    |  
            |                                    |
            v                                    | 
          +---+---+---+---+                      |
-Heap:    | 1 | 2 | 3 | ? |                      |
+힙:    | 1 | 2 | 3 | ? |                      |
          +---+---+---+---+                      |
                ^                                |
                |                                |
@@ -90,17 +88,16 @@ Heap:    | 1 | 2 | 3 | ? |                      |
 
 ### `&Vec<T>` vs `&[T]`
 
-When you need to pass an immutable reference to a `Vec` to a function, prefer `&[T]` over `&Vec<T>`.\
-This allows the function to accept any kind of slice, not necessarily one backed by a `Vec`.
+함수에 `Vec`에 대한 불변 참조를 전달해야 할 때, `&Vec<T>`보다 `&[T]`를 선호하십시오.
+이를 통해 함수는 `Vec`에 의해 지원되는 것뿐만 아니라 모든 종류의 슬라이스를 허용할 수 있습니다.
 
-For example, you can then pass a subset of the elements in a `Vec`.
-But it goes further than that—you could also pass a **slice of an array**:
+예를 들어, `Vec`의 요소 하위 집합을 전달할 수 있습니다.
+하지만 그 이상으로, **배열의 슬라이스**도 전달할 수 있습니다:
 
 ```rust
 let array = [1, 2, 3];
 let slice: &[i32] = &array;
 ```
 
-Array slices and `Vec` slices are the same type: they're fat pointers to a contiguous sequence of elements.
-In the case of arrays, the pointer points to the stack rather than the heap, but that doesn't matter
-when it comes to using the slice.
+배열 슬라이스와 `Vec` 슬라이스는 동일한 타입입니다: 연속적인 요소 시퀀스에 대한 팻 포인터입니다.
+배열의 경우, 포인터는 힙이 아닌 스택을 가리키지만, 슬라이스를 사용하는 데는 중요하지 않습니다.

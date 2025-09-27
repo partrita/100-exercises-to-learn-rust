@@ -1,80 +1,71 @@
 # `Sized`
 
-There's more to `&str` than meets the eye, even after having
-investigated deref coercion.\
-From our previous [discussion on memory layouts](../03_ticket_v1/10_references_in_memory.md),
-it would have been reasonable to expect `&str` to be represented as a single `usize` on
-the stack, a pointer. That's not the case though. `&str` stores some **metadata** next
-to the pointer: the length of the slice it points to. Going back to the example from
-[a previous section](06_str_slice.md):
+역참조 강제 변환을 조사한 후에도 `&str`에는 눈에 보이는 것보다 더 많은 것이 있습니다.
+[메모리 레이아웃에 대한 이전 논의](../03_ticket_v1/10_references_in_memory.md)에서 `&str`이 스택에서 단일 `usize`인 포인터로 표현될 것으로 예상하는 것이 합리적이었을 것입니다. 하지만 그렇지 않습니다. `&str`은 포인터 옆에 **메타데이터**를 저장합니다: 가리키는 슬라이스의 길이입니다. [이전 섹션](06_str_slice.md)의 예제로 돌아가 보겠습니다:
 
 ```rust
 let mut s = String::with_capacity(5);
 s.push_str("Hello");
-// Create a string slice reference from the `String`, 
-// skipping the first byte.
+// `String`에서 문자열 슬라이스 참조를 만듭니다, 
+// 첫 번째 바이트를 건너뜁니다.
 let slice: &str = &s[1..];
 ```
 
-In memory, we get:
+메모리에서는 다음과 같습니다:
 
 ```text
                     s                              slice
       +---------+--------+----------+      +---------+--------+
-Stack | pointer | length | capacity |      | pointer | length |
+스택  | 포인터  | 길이   | 용량     |      | 포인터  | 길이   |
       |    |    |   5    |    5     |      |    |    |   4    |
       +----|----+--------+----------+      +----|----+--------+
            |        s                           |  
            |                                    |
            v                                    | 
          +---+---+---+---+---+                  |
-Heap:    | H | e | l | l | o |                  |
+힙:      | H | e | l | l | o |                  |
          +---+---+---+---+---+                  |
                ^                                |
                |                                |
                +--------------------------------+
 ```
 
-What's going on?
+무슨 일일까요?
 
-## Dynamically sized types
+## 동적 크기 타입
 
-`str` is a **dynamically sized type** (DST).\
-A DST is a type whose size is not known at compile time. Whenever you have a
-reference to a DST, like `&str`, it has to include additional
-information about the data it points to. It is a **fat pointer**.\
-In the case of `&str`, it stores the length of the slice it points to.
-We'll see more examples of DSTs in the rest of the course.
+`str`은 **동적 크기 타입**(DST)입니다.
+DST는 컴파일 타임에 크기를 알 수 없는 타입입니다. `&str`과 같이 DST에 대한 참조가 있을 때마다 가리키는 데이터에 대한 추가 정보를 포함해야 합니다. 이것은 **팻 포인터**입니다.
+`&str`의 경우, 가리키는 슬라이스의 길이를 저장합니다.
+과정의 나머지 부분에서 DST의 더 많은 예를 보게 될 것입니다.
 
-## The `Sized` trait
+## `Sized` 트레이트
 
-Rust's `std` library defines a trait called `Sized`.
+Rust의 `std` 라이브러리는 `Sized`라는 트레이트를 정의합니다.
 
 ```rust
 pub trait Sized {
-    // This is an empty trait, no methods to implement.
+    // 이것은 빈 트레이트이며, 구현할 메소드가 없습니다.
 }
 ```
 
-A type is `Sized` if its size is known at compile time. In other words, it's not a DST.
+A 타입의 크기가 컴파일 타임에 알려져 있으면 `Sized`입니다. 즉, DST가 아닙니다.
 
-### Marker traits
+### 마커 트레이트
 
-`Sized` is your first example of a **marker trait**.\
-A marker trait is a trait that doesn't require any methods to be implemented. It doesn't define any behavior.
-It only serves to **mark** a type as having certain properties.
-The mark is then leveraged by the compiler to enable certain behaviors or optimizations.
+`Sized`는 **마커 트레이트**의 첫 번째 예입니다.
+마커 트레이트는 구현할 메소드가 필요 없는 트레이트입니다. 어떠한 동작도 정의하지 않습니다.
+단지 타입이 특정 속성을 가지고 있음을 **표시**하는 역할만 합니다.
+그런 다음 이 표시는 컴파일러가 특정 동작이나 최적화를 활성화하는 데 활용됩니다.
 
-### Auto traits
+### 자동 트레이트
 
-In particular, `Sized` is also an **auto trait**.\
-You don't need to implement it explicitly; the compiler implements it automatically for you
-based on the type's definition.
+특히, `Sized`는 **자동 트레이트**이기도 합니다.
+명시적으로 구현할 필요가 없습니다. 컴파일러가 타입의 정의에 따라 자동으로 구현합니다.
 
-### Examples
+### 예제
 
-All the types we've seen so far are `Sized`: `u32`, `String`, `bool`, etc.
+지금까지 본 모든 타입은 `Sized`입니다: `u32`, `String`, `bool` 등.
 
-`str`, as we just saw, is not `Sized`.\
-`&str` is `Sized` though! We know its size at compile time: two `usize`s, one for the pointer
-and one for the length.
+`str`은 방금 본 것처럼 `Sized`가 아닙니다.
+하지만 `&str`은 `Sized`입니다! 컴파일 타임에 크기를 알고 있습니다: 포인터용 `usize` 하나와 길이용 `usize` 하나, 총 두 개의 `usize`입니다.

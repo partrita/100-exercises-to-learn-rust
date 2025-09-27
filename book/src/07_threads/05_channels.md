@@ -1,41 +1,36 @@
-# Channels
+# 채널
 
-All our spawned threads have been fairly short-lived so far.\
-Get some input, run a computation, return the result, shut down.
+지금까지 생성된 모든 스레드는 상당히 짧은 수명을 가졌습니다.
+입력을 받고, 계산을 실행하고, 결과를 반환하고, 종료되었습니다.
 
-For our ticket management system, we want to do something different:
-a client-server architecture.
+티켓 관리 시스템의 경우, 우리는 다른 것을 원합니다:
+클라이언트-서버 아키텍처입니다.
 
-We will have **one long-running server thread**, responsible for managing
-our state, the stored tickets.
+우리는 상태, 즉 저장된 티켓을 관리하는 **하나의 장기 실행 서버 스레드**를 가질 것입니다.
 
-We will then have **multiple client threads**.\
-Each client will be able to send **commands** and **queries** to
-the stateful thread, in order to change its state (e.g. add a new ticket)
-or retrieve information (e.g. get the status of a ticket).\
-Client threads will run concurrently.
+그런 다음 **여러 클라이언트 스레드**를 가질 것입니다.
+각 클라이언트는 상태를 변경하거나(예: 새 티켓 추가) 정보를 검색하기 위해(예: 티켓 상태 가져오기)
+상태 저장 스레드에 **명령**과 **쿼리**를 보낼 수 있습니다.
+클라이언트 스레드는 동시에 실행됩니다.
 
-## Communication
+## 통신
 
-So far we've only had very limited parent-child communication:
+지금까지 우리는 매우 제한적인 부모-자식 통신만 가졌습니다:
 
-- The spawned thread borrowed/consumed data from the parent context
-- The spawned thread returned data to the parent when joined
+- 생성된 스레드는 부모 컨텍스트에서 데이터를 빌리거나 소비했습니다.
+- 생성된 스레드는 조인될 때 부모에게 데이터를 반환했습니다.
 
-This isn't enough for a client-server design.\
-Clients need to be able to send and receive data from the server thread
-_after_ it has been launched.
+이것으로는 클라이언트-서버 설계에 충분하지 않습니다.
+클라이언트는 서버 스레드가 시작된 _후에_ 서버 스레드로부터 데이터를 보내고 받을 수 있어야 합니다.
 
-We can solve the issue using **channels**.
+**채널**을 사용하여 이 문제를 해결할 수 있습니다.
 
-## Channels
+## 채널
 
-Rust's standard library provides **multi-producer, single-consumer** (mpsc) channels
-in its `std::sync::mpsc` module.\
-There are two channel flavours: bounded and unbounded. We'll stick to the unbounded
-version for now, but we'll discuss the pros and cons later on.
+Rust의 표준 라이브러리는 `std::sync::mpsc` 모듈에서 **다중 생산자, 단일 소비자** (mpsc) 채널을 제공합니다.
+채널에는 바운드 및 언바운드 두 가지 종류가 있습니다. 지금은 언바운드 버전을 고수하겠지만, 나중에 장단점에 대해 논의할 것입니다.
 
-Channel creation looks like this:
+채널 생성은 다음과 같습니다:
 
 ```rust
 use std::sync::mpsc::channel;
@@ -43,31 +38,29 @@ use std::sync::mpsc::channel;
 let (sender, receiver) = channel();
 ```
 
-You get a sender and a receiver.\
-You call `send` on the sender to push data into the channel.\
-You call `recv` on the receiver to pull data from the channel.
+보내는 사람과 받는 사람을 얻습니다.
+채널에 데이터를 푸시하려면 보내는 사람에서 `send`를 호출합니다.
+채널에서 데이터를 가져오려면 받는 사람에서 `recv`를 호출합니다.
 
-### Multiple senders
+### 여러 보내는 사람
 
-`Sender` is clonable: we can create multiple senders (e.g. one for
-each client thread) and they will all push data into the same channel.
+`Sender`는 복제 가능합니다: 여러 보내는 사람을 만들 수 있으며(예: 각 클라이언트 스레드마다 하나씩) 모두 동일한 채널에 데이터를 푸시할 것입니다.
 
-`Receiver`, instead, is not clonable: there can only be a single receiver
-for a given channel.
+반면에 `Receiver`는 복제할 수 없습니다: 주어진 채널에 대해 단일 받는 사람만 있을 수 있습니다.
 
-That's what **mpsc** (multi-producer single-consumer) stands for!
+이것이 바로 **mpsc** (다중 생산자 단일 소비자)가 의미하는 바입니다!
 
-### Message type
+### 메시지 타입
 
-Both `Sender` and `Receiver` are generic over a type parameter `T`.\
-That's the type of the _messages_ that can travel on our channel.
+`Sender`와 `Receiver`는 모두 타입 매개변수 `T`에 대해 제네릭입니다.
+이것은 채널에서 이동할 수 있는 _메시지_의 타입입니다.
 
-It could be a `u64`, a struct, an enum, etc.
+`u64`, 구조체, 열거형 등이 될 수 있습니다.
 
-### Errors
+### 오류
 
-Both `send` and `recv` can fail.\
-`send` returns an error if the receiver has been dropped.\
-`recv` returns an error if all senders have been dropped and the channel is empty.
+`send`와 `recv`는 모두 실패할 수 있습니다.
+받는 사람이 삭제되면 `send`는 오류를 반환합니다.
+모든 보내는 사람이 삭제되고 채널이 비어 있으면 `recv`는 오류를 반환합니다.
 
-In other words, `send` and `recv` error when the channel is effectively closed.
+즉, 채널이 효과적으로 닫히면 `send`와 `recv`는 오류를 발생시킵니다.

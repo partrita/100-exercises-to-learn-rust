@@ -1,27 +1,24 @@
-# Update operations
+# 업데이트 작업
 
-So far we've implemented only insertion and retrieval operations.\
-Let's see how we can expand the system to provide an update operation.
+지금까지는 삽입 및 검색 작업만 구현했습니다.
+이제 업데이트 작업을 제공하도록 시스템을 확장하는 방법을 알아봅시다.
 
-## Legacy updates
+## 레거시 업데이트
 
-In the non-threaded version of the system, updates were fairly straightforward: `TicketStore` exposed a
-`get_mut` method that allowed the caller to obtain a mutable reference to a ticket, and then modify it.
+시스템의 비스레드 버전에서는 업데이트가 상당히 간단했습니다: `TicketStore`는 호출자가 티켓에 대한 가변 참조를 얻고 수정할 수 있도록 하는 `get_mut` 메소드를 노출했습니다.
 
-## Multithreaded updates
+## 다중 스레드 업데이트
 
-The same strategy won't work in the current multithreaded version. The borrow checker would
-stop us: `SyncSender<&mut Ticket>` isn't `'static` because `&mut Ticket` doesn't satisfy the `'static` lifetime, therefore
-they can't be captured by the closure that gets passed to `std::thread::spawn`.
+동일한 전략은 현재 다중 스레드 버전에서는 작동하지 않을 것입니다. 빌림 검사기가 우리를 막을 것입니다: `SyncSender<&mut Ticket>`은 `&mut Ticket`이 `'static` 라이프타임을 만족하지 않으므로 `'static`이 아니며, 따라서 `std::thread::spawn`에 전달되는 클로저에 의해 캡처될 수 없습니다.
 
-There are a few ways to work around this limitation. We'll explore a few of them in the following exercises.
+이러한 제한을 해결하는 몇 가지 방법이 있습니다. 다음 연습 문제에서 그 중 몇 가지를 탐색할 것입니다.
 
-### Patching
+### 패칭
 
-We can't send a `&mut Ticket` over a channel, therefore we can't mutate on the client-side.\
-Can we mutate on the server-side?
+채널을 통해 `&mut Ticket`을 보낼 수 없으므로 클라이언트 측에서 변경할 수 없습니다.
+서버 측에서 변경할 수 있을까요?
 
-We can, if we tell the server what needs to be changed. In other words, if we send a **patch** to the server:
+서버에 무엇을 변경해야 하는지 알려주면 가능합니다. 즉, 서버에 **패치**를 보내는 것입니다:
 
 ```rust
 struct TicketPatch {
@@ -32,8 +29,8 @@ struct TicketPatch {
 }
 ```
 
-The `id` field is mandatory, since it's required to identify the ticket that needs to be updated.\
-All other fields are optional:
+`id` 필드는 업데이트해야 하는 티켓을 식별하는 데 필요하므로 필수입니다.
+다른 모든 필드는 선택 사항입니다:
 
-- If a field is `None`, it means that the field should not be changed.
-- If a field is `Some(value)`, it means that the field should be changed to `value`.
+- 필드가 `None`이면 필드를 변경해서는 안 된다는 의미입니다.
+- 필드가 `Some(value)`이면 필드를 `value`로 변경해야 한다는 의미입니다.

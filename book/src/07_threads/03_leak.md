@@ -1,29 +1,27 @@
-# Leaking data
+# 데이터 누수
 
-The main concern around passing references to spawned threads is use-after-free bugs:
-accessing data using a pointer to a memory region that's already been freed/de-allocated.\
-If you're working with heap-allocated data, you can avoid the issue by
-telling Rust that you'll never reclaim that memory: you choose to **leak memory**,
-intentionally.
+생성된 스레드에 참조를 전달하는 것과 관련된 주요 문제는 해제 후 사용 버그입니다:
+이미 해제/할당 해제된 메모리 영역에 대한 포인터를 사용하여 데이터에 접근하는 것입니다.
+힙 할당 데이터로 작업하는 경우, 해당 메모리를 다시 회수하지 않을 것이라고 Rust에 알려줌으로써 이 문제를 피할 수 있습니다: 의도적으로 **메모리를 누수**하도록 선택하는 것입니다.
 
-This can be done, for example, using the `Box::leak` method from Rust's standard library:
+예를 들어, Rust의 표준 라이브러리에 있는 `Box::leak` 메소드를 사용하여 이를 수행할 수 있습니다:
 
 ```rust
-// Allocate a `u32` on the heap, by wrapping it in a `Box`.
+// `u32`를 `Box`로 래핑하여 힙에 할당합니다.
 let x = Box::new(41u32);
-// Tell Rust that you'll never free that heap allocation
-// using `Box::leak`. You can thus get back a 'static reference.
+// `Box::leak`를 사용하여 해당 힙 할당을 절대 해제하지 않을 것이라고 Rust에 알립니다.
+// 따라서 `'static` 참조를 다시 얻을 수 있습니다.
 let static_ref: &'static mut u32 = Box::leak(x);
 ```
 
-## Data leakage is process-scoped
+## 데이터 누수는 프로세스 범위입니다
 
-Leaking data is dangerous: if you keep leaking memory, you'll eventually
-run out and crash with an out-of-memory error.
+데이터 누수는 위험합니다: 메모리를 계속 누수하면 결국
+메모리가 부족해져 메모리 부족 오류로 충돌할 것입니다.
 
 ```rust
-// If you leave this running for a while, 
-// it'll eventually use all the available memory.
+// 이것을 잠시 실행하면, 
+// 결국 사용 가능한 모든 메모리를 사용할 것입니다.
 fn oom_trigger() {
     loop {
         let v: Vec<usize> = Vec::with_capacity(1024);
@@ -32,15 +30,13 @@ fn oom_trigger() {
 }
 ```
 
-At the same time, memory leaked via `leak` method is not truly forgotten.\
-The operating system can map each memory region to the process responsible for it.
-When the process exits, the operating system will reclaim that memory.
+동시에, `leak` 메소드를 통해 누수된 메모리는 실제로 잊혀지지 않습니다.
+운영 체제는 각 메모리 영역을 해당 프로세스에 매핑할 수 있습니다.
+프로세스가 종료되면 운영 체제는 해당 메모리를 회수합니다.
 
-Keeping this in mind, it can be OK to leak memory when:
+이것을 염두에 두고, 다음 경우에 메모리를 누수하는 것이 괜찮을 수 있습니다:
 
-- The amount of memory you need to leak is bounded/known upfront, or
-- Your process is short-lived and you're confident you won't exhaust
-  all the available memory before it exits
+- 누수해야 하는 메모리 양이 미리 제한/알려져 있거나,
+- 프로세스가 단명하며 종료되기 전에 사용 가능한 모든 메모리를 소진하지 않을 것이라고 확신하는 경우
 
-"Let the OS deal with it" is a perfectly valid memory management strategy
-if your usecase allows for it.
+"운영 체제가 처리하게 하라"는 것은 사용 사례가 허용하는 경우 완벽하게 유효한 메모리 관리 전략입니다.

@@ -1,70 +1,63 @@
-# Conversions, pt. 1
+# 변환, 1부
 
-We've repeated over and over again that Rust won't perform
-implicit type conversions for integers.\
-How do you perform _explicit_ conversions then?
+Rust가 정수에 대해 암시적 타입 변환을 수행하지 않는다는 것을 계속해서 반복했습니다.\
+그렇다면 _명시적_ 변환은 어떻게 수행할까요?
 
 ## `as`
 
-You can use the `as` operator to convert between integer types.\
-`as` conversions are **infallible**.
+`as` 연산자를 사용하여 정수 타입 간에 변환할 수 있습니다. \
+`as` 변환은 **실패하지 않습니다**.
 
-For example:
+예를 들어:
 
 ```rust
 let a: u32 = 10;
 
-// Cast `a` into the `u64` type
+// `a`를 `u64` 타입으로 캐스팅
 let b = a as u64;
 
-// You can use `_` as the target type
-// if it can be correctly inferred 
-// by the compiler. For example:
+// 대상 타입으로 `_`를 사용할 수 있습니다
+// 컴파일러가 올바르게 추론할 수 있는 경우.
+// 예를 들어:
 let c: u64 = a as _;
 ```
 
-The semantics of this conversion are what you expect: all `u32` values are valid `u64`
-values.
+이 변환의 의미는 예상대로입니다: 모든 `u32` 값은 유효한 `u64` 값입니다.
 
-### Truncation
+### 잘림
 
-Things get more interesting if we go in the opposite direction:
+반대 방향으로 가면 상황이 더 흥미로워집니다:
 
 ```rust
-// A number that's too big 
-// to fit into a `u8`
+// `u8`에 담기에는 너무 큰 숫자
 let a: u16 = 255 + 1;
 let b = a as u8;
 ```
 
-This program will run without issues, because `as` conversions are infallible.
-But what is the value of `b`?
-When going from a larger integer type to a smaller, the Rust compiler will perform
-a **truncation**.
+이 프로그램은 `as` 변환이 실패하지 않기 때문에 문제 없이 실행됩니다.
+하지만 `b`의 값은 무엇일까요?
+더 큰 정수 타입에서 더 작은 정수 타입으로 변환할 때 Rust 컴파일러는 **잘림**을 수행합니다.
 
-To understand what happens, let's start by looking at how `256u16` is
-represented in memory, as a sequence of bits:
+무슨 일이 일어나는지 이해하기 위해, `256u16`이 메모리에서 비트 시퀀스로 어떻게 표현되는지부터 살펴봅시다:
 
 ```text
  0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0
 |               |               |
 +---------------+---------------+
-  First 8 bits    Last 8 bits
+  첫 8비트         마지막 8비트
 ```
 
-When converting to a `u8`, the Rust compiler will keep the last 8 bits of a `u16`
-memory representation:
+`u8`로 변환할 때 Rust 컴파일러는 `u16` 메모리 표현의 마지막 8비트를 유지합니다:
 
 ```text
  0 0 0 0 0 0 0 0 
 |               |
 +---------------+
-  Last 8 bits
+  마지막 8비트
 ```
 
-Hence `256 as u8` is equal to `0`. That's... not ideal, in most scenarios.\
-In fact, the Rust compiler will actively try to stop you if it sees you trying
-to cast a literal value which will result in a truncation:
+따라서 `256 as u8`은 `0`과 같습니다. 대부분의 시나리오에서 이는... 이상적이지 않습니다.\ 
+사실, Rust 컴파일러는 잘림을 초래할 리터럴 값을 캐스팅하려고 하면 적극적으로 막으려고 합니다:
 
 ```text
 error: literal out of range for `i8`
@@ -78,25 +71,18 @@ error: literal out of range for `i8`
   = note: `#[deny(overflowing_literals)]` on by default
 ```
 
-### Recommendation
+### 권장 사항
 
-As a rule of thumb, be quite careful with `as` casting.\
-Use it _exclusively_ for going from a smaller type to a larger type.
-To convert from a larger to smaller integer type, rely on the
-[_fallible_ conversion machinery](../05_ticket_v2/13_try_from.md) that we'll
-explore later in the course.
+일반적으로 `as` 캐스팅에 매우 주의해야 합니다.\ 
+더 작은 타입에서 더 큰 타입으로 변환할 때만 _독점적으로_ 사용하십시오.
+더 큰 정수 타입에서 더 작은 정수 타입으로 변환하려면, 과정의 뒷부분에서 살펴볼 [_실패 가능한_ 변환 메커니즘](../05_ticket_v2/13_try_from.md)에 의존하십시오.
 
-### Limitations
+### 한계
 
-Surprising behaviour is not the only downside of `as` casting.
-It is also fairly limited: you can only rely on `as` casting
-for primitive types and a few other special cases.\
-When working with composite types, you'll have to rely on
-different conversion mechanisms ([fallible](../05_ticket_v2/13_try_from.md)
-and [infallible](../04_traits/09_from.md)), which we'll explore later on.
+놀라운 동작은 `as` 캐스팅의 유일한 단점이 아닙니다.
+또한 상당히 제한적입니다: 기본 타입 및 몇 가지 다른 특수한 경우에만 `as` 캐스팅에 의존할 수 있습니다.\ 
+복합 타입으로 작업할 때는 나중에 살펴볼 다른 변환 메커니즘([실패 가능](../05_ticket_v2/13_try_from.md) 및 [실패 불가능](../04_traits/09_from.md))에 의존해야 합니다.
 
-## Further reading
+## 추가 자료
 
-- Check out [Rust's official reference](https://doc.rust-lang.org/reference/expressions/operator-expr.html#numeric-cast)
-  to learn the precise behaviour of `as` casting for each source/target combination,
-  as well as the exhaustive list of allowed conversions.
+- 각 소스/대상 조합에 대한 `as` 캐스팅의 정확한 동작과 허용되는 변환의 전체 목록을 알아보려면 [Rust의 공식 참조](https://doc.rust-lang.org/reference/expressions/operator-expr.html#numeric-cast)를 확인하십시오.

@@ -1,27 +1,22 @@
-# Threads
+# 스레드
 
-Before we start writing multithreaded code, let's take a step back and talk about what threads are
-and why we might want to use them.
+다중 스레드 코드를 작성하기 전에, 스레드가 무엇이며 왜 스레드를 사용하고 싶은지 잠시 이야기해 봅시다.
 
-## What is a thread?
+## 스레드란 무엇인가요?
 
-A **thread** is an execution context managed by the underlying operating system.\
-Each thread has its own stack and instruction pointer.
+**스레드**는 기본 운영 체제에서 관리하는 실행 컨텍스트입니다.
+각 스레드는 자체 스택과 명령어 포인터를 가집니다.
 
-A single **process** can manage multiple threads.
-These threads share the same memory space, which means they can access the same data.
+단일 **프로세스**는 여러 스레드를 관리할 수 있습니다.
+이러한 스레드는 동일한 메모리 공간을 공유하며, 이는 동일한 데이터에 접근할 수 있음을 의미합니다.
 
-Threads are a **logical** construct. In the end, you can only run one set of instructions
-at a time on a CPU core, the **physical** execution unit.\
-Since there can be many more threads than there are CPU cores, the operating system's
-**scheduler** is in charge of deciding which thread to run at any given time,
-partitioning CPU time among them to maximize throughput and responsiveness.
+스레드는 **논리적인** 구성 요소입니다. 결국, CPU 코어(즉, **물리적인** 실행 단위)에서 한 번에 하나의 명령어 집합만 실행할 수 있습니다.
+CPU 코어보다 훨씬 더 많은 스레드가 있을 수 있으므로, 운영 체제의 **스케줄러**는 처리량과 응답성을 최대화하기 위해 CPU 시간을 분할하여 주어진 시간에 어떤 스레드를 실행할지 결정하는 역할을 합니다.
 
 ## `main`
 
-When a Rust program starts, it runs on a single thread, the **main thread**.\
-This thread is created by the operating system and is responsible for running the `main`
-function.
+Rust 프로그램이 시작되면 단일 스레드인 **메인 스레드**에서 실행됩니다.
+이 스레드는 운영 체제에 의해 생성되며 `main` 함수를 실행하는 역할을 합니다.
 
 ```rust
 use std::thread;
@@ -37,14 +32,13 @@ fn main() {
 
 ## `std::thread`
 
-Rust's standard library provides a module, `std::thread`, that allows you to create
-and manage threads.
+Rust의 표준 라이브러리는 스레드를 생성하고 관리할 수 있는 `std::thread` 모듈을 제공합니다.
 
 ### `spawn`
 
-You can use `std::thread::spawn` to create new threads and execute code on them.
+`std::thread::spawn`을 사용하여 새 스레드를 생성하고 해당 스레드에서 코드를 실행할 수 있습니다.
 
-For example:
+예를 들어:
 
 ```rust
 use std::thread;
@@ -65,14 +59,14 @@ fn main() {
 }
 ```
 
-If you execute this program on the [Rust playground](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=afedf7062298ca8f5a248bc551062eaa)
-you'll see that the main thread and the spawned thread run concurrently.\
-Each thread makes progress independently of the other.
+[Rust 플레이그라운드](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=afedf7062298ca8f5a248bc551062eaa)에서 이 프로그램을 실행하면
+메인 스레드와 생성된 스레드가 동시에 실행되는 것을 볼 수 있습니다.
+각 스레드는 서로 독립적으로 진행됩니다.
 
-### Process termination
+### 프로세스 종료
 
-When the main thread finishes, the overall process will exit.\
-A spawned thread will continue running until it finishes or the main thread finishes.
+메인 스레드가 완료되면 전체 프로세스가 종료됩니다.
+생성된 스레드는 완료되거나 메인 스레드가 완료될 때까지 계속 실행됩니다.
 
 ```rust
 use std::thread;
@@ -90,13 +84,12 @@ fn main() {
 }
 ```
 
-In the example above, you can expect to see the message "Hello from a thread!" printed roughly five times.\
-Then the main thread will finish (when the `sleep` call returns), and the spawned thread will be terminated
-since the overall process exits.
+위 예제에서는 "Hello from a thread!" 메시지가 대략 5번 인쇄되는 것을 볼 수 있습니다.
+그런 다음 메인 스레드가 완료되고(`sleep` 호출이 반환될 때), 전체 프로세스가 종료되므로 생성된 스레드는 종료됩니다.
 
 ### `join`
 
-You can also wait for a spawned thread to finish by calling the `join` method on the `JoinHandle` that `spawn` returns.
+`spawn`이 반환하는 `JoinHandle`에서 `join` 메소드를 호출하여 생성된 스레드가 완료될 때까지 기다릴 수도 있습니다.
 
 ```rust
 use std::thread;
@@ -109,7 +102,5 @@ fn main() {
 }
 ```
 
-In this example, the main thread will wait for the spawned thread to finish before exiting.\
-This introduces a form of **synchronization** between the two threads: you're guaranteed to see the message
-"Hello from a thread!" printed before the program exits, because the main thread won't exit
-until the spawned thread has finished.
+이 예제에서 메인 스레드는 종료되기 전에 생성된 스레드가 완료될 때까지 기다릴 것입니다.
+이것은 두 스레드 간의 **동기화** 형태를 도입합니다: 메인 스레드가 생성된 스레드가 완료될 때까지 종료되지 않으므로, 프로그램이 종료되기 전에 "Hello from a thread!" 메시지가 인쇄되는 것을 보장합니다.

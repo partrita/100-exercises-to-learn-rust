@@ -1,19 +1,16 @@
-# Bounded vs unbounded channels
+# 바운드 채널 vs 언바운드 채널
 
-So far we've been using unbounded channels.\
-You can send as many messages as you want, and the channel will grow to accommodate them.\
-In a multi-producer single-consumer scenario, this can be problematic: if the producers
-enqueue messages at a faster rate than the consumer can process them, the channel will
-keep growing, potentially consuming all available memory.
+지금까지 우리는 언바운드 채널을 사용해 왔습니다.
+원하는 만큼 많은 메시지를 보낼 수 있으며, 채널은 이를 수용하기 위해 확장됩니다.
+다중 생산자 단일 소비자 시나리오에서 이는 문제가 될 수 있습니다: 생산자가 소비자가 처리할 수 있는 속도보다 빠르게 메시지를 큐에 넣으면 채널은 계속 확장되어 사용 가능한 모든 메모리를 소비할 수 있습니다.
 
-Our recommendation is to **never** use an unbounded channel in a production system.\
-You should always enforce an upper limit on the number of messages that can be enqueued using a
-**bounded channel**.
+프로덕션 시스템에서는 언바운드 채널을 **절대** 사용하지 않는 것이 좋습니다.
+**바운드 채널**을 사용하여 큐에 넣을 수 있는 메시지 수에 항상 상한선을 강제해야 합니다.
 
-## Bounded channels
+## 바운드 채널
 
-A bounded channel has a fixed capacity.\
-You can create one by calling `sync_channel` with a capacity greater than zero:
+바운드 채널은 고정된 용량을 가집니다.
+용량이 0보다 큰 `sync_channel`을 호출하여 만들 수 있습니다:
 
 ```rust
 use std::sync::mpsc::sync_channel;
@@ -21,23 +18,22 @@ use std::sync::mpsc::sync_channel;
 let (sender, receiver) = sync_channel(10);
 ```
 
-`receiver` has the same type as before, `Receiver<T>`.\
-`sender`, instead, is an instance of `SyncSender<T>`.
+`receiver`는 이전과 동일한 타입인 `Receiver<T>`를 가집니다.
+`sender`는 대신 `SyncSender<T>`의 인스턴스입니다.
 
-### Sending messages
+### 메시지 보내기
 
-You have two different methods to send messages through a `SyncSender`:
+`SyncSender`를 통해 메시지를 보내는 두 가지 다른 메소드가 있습니다:
 
-- `send`: if there is space in the channel, it will enqueue the message and return `Ok(())`.\
-  If the channel is full, it will block and wait until there is space available.
-- `try_send`: if there is space in the channel, it will enqueue the message and return `Ok(())`.\
-  If the channel is full, it will return `Err(TrySendError::Full(value))`, where `value` is the message that couldn't be sent.
+- `send`: 채널에 공간이 있으면 메시지를 큐에 넣고 `Ok(())`를 반환합니다.
+  채널이 가득 차면 사용 가능한 공간이 생길 때까지 차단하고 기다립니다.
+- `try_send`: 채널에 공간이 있으면 메시지를 큐에 넣고 `Ok(())`를 반환합니다.
+  채널이 가득 차면 `Err(TrySendError::Full(value))`를 반환하며, 여기서 `value`는 보낼 수 없었던 메시지입니다.
 
-Depending on your use case, you might want to use one or the other.
+사용 사례에 따라 둘 중 하나를 사용하고 싶을 수 있습니다.
 
-### Backpressure
+### 역압력
 
-The main advantage of using bounded channels is that they provide a form of **backpressure**.\
-They force the producers to slow down if the consumer can't keep up.
-The backpressure can then propagate through the system, potentially affecting the whole architecture and
-preventing end users from overwhelming the system with requests.
+바운드 채널을 사용하는 주요 장점은 **역압력** 형태를 제공한다는 것입니다.
+소비자가 따라잡을 수 없으면 생산자의 속도를 늦추도록 강제합니다.
+역압력은 시스템 전체에 전파되어 전체 아키텍처에 영향을 미치고 최종 사용자가 요청으로 시스템을 압도하는 것을 방지할 수 있습니다.

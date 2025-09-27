@@ -1,11 +1,11 @@
-# Factorial
+# 팩토리얼
 
-So far you've learned:
+지금까지 배운 내용은 다음과 같습니다:
 
-- How to define a function
-- How to call a function
-- Which integer types are available in Rust
-- Which arithmetic operators are available for integers
-- How to execute conditional logic via comparisons and `if`/`else` expressions
+- 함수 정의 방법
+- 함수 호출 방법
+- Rust에서 사용 가능한 정수 타입
+- 정수에 사용 가능한 산술 연산자
+- 비교 및 `if`/`else` 표현식을 통한 조건부 로직 실행 방법
 
-It looks like you're ready to tackle factorials!
+이제 팩토리얼을 다룰 준비가 된 것 같습니다!

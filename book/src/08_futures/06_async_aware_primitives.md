@@ -1,18 +1,15 @@
-# Async-aware primitives
+# 비동기 인식 프리미티브
 
-If you browse `tokio`'s documentation, you'll notice that it provides a lot of types
-that "mirror" the ones in the standard library, but with an asynchronous twist:
-locks, channels, timers, and more.
+`tokio` 문서를 살펴보면, 표준 라이브러리의 타입들을 "미러링"하지만 비동기적인 특징을 가진 많은 타입들을 발견할 수 있을 것입니다:
+잠금, 채널, 타이머 등.
 
-When working in an asynchronous context, you should prefer these asynchronous alternatives
-to their synchronous counterparts.
+비동기 컨텍스트에서 작업할 때는 동기적인 대응물보다 이러한 비동기 대안을 선호해야 합니다.
 
-To understand why, let's take a look at `Mutex`, the mutually exclusive lock we explored
-in the previous chapter.
+그 이유를 이해하기 위해 이전 챕터에서 탐색했던 상호 배타적 잠금인 `Mutex`를 살펴봅시다.
 
-## Case study: `Mutex`
+## 사례 연구: `Mutex`
 
-Let's look at a simple example:
+간단한 예제를 살펴봅시다:
 
 ```rust
 use std::sync::{Arc, Mutex};
@@ -21,44 +18,40 @@ async fn run(m: Arc<Mutex<Vec<u64>>>) {
     let guard = m.lock().unwrap();
     http_call(&guard).await;
     println!("Sent {:?} to the server", &guard);
-    // `guard` is dropped here
+    // `guard`는 여기서 삭제됩니다
 }
 
-/// Use `v` as the body of an HTTP call.
+/// `v`를 HTTP 호출의 본문으로 사용합니다.
 async fn http_call(v: &[u64]) {
   // [...]
 }
 ```
 
-### `std::sync::MutexGuard` and yield points
+### `std::sync::MutexGuard` 및 양보 지점
 
-This code will compile, but it's dangerous.
+이 코드는 컴파일되지만 위험합니다.
 
-We try to acquire a lock over a `Mutex` from `std` in an asynchronous context.
-We then hold on to the resulting `MutexGuard` across a yield point (the `.await` on
-`http_call`).
+비동기 컨텍스트에서 `std`의 `Mutex`에 대한 잠금을 획득하려고 합니다.
+그런 다음 양보 지점(`http_call`의 `.await`)을 넘어 결과 `MutexGuard`를 유지합니다.
 
-Let's imagine that there are two tasks executing `run`, concurrently, on a single-threaded
-runtime. We observe the following sequence of scheduling events:
+단일 스레드 런타임에서 두 태스크가 `run`을 동시에 실행한다고 상상해 봅시다. 다음 스케줄링 이벤트 시퀀스를 관찰합니다:
 
 ```text
-     Task A          Task B
+     태스크 A          태스크 B
         | 
-  Acquire lock
-Yields to runtime
+  잠금 획득
+런타임에 양보
         | 
         +--------------+
                        |
-             Tries to acquire lock
+             잠금 획득 시도
 ```
 
-We have a deadlock. Task B will never manage to acquire the lock, because the lock
-is currently held by task A, which has yielded to the runtime before releasing the
-lock and won't be scheduled again because the runtime cannot preempt task B.
+교착 상태가 발생합니다. 태스크 B는 잠금을 획득할 수 없을 것입니다. 잠금이 현재 태스크 A에 의해 유지되고 있으며, 태스크 A는 잠금을 해제하기 전에 런타임에 양보했고 런타임이 태스크 B를 선점할 수 없으므로 다시 스케줄링되지 않을 것이기 때문입니다.
 
 ### `tokio::sync::Mutex`
 
-You can solve the issue by switching to `tokio::sync::Mutex`:
+`tokio::sync::Mutex`로 전환하여 문제를 해결할 수 있습니다:
 
 ```rust
 use std::sync::Arc;
@@ -68,62 +61,55 @@ async fn run(m: Arc<Mutex<Vec<u64>>>) {
     let guard = m.lock().await;
     http_call(&guard).await;
     println!("Sent {:?} to the server", &guard);
-    // `guard` is dropped here
+    // `guard`는 여기서 삭제됩니다
 }
 ```
 
-Acquiring the lock is now an asynchronous operation, which yields back to the runtime
-if it can't make progress.\
-Going back to the previous scenario, the following would happen:
+잠금 획득은 이제 비동기 작업이며, 진행할 수 없으면 런타임에 다시 양보합니다.
+이전 시나리오로 돌아가면 다음이 발생합니다:
 
 ```text
-       Task A          Task B
+       태스크 A          태스크 B
           | 
-  Acquires the lock
-  Starts `http_call`
-  Yields to runtime
+  잠금 획득
+  `http_call` 시작
+  런타임에 양보
           | 
           +--------------+
                          |
-             Tries to acquire the lock
-              Cannot acquire the lock
-                 Yields to runtime
+             잠금 획득 시도
+              잠금 획득 불가
+                 런타임에 양보
                          |
           +--------------+
           |
-`http_call` completes      
-  Releases the lock
-   Yield to runtime
+`http_call` 완료      
+  잠금 해제
+   런타임에 양보
           |
           +--------------+
                          |
-                 Acquires the lock
+                 잠금 획득
                        [...]
 ```
 
-All good!
+모든 것이 좋습니다!
 
-### Multithreaded won't save you
+### 다중 스레드는 당신을 구하지 못할 것입니다
 
-We've used a single-threaded runtime as the execution context in our
-previous example, but the same risk persists even when using a multithreaded
-runtime.\
-The only difference is in the number of concurrent tasks required to create the deadlock:
-in a single-threaded runtime, 2 are enough; in a multithreaded runtime, we
-would need `N+1` tasks, where `N` is the number of runtime threads.
+이전 예제에서 단일 스레드 런타임을 실행 컨텍스트로 사용했지만, 다중 스레드 런타임을 사용할 때도 동일한 위험이 지속됩니다.
+유일한 차이점은 교착 상태를 생성하는 데 필요한 동시 태스크 수입니다:
+단일 스레드 런타임에서는 2개로 충분합니다. 다중 스레드 런타임에서는 `N`이 런타임 스레드 수인 `N+1`개의 태스크가 필요합니다.
 
-### Downsides
+### 단점
 
-Having an async-aware `Mutex` comes with a performance penalty.\
-If you're confident that the lock isn't under significant contention
-_and_ you're careful to never hold it across a yield point, you can
-still use `std::sync::Mutex` in an asynchronous context.
+비동기 인식 `Mutex`를 사용하는 것은 성능 저하를 수반합니다.
+잠금이 심각한 경쟁 상태에 있지 않고 _그리고_ 양보 지점을 넘어 잠금을 유지하지 않도록 주의한다면,
+비동기 컨텍스트에서 `std::sync::Mutex`를 계속 사용할 수 있습니다.
 
-But weigh the performance benefit against the liveness risk you
-will incur.
+하지만 성능 이점과 발생할 활성 위험을 비교하십시오.
 
-## Other primitives
+## 다른 프리미티브
 
-We used `Mutex` as an example, but the same applies to `RwLock`, semaphores, etc.\
-Prefer async-aware versions when working in an asynchronous context to minimise
-the risk of issues.
+`Mutex`를 예로 들었지만, `RwLock`, 세마포어 등에도 동일하게 적용됩니다.
+문제 발생 위험을 최소화하려면 비동기 컨텍스트에서 작업할 때 비동기 인식 버전을 선호하십시오.

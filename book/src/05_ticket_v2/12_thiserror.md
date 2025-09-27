@@ -1,15 +1,14 @@
 # `thiserror`
 
-That was a bit of detour, wasn't it? But a necessary one!\
-Let's get back on track now: custom error types and `thiserror`.
+조금 돌아가는 길이었죠? 하지만 필요한 길이었습니다!
+이제 다시 본론으로 돌아가 봅시다: 사용자 정의 오류 타입과 `thiserror`입니다.
 
-## Custom error types
+## 사용자 정의 오류 타입
 
-We've seen how to implement the `Error` trait "manually" for a custom error type.\
-Imagine that you have to do this for most error types in your codebase. That's a lot of boilerplate, isn't it?
+사용자 정의 오류 타입에 대해 "수동으로" `Error` 트레이트를 구현하는 방법을 보았습니다.
+코드베이스의 대부분의 오류 타입에 대해 이 작업을 수행해야 한다고 상상해 보십시오. 상용구가 많지 않나요?
 
-We can remove some of the boilerplate by using [`thiserror`](https://docs.rs/thiserror/latest/thiserror/),
-a Rust crate that provides a **procedural macro** to simplify the creation of custom error types.
+사용자 정의 오류 타입 생성을 단순화하는 **절차적 매크로**를 제공하는 Rust 크레이트인 [`thiserror`](https://docs.rs/thiserror/latest/thiserror/)를 사용하여 일부 상용구를 제거할 수 있습니다.
 
 ```rust
 #[derive(thiserror::Error, Debug)]
@@ -21,21 +20,20 @@ enum TicketNewError {
 }
 ```
 
-## You can write your own macros
+## 자신만의 매크로를 작성할 수 있습니다
 
-All the `derive` macros we've seen so far were provided by the Rust standard library.\
-`thiserror::Error` is the first example of a **third-party** `derive` macro.
+지금까지 본 모든 `derive` 매크로는 Rust 표준 라이브러리에서 제공되었습니다.
+`thiserror::Error`는 **타사** `derive` 매크로의 첫 번째 예입니다.
 
-`derive` macros are a subset of **procedural macros**, a way to generate Rust code at compile time.
-We won't get into the details of how to write a procedural macro in this course, but it's important
-to know that you can write your own!\
-A topic to approach in a more advanced Rust course.
+`derive` 매크로는 컴파일 타임에 Rust 코드를 생성하는 방법인 **절차적 매크로**의 하위 집합입니다.
+이 과정에서는 절차적 매크로를 작성하는 방법에 대한 자세한 내용은 다루지 않지만, 자신만의 매크로를 작성할 수 있다는 것을 아는 것이 중요합니다!
+더 고급 Rust 과정에서 다룰 주제입니다.
 
-## Custom syntax
+## 사용자 정의 구문
 
-Each procedural macro can define its own syntax, which is usually explained in the crate's documentation.
-In the case of `thiserror`, we have:
+각 절차적 매크로는 자체 구문을 정의할 수 있으며, 이는 일반적으로 크레이트의 설명서에 설명되어 있습니다.
+`thiserror`의 경우 다음과 같습니다:
 
-- `#[derive(thiserror::Error)]`: this is the syntax to derive the `Error` trait for a custom error type, helped by `thiserror`.
-- `#[error("{0}")]`: this is the syntax to define a `Display` implementation for each variant of the custom error type.
-  `{0}` is replaced by the zero-th field of the variant (`String`, in this case) when the error is displayed.
+- `#[derive(thiserror::Error)]`: `thiserror`의 도움을 받아 사용자 정의 오류 타입에 대해 `Error` 트레이트를 파생시키는 구문입니다.
+- `#[error("{0}")]`: 사용자 정의 오류 타입의 각 베리언트에 대한 `Display` 구현을 정의하는 구문입니다.
+  `{0}`은 오류가 표시될 때 베리언트의 0번째 필드(이 경우 `String`)로 대체됩니다.

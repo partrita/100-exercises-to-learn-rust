@@ -1,8 +1,8 @@
 use tokio::net::TcpListener;
 
-// TODO: write an echo server that accepts TCP connections on two listeners, concurrently.
-//  Multiple connections (on the same listeners) should be processed concurrently.
-//  The received data should be echoed back to the client.
+// TODO: 두 개의 리스너에서 동시에 TCP 연결을 수락하는 에코 서버를 작성하세요.
+//  동일한 리스너에 대한 여러 연결은 동시에 처리되어야 합니다.
+//  수신된 데이터는 클라이언트에게 다시 에코되어야 합니다.
 pub async fn echoes(first: TcpListener, second: TcpListener) -> Result<(), anyhow::Error> {
     todo!()
 }
@@ -36,12 +36,12 @@ mod tests {
                     let mut socket = tokio::net::TcpStream::connect(addr).await.unwrap();
                     let (mut reader, mut writer) = socket.split();
 
-                    // Send the request
+                    // 요청 보내기
                     writer.write_all(request.as_bytes()).await.unwrap();
-                    // Close the write side of the socket
+                    // 소켓의 쓰기 측 닫기
                     writer.shutdown().await.unwrap();
 
-                    // Read the response
+                    // 응답 읽기
                     let mut buf = Vec::with_capacity(request.len());
                     reader.read_to_end(&mut buf).await.unwrap();
                     assert_eq!(&buf, request.as_bytes());

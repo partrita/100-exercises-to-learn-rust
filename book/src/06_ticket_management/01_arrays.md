@@ -1,38 +1,37 @@
-# Arrays
+# 배열
 
-As soon as we start talking about "ticket management" we need to think about a way to store _multiple_ tickets.
-In turn, this means we need to think about collections. In particular, homogeneous collections:
-we want to store multiple instances of the same type.
+"티켓 관리"에 대해 이야기하기 시작하자마자 _여러_ 티켓을 저장하는 방법에 대해 생각해야 합니다.
+결과적으로, 이는 컬렉션에 대해 생각해야 함을 의미합니다. 특히, 동종 컬렉션: 동일한 타입의 여러 인스턴스를 저장하고 싶습니다.
 
-What does Rust have to offer in this regard?
+이와 관련하여 Rust는 무엇을 제공할까요?
 
-## Arrays
+## 배열
 
-A first attempt could be to use an **array**.\
-Arrays in Rust are fixed-size collections of elements of the same type.
+첫 번째 시도는 **배열**을 사용하는 것일 수 있습니다.
+Rust의 배열은 동일한 타입의 요소들로 구성된 고정 크기 컬렉션입니다.
 
-Here's how you can define an array:
+배열을 정의하는 방법은 다음과 같습니다:
 
 ```rust
-// Array type syntax: [ <type> ; <number of elements> ]
+// 배열 타입 구문: [ <타입> ; <요소 수> ]
 let numbers: [u32; 3] = [1, 2, 3];
 ```
 
-This creates an array of 3 integers, initialized with the values `1`, `2`, and `3`.\
-The type of the array is `[u32; 3]`, which reads as "an array of `u32`s with a length of 3".
+이것은 `1`, `2`, `3` 값으로 초기화된 3개의 정수 배열을 생성합니다.
+배열의 타입은 `[u32; 3]`이며, "길이가 3인 `u32` 배열"로 읽습니다.
 
-If all array elements are the same, you can use a shorter syntax to initialize it:
+모든 배열 요소가 동일한 경우, 더 짧은 구문을 사용하여 초기화할 수 있습니다:
 
 ```rust
-// [ <value> ; <number of elements> ]
+// [ <값> ; <요소 수> ]
 let numbers: [u32; 3] = [1; 3];
 ```
 
-`[1; 3]` creates an array of three elements, all equal to `1`.
+`[1; 3]`은 모두 `1`과 같은 세 개의 요소로 구성된 배열을 생성합니다.
 
-### Accessing elements
+### 요소 접근
 
-You can access elements of an array using square brackets:
+대괄호를 사용하여 배열의 요소에 접근할 수 있습니다:
 
 ```rust
 let first = numbers[0];
@@ -40,51 +39,47 @@ let second = numbers[1];
 let third = numbers[2];
 ```
 
-The index must be of type `usize`.\
-Arrays are **zero-indexed**, like everything in Rust. You've seen this before with string slices and field indexing in
-tuples/tuple-like variants.
+인덱스는 `usize` 타입이어야 합니다.
+배열은 Rust의 모든 것과 마찬가지로 **0부터 시작**합니다. 문자열 슬라이스 및 튜플/튜플과 유사한 베리언트의 필드 인덱싱에서 이전에 보셨을 것입니다.
 
-### Out-of-bounds access
+### 범위 초과 접근
 
-If you try to access an element that's out of bounds, Rust will panic:
+범위를 벗어난 요소에 접근하려고 하면 Rust는 패닉을 일으킵니다:
 
 ```rust
 let numbers: [u32; 3] = [1, 2, 3];
-let fourth = numbers[3]; // This will panic
+let fourth = numbers[3]; // 이것은 패닉을 일으킬 것입니다
 ```
 
-This is enforced at runtime using **bounds checking**. It comes with a small performance overhead, but it's how
-Rust prevents buffer overflows.\
-In some scenarios the Rust compiler can optimize away bounds checks, especially if iterators are involved—we'll speak
-more about this later on.
+이것은 **경계 검사**를 사용하여 런타임에 강제됩니다. 약간의 성능 오버헤드가 있지만, Rust가 버퍼 오버플로를 방지하는 방법입니다.
+일부 시나리오에서는 Rust 컴파일러가 경계 검사를 최적화할 수 있습니다. 특히 반복자가 관련된 경우 나중에 이에 대해 더 자세히 이야기할 것입니다.
 
-If you don't want to panic, you can use the `get` method, which returns an `Option<&T>`:
+패닉을 원하지 않는 경우, `Option<&T>`를 반환하는 `get` 메소드를 사용할 수 있습니다:
 
 ```rust
 let numbers: [u32; 3] = [1, 2, 3];
 assert_eq!(numbers.get(0), Some(&1));
-// You get a `None` if you try to access an out-of-bounds index
-// rather than a panic.
+// 범위를 벗어난 인덱스에 접근하려고 하면 패닉 대신
+// `None`을 얻게 됩니다.
 assert_eq!(numbers.get(3), None);
 ```
 
-### Performance
+### 성능
 
-Since the size of an array is known at compile-time, the compiler can allocate the array on the stack.
-If you run the following code:
+배열의 크기는 컴파일 타임에 알려져 있으므로 컴파일러는 스택에 배열을 할당할 수 있습니다.
+다음 코드를 실행하면:
 
 ```rust
 let numbers: [u32; 3] = [1, 2, 3];
 ```
 
-You'll get the following memory layout:
+다음과 같은 메모리 레이아웃을 얻게 됩니다:
 
 ```text
         +---+---+---+
-Stack:  | 1 | 2 | 3 |
+스택:  | 1 | 2 | 3 |
         +---+---+---+
 ```
 
-In other words, the size of an array is `std::mem::size_of::<T>() * N`, where `T` is the type of the elements and `N` is
-the number of elements.\
-You can access and replace each element in `O(1)` time.
+즉, 배열의 크기는 `std::mem::size_of::<T>() * N`이며, 여기서 `T`는 요소의 타입이고 `N`은 요소의 수입니다.
+각 요소에 `O(1)` 시간으로 접근하고 교체할 수 있습니다.

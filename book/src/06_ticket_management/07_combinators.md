@@ -1,57 +1,56 @@
-# Combinators
+# 조합자
 
-Iterators can do so much more than `for` loops!\
-If you look at the documentation for the `Iterator` trait, you'll find a **vast** collection of
-methods that you can leverage to transform, filter, and combine iterators in various ways.
+반복자는 `for` 루프보다 훨씬 더 많은 것을 할 수 있습니다!
+`Iterator` 트레이트 문서를 살펴보면, 다양한 방식으로 반복자를 변환, 필터링 및 결합하는 데 활용할 수 있는 **방대한** 메소드 컬렉션을 찾을 수 있습니다.
 
-Let's mention the most common ones:
+가장 일반적인 것들을 언급해 봅시다:
 
-- `map` applies a function to each element of the iterator.
-- `filter` keeps only the elements that satisfy a predicate.
-- `filter_map` combines `filter` and `map` in one step.
-- `cloned` converts an iterator of references into an iterator of values, cloning each element.
-- `enumerate` returns a new iterator that yields `(index, value)` pairs.
-- `skip` skips the first `n` elements of the iterator.
-- `take` stops the iterator after `n` elements.
-- `chain` combines two iterators into one.
+- `map`은 반복자의 각 요소에 함수를 적용합니다.
+- `filter`는 술어를 만족하는 요소만 유지합니다.
+- `filter_map`은 `filter`와 `map`을 한 단계로 결합합니다.
+- `cloned`는 참조 반복자를 값 반복자로 변환하고 각 요소를 복제합니다.
+- `enumerate`는 `(인덱스, 값)` 쌍을 생성하는 새로운 반복자를 반환합니다.
+- `skip`은 반복자의 처음 `n`개 요소를 건너뜁니다.
+- `take`는 `n`개 요소 후에 반복자를 중지합니다.
+- `chain`은 두 반복자를 하나로 결합합니다.
 
-These methods are called **combinators**.\
-They are usually **chained** together to create complex transformations in a concise and readable way:
+이러한 메소드를 **조합자**라고 합니다.
+이들은 일반적으로 간결하고 읽기 쉬운 방식으로 복잡한 변환을 생성하기 위해 함께 **연결**됩니다:
 
 ```rust
 let numbers = vec![1, 2, 3, 4, 5];
-// The sum of the squares of the even numbers
+// 짝수의 제곱의 합
 let outcome: u32 = numbers.iter()
     .filter(|&n| n % 2 == 0)
     .map(|&n| n * n)
     .sum();
 ```
 
-## Closures
+## 클로저
 
-What's going on with the `filter` and `map` methods above?\
-They take **closures** as arguments.
+위의 `filter` 및 `map` 메소드에서 무슨 일이 일어나고 있을까요?
+이들은 인수로 **클로저**를 받습니다.
 
-Closures are **anonymous functions**, i.e. functions that are not defined using the `fn` syntax we are used to.\
-They are defined using the `|args| body` syntax, where `args` are the arguments and `body` is the function body.
-`body` can be a block of code or a single expression.
-For example:
+클로저는 **익명 함수**입니다. 즉, 우리가 익숙한 `fn` 구문을 사용하여 정의되지 않은 함수입니다.
+이들은 `|args| body` 구문을 사용하여 정의되며, 여기서 `args`는 인수이고 `body`는 함수 본문입니다.
+`body`는 코드 블록이거나 단일 표현식일 수 있습니다.
+예를 들어:
 
 ```rust
-// An anonymous function that adds 1 to its argument
+// 인수에 1을 더하는 익명 함수
 let add_one = |x| x + 1;
-// Could be written with a block too:
+// 블록으로도 작성할 수 있습니다:
 let add_one = |x| { x + 1 };
 ```
 
-Closures can take more than one argument:
+클로저는 하나 이상의 인수를 받을 수 있습니다:
 
 ```rust
 let add = |x, y| x + y;
 let sum = add(1, 2);
 ```
 
-They can also capture variables from their environment:
+이들은 환경에서 변수를 캡처할 수도 있습니다:
 
 ```rust
 let x = 42;
@@ -59,24 +58,24 @@ let add_x = |y| x + y;
 let sum = add_x(1);
 ```
 
-If necessary, you can specify the types of the arguments and/or the return type:
+필요한 경우 인수의 타입 및/또는 반환 타입을 지정할 수 있습니다:
 
 ```rust
-// Just the input type
+// 입력 타입만
 let add_one = |x: i32| x + 1;
-// Or both input and output types, using the `fn` syntax
+// `fn` 구문을 사용하여 입력 및 출력 타입 모두
 let add_one: fn(i32) -> i32 = |x| x + 1;
 ```
 
 ## `collect`
 
-What happens when you're done transforming an iterator using combinators?\
-You either iterate over the transformed values using a `for` loop, or you collect them into a collection.
+조합자를 사용하여 반복자를 변환한 후에는 어떻게 될까요?
+변환된 값을 `for` 루프를 사용하여 반복하거나 컬렉션으로 수집합니다.
 
-The latter is done using the `collect` method.\
-`collect` consumes the iterator and collects its elements into a collection of your choice.
+후자는 `collect` 메소드를 사용하여 수행됩니다.
+`collect`는 반복자를 소비하고 해당 요소를 선택한 컬렉션으로 수집합니다.
 
-For example, you can collect the squares of the even numbers into a `Vec`:
+예를 들어, 짝수의 제곱을 `Vec`으로 수집할 수 있습니다:
 
 ```rust
 let numbers = vec![1, 2, 3, 4, 5];
@@ -86,22 +85,21 @@ let squares_of_evens: Vec<u32> = numbers.iter()
     .collect();
 ```
 
-`collect` is generic over its **return type**.\
-Therefore you usually need to provide a type hint to help the compiler infer the correct type.
-In the example above, we annotated the type of `squares_of_evens` to be `Vec<u32>`.
-Alternatively, you can use the **turbofish syntax** to specify the type:
+`collect`는 **반환 타입**에 대해 제네릭입니다.
+따라서 컴파일러가 올바른 타입을 추론하는 데 도움이 되도록 일반적으로 타입 힌트를 제공해야 합니다.
+위의 예에서 `squares_of_evens`의 타입을 `Vec<u32>`로 주석 처리했습니다.
+대신 **터보피시 구문**을 사용하여 타입을 지정할 수 있습니다:
 
 ```rust
 let squares_of_evens = numbers.iter()
     .filter(|&n| n % 2 == 0)
     .map(|&n| n * n)
-    // Turbofish syntax: `<method_name>::<type>()`
-    // It's called turbofish because `::<>` looks like a fish
+    // 터보피시 구문: `<메소드_이름>::<타입>()`
+    // `::<>`가 물고기처럼 생겼기 때문에 터보피시라고 불립니다
     .collect::<Vec<u32>>();
 ```
 
-## Further reading
+## 추가 자료
 
-- [`Iterator`'s documentation](https://doc.rust-lang.org/std/iter/trait.Iterator.html) gives you an
-  overview of the methods available for iterators in `std`.
-- [The `itertools` crate](https://docs.rs/itertools/) defines even **more** combinators for iterators.
+- [`Iterator` 문서](https://doc.rust-lang.org/std/iter/trait.Iterator.html)는 `std`에서 반복자에 사용할 수 있는 메소드에 대한 개요를 제공합니다.
+- [`itertools` 크레이트](https://docs.rs/itertools/)는 반복자를 위한 **더 많은** 조합자를 정의합니다.

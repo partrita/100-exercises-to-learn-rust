@@ -1,6 +1,6 @@
 [book]
 authors = ["Luca Palmieri"]
-language = "en"
+language = "ko"
 multilingual = false
 src = "src"
 title = "100 Exercises To Learn Rust"

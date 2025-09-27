@@ -1,2 +1,5 @@
 target/
 exercises/progress.db
+# pixi environments
+.pixi/*
+!.pixi/config.toml

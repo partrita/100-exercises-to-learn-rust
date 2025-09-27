@@ -1,92 +1,82 @@
-# Locks, `Send` and `Arc`
+# 잠금, `Send` 및 `Arc`
 
-The patching strategy you just implemented has a major drawback: it's racy.\
-If two clients send patches for the same ticket roughly at same time, the server will apply them in an arbitrary order.
-Whoever enqueues their patch last will overwrite the changes made by the other client.
+방금 구현한 패치 전략에는 큰 단점이 있습니다: 경쟁 상태입니다.
+두 클라이언트가 거의 동시에 동일한 티켓에 대한 패치를 보내면 서버는 임의의 순서로 이를 적용할 것입니다.
+패치를 마지막으로 큐에 넣은 클라이언트가 다른 클라이언트가 변경한 내용을 덮어쓸 것입니다.
 
-## Version numbers
+## 버전 번호
 
-We could try to fix this by using a **version number**.\
-Each ticket gets assigned a version number upon creation, set to `0`.\
-Whenever a client sends a patch, they must include the current version number of the ticket alongside the
-desired changes. The server will only apply the patch if the version number matches the one it has stored.
+**버전 번호**를 사용하여 이 문제를 해결할 수 있습니다.
+각 티켓은 생성 시 버전 번호 `0`이 할당됩니다.
+클라이언트가 패치를 보낼 때마다 원하는 변경 사항과 함께 티켓의 현재 버전 번호를 포함해야 합니다. 서버는 버전 번호가 저장된 번호와 일치하는 경우에만 패치를 적용합니다.
 
-In the scenario described above, the server would reject the second patch, because the version number would
-have been incremented by the first patch and thus wouldn't match the one sent by the second client.
+위에 설명된 시나리오에서 서버는 두 번째 패치를 거부할 것입니다. 첫 번째 패치에 의해 버전 번호가 증가하여 두 번째 클라이언트가 보낸 번호와 일치하지 않기 때문입니다.
 
-This approach is fairly common in distributed systems (e.g. when client and servers don't share memory),
-and it is known as **optimistic concurrency control**.\
-The idea is that most of the time, conflicts won't happen, so we can optimize for the common case.
-You know enough about Rust by now to implement this strategy on your own as a bonus exercise, if you want to.
+이 접근 방식은 분산 시스템(예: 클라이언트와 서버가 메모리를 공유하지 않는 경우)에서 상당히 일반적이며 **낙관적 동시성 제어**라고 알려져 있습니다.
+아이디어는 대부분의 경우 충돌이 발생하지 않으므로 일반적인 경우에 최적화할 수 있다는 것입니다.
+원한다면 보너스 연습으로 이 전략을 직접 구현할 만큼 Rust에 대해 충분히 알고 있습니다.
 
-## Locking
+## 잠금
 
-We can also fix the race condition by introducing a **lock**.\
-Whenever a client wants to update a ticket, they must first acquire a lock on it. While the lock is active,
-no other client can modify the ticket.
+**잠금**을 도입하여 경쟁 상태를 해결할 수도 있습니다.
+클라이언트가 티켓을 업데이트하려면 먼저 티켓에 대한 잠금을 획득해야 합니다. 잠금이 활성화되어 있는 동안에는 다른 클라이언트가 티켓을 수정할 수 없습니다.
 
-Rust's standard library provides two different locking primitives: `Mutex<T>` and `RwLock<T>`.\
-Let's start with `Mutex<T>`. It stands for **mut**ual **ex**clusion, and it's the simplest kind of lock:
-it allows only one thread to access the data, no matter if it's for reading or writing.
+Rust의 표준 라이브러리는 `Mutex<T>`와 `RwLock<T>`라는 두 가지 다른 잠금 프리미티브를 제공합니다.
+`Mutex<T>`부터 시작하겠습니다. 이것은 **mut**ual **ex**clusion의 약자이며, 가장 간단한 종류의 잠금입니다:
+읽기 또는 쓰기 여부에 관계없이 하나의 스레드만 데이터에 접근할 수 있도록 허용합니다.
 
-`Mutex<T>` wraps the data it protects, and it's therefore generic over the type of the data.\
-You can't access the data directly: the type system forces you to acquire a lock first using either `Mutex::lock` or
-`Mutex::try_lock`. The former blocks until the lock is acquired, the latter returns immediately with an error if the lock
-can't be acquired.\
-Both methods return a guard object that dereferences to the data, allowing you to modify it. The lock is released when
-the guard is dropped.
+`Mutex<T>`는 보호하는 데이터를 래핑하며, 따라서 데이터의 타입에 대해 제네릭입니다.
+데이터에 직접 접근할 수 없습니다: 타입 시스템은 `Mutex::lock` 또는 `Mutex::try_lock`을 사용하여 먼저 잠금을 획득하도록 강제합니다. 전자는 잠금이 획득될 때까지 차단하고, 후자는 잠금을 획득할 수 없으면 즉시 오류를 반환합니다.
+두 메소드 모두 데이터에 역참조하는 가드 객체를 반환하여 데이터를 수정할 수 있도록 합니다. 잠금은 가드가 삭제될 때 해제됩니다.
 
 ```rust
 use std::sync::Mutex;
 
-// An integer protected by a mutex lock
+// 뮤텍스 잠금으로 보호되는 정수
 let lock = Mutex::new(0);
 
-// Acquire a lock on the mutex
+// 뮤텍스에 대한 잠금 획득
 let mut guard = lock.lock().unwrap();
 
-// Modify the data through the guard,
-// leveraging its `Deref` implementation
+// 가드를 통해 데이터 수정,
+// `Deref` 구현 활용
 *guard += 1;
 
-// The lock is released when `data` goes out of scope
-// This can be done explicitly by dropping the guard
-// or happen implicitly when the guard goes out of scope
+// 잠금은 `data`가 범위를 벗어날 때 해제됩니다
+// 이것은 가드를 명시적으로 삭제하거나
+// 가드가 범위를 벗어날 때 암시적으로 발생할 수 있습니다
 drop(guard)
 ```
 
-## Locking granularity
+## 잠금 세분성
 
-What should our `Mutex` wrap?\
-The simplest option would be to wrap the entire `TicketStore` in a single `Mutex`.\
-This would work, but it would severely limit the system's performance: you wouldn't be able to read tickets in parallel,
-because every read would have to wait for the lock to be released.\
-This is known as **coarse-grained locking**.
+`Mutex`는 무엇을 래핑해야 할까요?
+가장 간단한 옵션은 전체 `TicketStore`를 단일 `Mutex`로 래핑하는 것입니다.
+이것은 작동하겠지만, 시스템의 성능을 심각하게 제한할 것입니다: 모든 읽기가 잠금이 해제될 때까지 기다려야 하므로 티켓을 병렬로 읽을 수 없을 것입니다.
+이것은 **조악한 잠금**이라고 알려져 있습니다.
 
-It would be better to use **fine-grained locking**, where each ticket is protected by its own lock.
-This way, clients can keep working with tickets in parallel, as long as they aren't trying to access the same ticket.
+각 티켓이 자체 잠금으로 보호되는 **세분화된 잠금**을 사용하는 것이 더 좋을 것입니다.
+이렇게 하면 클라이언트가 동일한 티켓에 접근하려고 시도하지 않는 한, 티켓으로 병렬로 계속 작업할 수 있습니다.
 
 ```rust
-// The new structure, with a lock for each ticket
+// 각 티켓에 대한 잠금이 있는 새로운 구조
 struct TicketStore {
     tickets: BTreeMap<TicketId, Mutex<Ticket>>,
 }
 ```
 
-This approach is more efficient, but it has a downside: `TicketStore` has to become **aware** of the multithreaded
-nature of the system; up until now, `TicketStore` has been blissfully ignoring the existence of threads.\
-Let's go for it anyway.
+이 접근 방식은 더 효율적이지만 단점이 있습니다: `TicketStore`는 시스템의 다중 스레드 특성을 **인식**해야 합니다. 지금까지 `TicketStore`는 스레드의 존재를 행복하게 무시해 왔습니다.
+어쨌든 시도해 봅시다.
 
-## Who holds the lock?
+## 누가 잠금을 가지고 있나요?
 
-For the whole scheme to work, the lock must be passed to the client that wants to modify the ticket.\
-The client can then directly modify the ticket (as if they had a `&mut Ticket`) and release the lock when they're done.
+전체 계획이 작동하려면 잠금이 티켓을 수정하려는 클라이언트에게 전달되어야 합니다.
+클라이언트는 티켓을 직접 수정하고(`&mut Ticket`을 가진 것처럼) 완료되면 잠금을 해제할 수 있습니다.
 
-This is a bit tricky.\
-We can't send a `Mutex<Ticket>` over a channel, because `Mutex` is not `Clone` and
-we can't move it out of the `TicketStore`. Could we send the `MutexGuard` instead?
+이것은 약간 까다롭습니다.
+`Mutex`는 `Clone`이 아니며 `TicketStore`에서 이동할 수 없으므로 채널을 통해 `Mutex<Ticket>`을 보낼 수 없습니다. 대신 `MutexGuard`를 보낼 수 있을까요?
 
-Let's test the idea with a small example:
+작은 예제로 아이디어를 테스트해 봅시다:
 
 ```rust
 use std::thread::spawn;
@@ -102,13 +92,13 @@ fn main() {
         receiver.recv().unwrap();
     });
 
-    // Try to send the guard over the channel
-    // to another thread
+    // 가드를 채널을 통해
+    // 다른 스레드로 보내려고 시도
     sender.send(guard);
 }
 ```
 
-The compiler is not happy with this code:
+컴파일러는 이 코드에 만족하지 않습니다:
 
 ```text
 error[E0277]: `MutexGuard<'_, i32>` cannot be sent between 
@@ -131,62 +121,55 @@ error[E0277]: `MutexGuard<'_, i32>` cannot be sent between
 note: required because it's used within this closure
 ```
 
-`MutexGuard<'_, i32>` is not `Send`: what does it mean?
+`MutexGuard<'_, i32>`는 `Send`가 아닙니다: 이것은 무엇을 의미할까요?
 
 ## `Send`
 
-`Send` is a marker trait that indicates that a type can be safely transferred from one thread to another.\
-`Send` is also an auto-trait, just like `Sized`; it's automatically implemented (or not implemented) for your type
-by the compiler, based on its definition.\
-You can also implement `Send` manually for your types, but it requires `unsafe` since you have to guarantee that the
-type is indeed safe to send between threads for reasons that the compiler can't automatically verify.
+`Send`는 타입이 한 스레드에서 다른 스레드로 안전하게 전송될 수 있음을 나타내는 마커 트레이트입니다.
+`Send`는 `Sized`와 마찬가지로 자동 트레이트입니다. 정의에 따라 컴파일러에 의해 타입에 대해 자동으로 구현되거나 구현되지 않습니다.
+타입에 대해 `Send`를 수동으로 구현할 수도 있지만, 컴파일러가 자동으로 확인할 수 없는 이유로 타입이 스레드 간에 실제로 안전하게 전송될 수 있음을 보장해야 하므로 `unsafe`가 필요합니다.
 
-### Channel requirements
+### 채널 요구 사항
 
-`Sender<T>`, `SyncSender<T>` and `Receiver<T>` are `Send` if and only if `T` is `Send`.\
-That's because they are used to send values between threads, and if the value itself is not `Send`, it would be
-unsafe to send it between threads.
+`Sender<T>`, `SyncSender<T>` 및 `Receiver<T>`는 `T`가 `Send`인 경우에만 `Send`입니다.
+이는 스레드 간에 값을 보내는 데 사용되기 때문이며, 값 자체가 `Send`가 아니면 스레드 간에 보내는 것이 안전하지 않을 것입니다.
 
 ### `MutexGuard`
 
-`MutexGuard` is not `Send` because the underlying operating system primitives that `Mutex` uses to implement
-the lock require (on some platforms) that the lock must be released by the same thread that acquired it.\
-If we were to send a `MutexGuard` to another thread, the lock would be released by a different thread, which would
-lead to undefined behavior.
+`MutexGuard`는 `Send`가 아닙니다. `Mutex`가 잠금을 구현하는 데 사용하는 기본 운영 체제 프리미티브가 (일부 플랫폼에서) 잠금이 획득된 스레드와 동일한 스레드에 의해 해제되어야 한다고 요구하기 때문입니다.
+`MutexGuard`를 다른 스레드로 보내면 잠금이 다른 스레드에 의해 해제되어 정의되지 않은 동작으로 이어질 것입니다.
 
-## Our challenges
+## 우리의 도전 과제
 
-Summing it up:
+요약하자면:
 
-- We can't send a `MutexGuard` over a channel. So we can't lock on the server-side and then modify the ticket on the
-  client-side.
-- We can send a `Mutex` over a channel because it's `Send` as long as the data it protects is `Send`, which is the
-  case for `Ticket`.
-  At the same time, we can't move the `Mutex` out of the `TicketStore` nor clone it.
+- 채널을 통해 `MutexGuard`를 보낼 수 없습니다. 따라서 서버 측에서 잠금을 걸고 클라이언트 측에서 티켓을 수정할 수 없습니다.
+- `Mutex`는 보호하는 데이터가 `Send`인 한 `Send`이므로 채널을 통해 `Mutex`를 보낼 수 있습니다. `Ticket`의 경우 그렇습니다.
+  동시에 `Mutex`를 `TicketStore`에서 이동하거나 복제할 수 없습니다.
 
-How can we solve this conundrum?\
-We need to look at the problem from a different angle.
-To lock a `Mutex`, we don't need an owned value. A shared reference is enough, since `Mutex` uses internal mutability:
+이 딜레마를 어떻게 해결할 수 있을까요?
+문제를 다른 각도에서 봐야 합니다.
+`Mutex`를 잠그기 위해 소유된 값이 필요하지 않습니다. `Mutex`는 내부 가변성을 사용하므로 공유 참조만으로 충분합니다:
 
 ```rust
 impl<T> Mutex<T> {
-    // `&self`, not `self`!
+    // `&self`, `self`가 아닙니다!
     pub fn lock(&self) -> LockResult<MutexGuard<'_, T>> {
-        // Implementation details
+        // 구현 세부 사항
     }
 }
 ```
 
-It is therefore enough to send a shared reference to the client.\
-We can't do that directly, though, because the reference would have to be `'static` and that's not the case.\
-In a way, we need an "owned shared reference". It turns out that Rust has a type that fits the bill: `Arc`.
+따라서 클라이언트에게 공유 참조를 보내는 것으로 충분합니다.
+하지만 참조가 `'static`이어야 하는데 그렇지 않으므로 직접 그렇게 할 수는 없습니다.
+어떤 면에서 "소유된 공유 참조"가 필요합니다. Rust에는 이 요구 사항을 충족하는 타입인 `Arc`가 있습니다.
 
-## `Arc` to the rescue
+## `Arc`가 구원합니다
 
-`Arc` stands for **atomic reference counting**.\
-`Arc` wraps around a value and keeps track of how many references to the value exist.
-When the last reference is dropped, the value is deallocated.\
-The value wrapped in an `Arc` is immutable: you can only get shared references to it.
+`Arc`는 **원자적 참조 카운팅**의 약자입니다.
+`Arc`는 값을 래핑하고 값에 대한 참조 수를 추적합니다.
+마지막 참조가 삭제되면 값은 할당 해제됩니다.
+`Arc`에 래핑된 값은 불변입니다: 공유 참조만 얻을 수 있습니다.
 
 ```rust
 use std::sync::Arc;
@@ -194,33 +177,30 @@ use std::sync::Arc;
 let data: Arc<u32> = Arc::new(0);
 let data_clone = Arc::clone(&data);
 
-// `Arc<T>` implements `Deref<T>`, so can convert 
-// a `&Arc<T>` to a `&T` using deref coercion
+// `Arc<T>`는 `Deref<T>`를 구현하므로,
+// 역참조 강제 변환을 사용하여 `&Arc<T>`를 `&T`로 변환할 수 있습니다.
 let data_ref: &u32 = &data;
 ```
 
-If you're having a déjà vu moment, you're right: `Arc` sounds very similar to `Rc`, the reference-counted pointer we
-introduced when talking about interior mutability. The difference is thread-safety: `Rc` is not `Send`, while `Arc` is.
-It boils down to the way the reference count is implemented: `Rc` uses a "normal" integer, while `Arc` uses an
-**atomic** integer, which can be safely shared and modified across threads.
+데자뷰를 느끼셨다면 맞습니다: `Arc`는 내부 가변성에 대해 이야기할 때 소개했던 참조 카운트 포인터인 `Rc`와 매우 유사하게 들립니다. 차이점은 스레드 안전성입니다: `Rc`는 `Send`가 아닌 반면, `Arc`는 `Send`입니다.
+이는 참조 카운트가 구현되는 방식에 달려 있습니다: `Rc`는 "일반" 정수를 사용하는 반면, `Arc`는 스레드 간에 안전하게 공유하고 수정할 수 있는 **원자적** 정수를 사용합니다.
 
 ## `Arc<Mutex<T>>`
 
-If we pair `Arc` with `Mutex`, we finally get a type that:
+`Arc`를 `Mutex`와 짝지으면 마침내 다음을 수행하는 타입을 얻게 됩니다:
 
-- Can be sent between threads, because:
-  - `Arc` is `Send` if `T` is `Send`, and
-  - `Mutex` is `Send` if `T` is `Send`.
-  - `T` is `Ticket`, which is `Send`.
-- Can be cloned, because `Arc` is `Clone` no matter what `T` is.
-  Cloning an `Arc` increments the reference count, the data is not copied.
-- Can be used to modify the data it wraps, because `Arc` lets you get a shared
-  reference to `Mutex<T>` which can in turn be used to acquire a lock.
+- 스레드 간에 전송될 수 있습니다. 왜냐하면:
+  - `Arc`는 `T`가 `Send`이면 `Send`이고,
+  - `Mutex`는 `T`가 `Send`이면 `Send`입니다.
+  - `T`는 `Ticket`이며, `Send`입니다.
+- `Arc`는 `T`가 무엇이든 `Clone`이므로 복제될 수 있습니다.
+  복제하면 참조 카운트가 증가하며, 데이터는 복사되지 않습니다.
+- 래핑하는 데이터를 수정하는 데 사용될 수 있습니다. `Arc`를 사용하면 `Mutex<T>`에 대한 공유 참조를 얻을 수 있으며, 이는 다시 잠금을 획득하는 데 사용될 수 있기 때문입니다.
 
-We have all the pieces we need to implement the locking strategy for our ticket store.
+티켓 저장소에 대한 잠금 전략을 구현하는 데 필요한 모든 조각을 갖추었습니다.
 
-## Further reading
+## 추가 자료
 
-- We won't be covering the details of atomic operations in this course, but you can find more information
-  [in the `std` documentation](https://doc.rust-lang.org/std/sync/atomic/index.html) as well as in the
-  ["Rust atomics and locks" book](https://marabos.nl/atomics/).
+- 이 과정에서는 원자적 작업의 세부 사항을 다루지 않지만,
+  [`std` 문서](https://doc.rust-lang.org/std/sync/atomic/index.html) 및
+  ["Rust atomics and locks" 책](https://marabos.nl/atomics/)에서 더 많은 정보를 찾을 수 있습니다.

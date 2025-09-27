@@ -1,51 +1,45 @@
-# Syntax
+# 구문
 
 <div class="warning">
 
-Don't jump ahead!\
-Complete the exercise for the previous section before you start this one.\
-It's located in `exercises/01_intro/00_welcome`, in the [course GitHub's repository](https://github.com/mainmatter/100-exercises-to-learn-rust).\
-Use [`wr`](00_welcome.md#wr-the-workshop-runner) to start the course and verify your solutions.
+앞서가지 마세요!\n이 섹션을 시작하기 전에 이전 섹션의 연습 문제를 완료하세요.\n[과정 GitHub 저장소](https://github.com/mainmatter/100-exercises-to-learn-rust)의 `exercises/01_intro/00_welcome`에 있습니다.\n[`wr`](00_welcome.md#wr-the-workshop-runner)을 사용하여 과정을 시작하고 해결책을 확인하세요.
 
 </div>
 
-The previous task doesn't even qualify as an exercise, but it already exposed you to quite a bit of Rust **syntax**.
-We won't cover every single detail of Rust's syntax used in the previous exercise.
-Instead, we'll cover _just enough_ to keep going without getting stuck in the details.\
-One step at a time!
+이전 과제는 연습 문제라고 하기도 어렵지만, 이미 상당한 양의 Rust **구문**에 노출되었습니다. 
+이전 연습 문제에서 사용된 Rust 구문의 모든 세부 사항을 다루지는 않을 것입니다.
+대신, 세부 사항에 얽매이지 않고 계속 진행할 수 있을 만큼만 다룰 것입니다.\n한 번에 한 걸음씩!
 
-## Comments
+## 주석
 
-You can use `//` for single-line comments:
+한 줄 주석에는 `//`를 사용할 수 있습니다:
 
 ```rust
-// This is a single-line comment
-// Followed by another single-line comment
+// 이것은 한 줄 주석입니다
+// 또 다른 한 줄 주석이 이어집니다
 ```
 
-## Functions
+## 함수
 
-Functions in Rust are defined using the `fn` keyword, followed by the function's name, its input parameters, and its
-return type.
-The function's body is enclosed in curly braces `{}`.
+Rust의 함수는 `fn` 키워드를 사용하여 정의되며, 그 뒤에 함수 이름, 입력 매개변수 및 반환 타입이 옵니다.
+함수 본문은 중괄호 `{}`로 묶습니다.
 
-In previous exercise, you saw the `greeting` function:
+이전 연습 문제에서는 `greeting` 함수를 보았습니다:
 
 ```rust
-// `fn` <function_name> ( <input params> ) -> <return_type> { <body> }
+// `fn` <함수_이름> ( <입력_매개변수> ) -> <반환_타입> { <본문> }
 fn greeting() -> &'static str {
-    // TODO: fix me 👇
+    // TODO: 여기를 수정하세요 👇
     "I'm ready to __!"
 }
 ```
 
-`greeting` has no input parameters and returns a reference to a string slice (`&'static str`).
+`greeting`은 입력 매개변수가 없으며 문자열 슬라이스에 대한 참조(`&'static str`)를 반환합니다.
 
-### Return type
+### 반환 타입
 
-The return type can be omitted from the signature if the function doesn't return anything (i.e. if it returns `()`,
-Rust's unit type).
-That's what happened with the `test_welcome` function:
+함수가 아무것도 반환하지 않는 경우(즉, Rust의 단위 타입인 `()`를 반환하는 경우) 시그니처에서 반환 타입을 생략할 수 있습니다.
+`test_welcome` 함수에서 그랬던 것처럼요:
 
 ```rust
 fn test_welcome() {
@@ -53,63 +47,60 @@ fn test_welcome() {
 }
 ```
 
-The above is equivalent to:
+위 코드는 다음과 동일합니다:
 
 ```rust
-// Spelling out the unit return type explicitly
+// 단위 반환 타입을 명시적으로 표기
 //                   👇
 fn test_welcome() -> () {
     assert_eq!(greeting(), "I'm ready to learn Rust!");
 }
 ```
 
-### Returning values
+### 값 반환하기
 
-The last expression in a function is implicitly returned:
+함수의 마지막 표현식은 암시적으로 반환됩니다:
 
 ```rust
 fn greeting() -> &'static str {
-    // This is the last expression in the function
-    // Therefore its value is returned by `greeting`
+    // 이것은 함수의 마지막 표현식입니다
+    // 따라서 그 값은 `greeting`에 의해 반환됩니다
     "I'm ready to learn Rust!"
 }
 ```
 
-You can also use the `return` keyword to return a value early:
+`return` 키워드를 사용하여 값을 조기에 반환할 수도 있습니다:
 
 ```rust
 fn greeting() -> &'static str {
-    // Notice the semicolon at the end of the line!
+    // 줄 끝에 세미콜론을 주목하세요!
     return "I'm ready to learn Rust!";
 }
 ```
 
-It is considered idiomatic to omit the `return` keyword when possible.
+가능한 경우 `return` 키워드를 생략하는 것이 관용적으로 간주됩니다.
 
-### Input parameters
+### 입력 매개변수
 
-Input parameters are declared inside the parentheses `()` that follow the function's name.\
-Each parameter is declared with its name, followed by a colon `:`, followed by its type.
+입력 매개변수는 함수 이름 뒤에 오는 괄호 `()` 안에 선언됩니다.\n각 매개변수는 이름, 콜론 `:`, 그리고 타입 순으로 선언됩니다.
 
-For example, the `greet` function below takes a `name` parameter of type `&str` (a "string slice"):
+예를 들어, 아래의 `greet` 함수는 `&str` 타입("문자열 슬라이스")의 `name` 매개변수를 받습니다:
 
 ```rust
-// An input parameter
+// 입력 매개변수
 //        👇
 fn greet(name: &str) -> String {
     format!("Hello, {}!", name)
 }
 ```
 
-If there are multiple input parameters, they must be separated with commas.
+입력 매개변수가 여러 개인 경우 쉼표로 구분해야 합니다.
 
-### Type annotations
+### 타입 어노테이션
 
-Since we've been mentioned "types" a few times, let's state it clearly: Rust is a **statically typed language**.\
-Every single value in Rust has a type and that type must be known to the compiler at compile-time.
+"타입"에 대해 몇 번 언급했으므로 명확히 합시다: Rust는 **정적 타입 언어**입니다.\nRust의 모든 값은 타입을 가지며, 그 타입은 컴파일 타임에 컴파일러에게 알려져야 합니다.
 
-Types are a form of **static analysis**.\
-You can think of a type as a **tag** that the compiler attaches to every value in your program. Depending on the
-tag, the compiler can enforce different rules—e.g. you can't add a string to a number, but you can add two numbers
-together.
-If leveraged correctly, types can prevent whole classes of runtime bugs.
+타입은 **정적 분석**의 한 형태입니다.\n타입을 프로그램의 모든 값에 컴파일러가 붙이는 **태그**라고 생각할 수 있습니다. 태그에 따라 컴파일러는 다른 규칙을 적용할 수 있습니다. 예를 들어, 문자열을 숫자에 더할 수는 없지만 두 숫자를 더할 수는 있습니다.
+올바르게 활용하면 타입은 전체 클래스의 런타임 버그를 예방할 수 있습니다.
+
+```

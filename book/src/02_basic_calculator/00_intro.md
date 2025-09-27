@@ -1,16 +1,15 @@
-# A Basic Calculator
+# 기본 계산기
 
-In this chapter we'll learn how to use Rust as a **calculator**.\
-It might not sound like much, but it'll give us a chance to cover a lot of Rust's basics, such as:
+이 장에서는 Rust를 **계산기**로 사용하는 방법을 배웁니다.
+별거 아닌 것처럼 들릴 수 있지만, 이를 통해 다음과 같은 Rust의 많은 기본 사항을 다룰 기회를 갖게 될 것입니다:
 
-- How to define and call functions
-- How to declare and use variables
-- Primitive types (integers and booleans)
-- Arithmetic operators (including overflow and underflow behavior)
-- Comparison operators
-- Control flow
-- Panics
+- 함수 정의 및 호출 방법
+- 변수 선언 및 사용 방법
+- 기본 타입 (정수 및 불리언)
+- 산술 연산자 (오버플로우 및 언더플로우 동작 포함)
+- 비교 연산자
+- 제어 흐름
+- 패닉
 
-Nailing the basics with a few exercises will get the language flowing under your fingers.
-When we move on to more complex topics, such as traits and ownership, you'll be able to focus on the new concepts
-without getting bogged down by the syntax or other trivial details.
+몇 가지 연습 문제로 기본을 다지면 손가락에 언어가 익숙해질 것입니다.
+특성 및 소유권과 같은 더 복잡한 주제로 넘어갈 때, 구문이나 다른 사소한 세부 사항에 얽매이지 않고 새로운 개념에 집중할 수 있게 될 것입니다.

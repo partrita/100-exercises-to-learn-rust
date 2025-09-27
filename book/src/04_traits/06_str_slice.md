@@ -1,54 +1,51 @@
-# String slices
+# 문자열 슬라이스
 
-Throughout the previous chapters you've seen quite a few **string literals** being used in the code,
-like `"To-Do"` or `"A ticket description"`.
-They were always followed by a call to `.to_string()` or `.into()`. It's time to understand why!
+이전 챕터에서 `"To-Do"`나 `"A ticket description"`과 같은 **문자열 리터럴**이 코드에서 꽤 많이 사용되는 것을 보셨을 겁니다.
+항상 `.to_string()`이나 `.into()` 호출이 뒤따랐습니다. 이제 그 이유를 이해할 시간입니다!
 
-## String literals
+## 문자열 리터럴
 
-You define a string literal by enclosing the raw text in double quotes:
+원시 텍스트를 큰따옴표로 묶어 문자열 리터럴을 정의합니다:
 
 ```rust
 let s = "Hello, world!";
 ```
 
-The type of `s` is `&str`, a **reference to a string slice**.
+`s`의 타입은 `&str`이며, **문자열 슬라이스에 대한 참조**입니다.
 
-## Memory layout
+## 메모리 레이아웃
 
-`&str` and `String` are different types—they're not interchangeable.\
-Let's recall the memory layout of a `String` from our
-[previous exploration](../03_ticket_v1/09_heap.md).
-If we run:
+`&str`과 `String`은 다른 타입이며, 서로 교환할 수 없습니다.
+[이전 탐색](../03_ticket_v1/09_heap.md)에서 `String`의 메모리 레이아웃을 다시 떠올려 봅시다.
+다음을 실행하면:
 
 ```rust
 let mut s = String::with_capacity(5);
 s.push_str("Hello");
 ```
 
-we'll get this scenario in memory:
+메모리에서 다음과 같은 시나리오를 얻게 됩니다:
 
 ```text
       +---------+--------+----------+
-Stack | pointer | length | capacity | 
+스택  | 포인터  | 길이   | 용량     | 
       |  |      |   5    |    5     |
       +--|------+--------+----------+
          |
          |
          v
        +---+---+---+---+---+
-Heap:  | H | e | l | l | o |
+힙:    | H | e | l | l | o |
        +---+---+---+---+---+
 ```
 
-If you remember, we've [also examined](../03_ticket_v1/10_references_in_memory.md)
-how a `&String` is laid out in memory:
+기억하신다면, 우리는 [또한](../03_ticket_v1/10_references_in_memory.md) `&String`이 메모리에 어떻게 배치되는지 살펴보았습니다:
 
 ```text
      --------------------------------------
      |                                    |         
 +----v----+--------+----------+      +----|----+
-| pointer | length | capacity |      | pointer |
+| 포인터  | 길이   | 용량     |      | 포인터  |
 |    |    |   5    |    5     |      |         |
 +----|----+--------+----------+      +---------+
      |        s                          &s 
@@ -59,59 +56,56 @@ how a `&String` is laid out in memory:
    +---+---+---+---+---+
 ```
 
-`&String` points to the memory location where the `String`'s metadata is stored.\
-If we follow the pointer, we get to the heap-allocated data. In particular, we get to the first byte of the string, `H`.
+`&String`은 `String`의 메타데이터가 저장된 메모리 위치를 가리킵니다.
+포인터를 따라가면 힙에 할당된 데이터에 도달합니다. 특히, 문자열의 첫 번째 바이트인 `H`에 도달합니다.
 
-What if we wanted a type that represents a **substring** of `s`? E.g. `ello` in `Hello`?
+`s`의 **부분 문자열**을 나타내는 타입을 원한다면 어떻게 해야 할까요? 예를 들어 `Hello`의 `ello`처럼요?
 
-## String slices
+## 문자열 슬라이스
 
-A `&str` is a **view** into a string, a **reference** to a sequence of UTF-8 bytes stored elsewhere.
-You can, for example, create a `&str` from a `String` like this:
+A `&str`은 문자열에 대한 **뷰**이며, 다른 곳에 저장된 UTF-8 바이트 시퀀스에 대한 **참조**입니다.
+예를 들어, 다음과 같이 `String`에서 `&str`을 만들 수 있습니다:
 
 ```rust
 let mut s = String::with_capacity(5);
 s.push_str("Hello");
-// Create a string slice reference from the `String`, 
-// skipping the first byte.
+// `String`에서 문자열 슬라이스 참조를 만듭니다, 
+// 첫 번째 바이트를 건너뜁니다.
 let slice: &str = &s[1..];
 ```
 
-In memory, it'd look like this:
+메모리에서는 다음과 같이 보일 것입니다:
 
 ```text
                     s                              slice
       +---------+--------+----------+      +---------+--------+
-Stack | pointer | length | capacity |      | pointer | length |
+스택  | 포인터  | 길이   | 용량     |      | 포인터  | 길이   |
       |    |    |   5    |    5     |      |    |    |   4    |
       +----|----+--------+----------+      +----|----+--------+
            |        s                           |  
            |                                    |
            v                                    | 
          +---+---+---+---+---+                  |
-Heap:    | H | e | l | l | o |                  |
+힙:      | H | e | l | l | o |                  |
          +---+---+---+---+---+                  |
                ^                                |
                |                                |
                +--------------------------------+
 ```
 
-`slice` stores two pieces of information on the stack:
+`slice`는 스택에 두 가지 정보를 저장합니다:
 
-- A pointer to the first byte of the slice.
-- The length of the slice.
+- 슬라이스의 첫 번째 바이트에 대한 포인터.
+- 슬라이스의 길이.
 
-`slice` doesn't own the data, it just points to it: it's a **reference** to the `String`'s heap-allocated data.\
-When `slice` is dropped, the heap-allocated data won't be deallocated, because it's still owned by `s`.
-That's why `slice` doesn't have a `capacity` field: it doesn't own the data, so it doesn't need to know how much
-space it was allocated for it; it only cares about the data it references.
+`slice`는 데이터를 소유하지 않고 단지 가리킬 뿐입니다: `String`의 힙 할당 데이터에 대한 **참조**입니다.
+`slice`가 삭제될 때, 힙 할당 데이터는 `s`가 여전히 소유하고 있기 때문에 해제되지 않습니다.
+이것이 `slice`에 `capacity` 필드가 없는 이유입니다: 데이터를 소유하지 않으므로 할당된 공간의 양을 알 필요가 없습니다. 참조하는 데이터에만 관심이 있습니다.
 
 ## `&str` vs `&String`
 
-As a rule of thumb, use `&str` rather than `&String` whenever you need a reference to textual data.\
-`&str` is more flexible and generally considered more idiomatic in Rust code.
+경험상, 텍스트 데이터에 대한 참조가 필요할 때마다 `&String` 대신 `&str`을 사용하십시오.
+`&str`은 더 유연하며 일반적으로 Rust 코드에서 더 관용적으로 간주됩니다.
 
-If a method returns a `&String`, you're promising that there is heap-allocated UTF-8 text somewhere that
-**matches exactly** the one you're returning a reference to.\
-If a method returns a `&str`, instead, you have a lot more freedom: you're just saying that _somewhere_ there's a
-bunch of text data and that a subset of it matches what you need, therefore you're returning a reference to it.
+메소드가 `&String`을 반환하면, 반환하는 참조와 **정확히 일치하는** 힙 할당 UTF-8 텍스트가 어딘가에 있다는 것을 약속하는 것입니다.
+대신 메소드가 `&str`을 반환하면 훨씬 더 많은 자유가 있습니다: _어딘가에_ 텍스트 데이터 묶음이 있고 그 중 일부가 필요한 것과 일치하므로 해당 부분에 대한 참조를 반환한다고 말하는 것뿐입니다.

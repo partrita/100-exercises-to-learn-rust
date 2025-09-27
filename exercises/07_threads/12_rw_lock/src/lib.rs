@@ -1,5 +1,5 @@
-// TODO: Replace `Mutex` with `RwLock` in the `TicketStore` struct and
-//  all other relevant places to allow multiple readers to access the ticket store concurrently.
+// TODO: `TicketStore` 구조체와 다른 모든 관련 위치에서 `Mutex`를 `RwLock`으로 교체하여
+//  여러 리더가 동시에 티켓 저장소에 접근할 수 있도록 하세요.
 use std::sync::mpsc::{sync_channel, Receiver, SyncSender, TrySendError};
 use std::sync::{Arc, Mutex};
 
@@ -78,8 +78,8 @@ pub fn server(receiver: Receiver<Command>) {
                 let _ = response_channel.send(ticket);
             }
             Err(_) => {
-                // There are no more senders, so we can safely break
-                // and shut down the server.
+                // 더 이상 송신자가 없으므로 안전하게 중단하고
+                // 서버를 종료할 수 있습니다.
                 break;
             }
         }

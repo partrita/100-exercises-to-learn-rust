@@ -1,6 +1,6 @@
-# Generics and associated types
+# 제네릭과 연관 타입
 
-Let's re-examine the definition for two of the traits we studied so far, `From` and `Deref`:
+지금까지 공부한 두 가지 트레이트인 `From`과 `Deref`의 정의를 다시 살펴봅시다:
 
 ```rust
 pub trait From<T> {
@@ -14,28 +14,25 @@ pub trait Deref {
 }
 ```
 
-They both feature type parameters.\
-In the case of `From`, it's a generic parameter, `T`.\
-In the case of `Deref`, it's an associated type, `Target`.
+둘 다 타입 매개변수를 특징으로 합니다.
+`From`의 경우, 제네릭 매개변수인 `T`입니다.
+`Deref`의 경우, 연관 타입인 `Target`입니다.
 
-What's the difference? Why use one over the other?
+차이점은 무엇일까요? 왜 하나를 다른 것보다 사용할까요?
 
-## At most one implementation
+## 최대 하나의 구현
 
-Due to how deref coercion works, there can only be one "target" type for a given type. E.g. `String` can
-only deref to `str`.
-It's about avoiding ambiguity: if you could implement `Deref` multiple times for a type,
-which `Target` type should the compiler choose when you call a `&self` method?
+역참조 강제 변환이 작동하는 방식 때문에 주어진 타입에 대해 단 하나의 "대상" 타입만 있을 수 있습니다. 예를 들어, `String`은 `str`로만 역참조할 수 있습니다.
+이것은 모호함을 피하기 위함입니다: 타입에 대해 `Deref`를 여러 번 구현할 수 있다면, `&self` 메소드를 호출할 때 컴파일러는 어떤 `Target` 타입을 선택해야 할까요?
 
-That's why `Deref` uses an associated type, `Target`.\
-An associated type is uniquely determined **by the trait implementation**.
-Since you can't implement `Deref` more than once, you'll only be able to specify one `Target` for a given type
-and there won't be any ambiguity.
+이것이 `Deref`가 연관 타입인 `Target`을 사용하는 이유입니다.
+연관 타입은 **트레이트 구현에 의해** 고유하게 결정됩니다.
+`Deref`를 두 번 이상 구현할 수 없으므로 주어진 타입에 대해 하나의 `Target`만 지정할 수 있으며 모호함이 없습니다.
 
-## Generic traits
+## 제네릭 트레이트
 
-On the other hand, you can implement `From` multiple times for a type, **as long as the input type `T` is different**.
-For example, you can implement `From` for `WrappingU32` using both `u32` and `u16` as input types:
+반면에, **입력 타입 `T`가 다른 한** 타입에 대해 `From`을 여러 번 구현할 수 있습니다.
+예를 들어, `u32`와 `u16`을 모두 입력 타입으로 사용하여 `WrappingU32`에 대해 `From`을 구현할 수 있습니다:
 
 ```rust
 impl From<u32> for WrappingU32 {
@@ -51,12 +48,12 @@ impl From<u16> for WrappingU32 {
 }
 ```
 
-This works because `From<u16>` and `From<u32>` are considered **different traits**.\
-There is no ambiguity: the compiler can determine which implementation to use based on type of the value being converted.
+`From<u16>`과 `From<u32>`가 **다른 트레이트**로 간주되기 때문에 이것은 작동합니다.
+모호함이 없습니다: 컴파일러는 변환되는 값의 타입에 따라 어떤 구현을 사용할지 결정할 수 있습니다.
 
-## Case study: `Add`
+## 사례 연구: `Add`
 
-As a closing example, consider the `Add` trait from the standard library:
+마지막 예로, 표준 라이브러리의 `Add` 트레이트를 고려해 봅시다:
 
 ```rust
 pub trait Add<RHS = Self> {
@@ -66,15 +63,15 @@ pub trait Add<RHS = Self> {
 }
 ```
 
-It uses both mechanisms:
+두 가지 메커니즘을 모두 사용합니다:
 
-- it has a generic parameter, `RHS` (right-hand side), which defaults to `Self`
-- it has an associated type, `Output`, the type of the result of the addition
+- 제네릭 매개변수인 `RHS`(오른쪽 피연산자)가 있으며, 기본값은 `Self`입니다.
+- 연관 타입인 `Output`이 있으며, 덧셈 결과의 타입입니다.
 
 ### `RHS`
 
-`RHS` is a generic parameter to allow for different types to be added together.\
-For example, you'll find these two implementations in the standard library:
+`RHS`는 다른 타입들이 함께 더해질 수 있도록 하는 제네릭 매개변수입니다.
+예를 들어, 표준 라이브러리에서 다음 두 가지 구현을 찾을 수 있습니다:
 
 ```rust
 impl Add<u32> for u32 {
@@ -82,10 +79,9 @@ impl Add<u32> for u32 {
     
     fn add(self, rhs: u32) -> u32 {
       //                      ^^^
-      // This could be written as `Self::Output` instead.
-      // The compiler doesn't care, as long as the type you
-      // specify here matches the type you assigned to `Output` 
-      // right above.
+      // 이것은 대신 `Self::Output`으로 작성될 수 있습니다.
+      // 컴파일러는 여기서 지정한 타입이 바로 위에서 `Output`에
+      // 할당한 타입과 일치하는 한 신경 쓰지 않습니다.
       // [...]
     }
 }
@@ -99,21 +95,20 @@ impl Add<&u32> for u32 {
 }
 ```
 
-This allows the following code to compile:
+이를 통해 다음 코드가 컴파일될 수 있습니다:
 
 ```rust
 let x = 5u32 + &5u32 + 6u32;
 ```
 
-because `u32` implements `Add<&u32>` _as well as_ `Add<u32>`.
+because `u32`가 `Add<&u32>`와 `Add<u32>`를 모두 구현하기 때문입니다.
 
 ### `Output`
 
-`Output` represents the type of the result of the addition.
+`Output`은 덧셈 결과의 타입을 나타냅니다.
 
-Why do we need `Output` in the first place? Can't we just use `Self` as output, the type implementing `Add`?
-We could, but it would limit the flexibility of the trait. In the standard library, for example, you'll find
-this implementation:
+애초에 `Output`이 왜 필요할까요? `Add`를 구현하는 타입인 `Self`를 출력으로 사용할 수는 없을까요?
+할 수는 있지만, 트레이트의 유연성을 제한할 것입니다. 예를 들어, 표준 라이브러리에서는 다음 구현을 찾을 수 있습니다:
 
 ```rust
 impl Add<&u32> for &u32 {
@@ -125,22 +120,17 @@ impl Add<&u32> for &u32 {
 }
 ```
 
-The type they're implementing the trait for is `&u32`, but the result of the addition is `u32`.\
-It would be impossible[^flexible] to provide this implementation if `add` had to return `Self`, i.e. `&u32` in this case.
-`Output` lets `std` decouple the implementor from the return type, thus supporting this case.
+트레이트를 구현하는 타입은 `&u32`이지만, 덧셈의 결과는 `u32`입니다.
+`add`가 `Self`, 즉 이 경우 `&u32`를 반환해야 한다면 이 구현을 제공하는 것은 불가능할 것입니다[^flexible].
+`Output`을 사용하면 `std`가 구현자를 반환 타입과 분리하여 이 경우를 지원할 수 있습니다.
 
-On the other hand, `Output` can't be a generic parameter. The output type of the operation **must** be uniquely determined
-once the types of the operands are known. That's why it's an associated type: for a given combination of implementor
-and generic parameters, there is only one `Output` type.
+반면에, `Output`은 제네릭 매개변수가 될 수 없습니다. 연산의 출력 타입은 피연산자의 타입이 알려지면 **반드시** 고유하게 결정되어야 합니다. 이것이 연관 타입인 이유입니다: 구현자와 제네릭 매개변수의 주어진 조합에 대해 단 하나의 `Output` 타입만 있습니다.
 
-## Conclusion
+## 결론
 
-To recap:
+요약하자면:
 
-- Use an **associated type** when the type must be uniquely determined for a given trait implementation.
-- Use a **generic parameter** when you want to allow multiple implementations of the trait for the same type,
-  with different input types.
+- 주어진 트레이트 구현에 대해 타입이 고유하게 결정되어야 할 때 **연관 타입**을 사용하십시오.
+- 다른 입력 타입으로 동일한 타입에 대해 트레이트의 여러 구현을 허용하고 싶을 때 **제네릭 매개변수**를 사용하십시오.
 
-[^flexible]: Flexibility is rarely free: the trait definition is more complex due to `Output`, and implementors have to reason about
-what they want to return. The trade-off is only justified if that flexibility is actually needed. Keep that in mind
-when designing your own traits.
+[^flexible]: 유연성은 거의 공짜가 아닙니다: `Output` 때문에 트레이트 정의가 더 복잡해지고, 구현자는 무엇을 반환할지 고민해야 합니다. 그 유연성이 실제로 필요한 경우에만 절충안이 정당화됩니다. 자신만의 트레이트를 설계할 때 이 점을 명심하십시오.

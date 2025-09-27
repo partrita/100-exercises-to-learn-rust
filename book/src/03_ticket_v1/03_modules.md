@@ -1,124 +1,116 @@
-# Modules
+# 모듈
 
-The `new` method you've just defined is trying to enforce some **constraints** on the field values for `Ticket`.
-But are those invariants really enforced? What prevents a developer from creating a `Ticket`
-without going through `Ticket::new`?
+방금 정의한 `new` 메소드는 `Ticket`의 필드 값에 대한 몇 가지 **제약 조건**을 강제하려고 합니다.
+하지만 이러한 불변성이 정말로 강제될까요? 개발자가 `Ticket::new`를 거치지 않고 `Ticket`을 만드는 것을 막는 것은 무엇일까요?
 
-To get proper **encapsulation** you need to become familiar with two new concepts: **visibility** and **modules**.
-Let's start with modules.
+적절한 **캡슐화**를 얻으려면 **가시성**과 **모듈**이라는 두 가지 새로운 개념에 익숙해져야 합니다.
+모듈부터 시작하겠습니다.
 
-## What is a module?
+## 모듈이란 무엇인가요?
 
-In Rust a **module** is a way to group related code together, under a common namespace (i.e. the module's name).\
-You've already seen modules in action: the unit tests that verify the correctness of your code are defined in a
-different module, named `tests`.
+Rust에서 **모듈**은 관련 코드를 공통 네임스페이스(즉, 모듈의 이름) 아래에 함께 그룹화하는 방법입니다.
+이미 모듈이 작동하는 것을 보았습니다. 코드의 정확성을 확인하는 단위 테스트는 `tests`라는 다른 모듈에 정의되어 있습니다.
 
 ```rust
 #[cfg(test)]
 mod tests {
-    // [...]
+    // [...] 
 }
 ```
 
-## Inline modules
+## 인라인 모듈
 
-The `tests` module above is an example of an **inline module**: the module declaration (`mod tests`) and the module
-contents (the stuff inside `{ ... }`) are next to each other.
+위의 `tests` 모듈은 **인라인 모듈**의 예입니다. 모듈 선언(`mod tests`)과 모듈 내용(`{ ... }` 안에 있는 것)이 서로 옆에 있습니다.
 
-## Module tree
+## 모듈 트리
 
-Modules can be nested, forming a **tree** structure.\
-The root of the tree is the **crate** itself, which is the top-level module that contains all the other modules.
-For a library crate, the root module is usually `src/lib.rs` (unless its location has been customized).
-The root module is also known as the **crate root**.
+모듈은 중첩되어 **트리** 구조를 형성할 수 있습니다.
+트리의 루트는 **크레이트** 자체이며, 다른 모든 모듈을 포함하는 최상위 모듈입니다.
+라이브러리 크레이트의 경우 루트 모듈은 일반적으로 `src/lib.rs`입니다(위치가 사용자 정의되지 않은 경우).
+루트 모듈은 **크레이트 루트**라고도 합니다.
 
-The crate root can have submodules, which in turn can have their own submodules, and so on.
+크레이트 루트는 하위 모듈을 가질 수 있으며, 하위 모듈은 다시 자체 하위 모듈을 가질 수 있습니다.
 
-## External modules and the filesystem
+## 외부 모듈 및 파일 시스템
 
-Inline modules are useful for small pieces of code, but as your project grows you'll want to split your code into
-multiple files. In the parent module, you declare the existence of a submodule using the `mod` keyword.
+인라인 모듈은 작은 코드 조각에 유용하지만 프로젝트가 커지면 코드를 여러 파일로 분할하고 싶을 것입니다. 부모 모듈에서는 `mod` 키워드를 사용하여 하위 모듈의 존재를 선언합니다.
 
 ```rust
 mod dog;
 ```
 
-`cargo`, Rust's build tool, is then in charge of finding the file that contains
-the module implementation.\
-If your module is declared in the root of your crate (e.g. `src/lib.rs` or `src/main.rs`),
-`cargo` expects the file to be named either:
+`cargo`, Rust의 빌드 도구는 모듈 구현을 포함하는 파일을 찾는 역할을 합니다.
+모듈이 크레이트의 루트(예: `src/lib.rs` 또는 `src/main.rs`)에 선언된 경우, `cargo`는 파일 이름이 다음 중 하나일 것으로 예상합니다:
 
 - `src/<module_name>.rs`
 - `src/<module_name>/mod.rs`
 
-If your module is a submodule of another module, the file should be named:
+모듈이 다른 모듈의 하위 모듈인 경우 파일 이름은 다음과 같아야 합니다:
 
 - `[..]/<parent_module>/<module_name>.rs`
 - `[..]/<parent_module>/<module_name>/mod.rs`
 
-E.g. `src/animals/dog.rs` or `src/animals/dog/mod.rs` if `dog` is a submodule of `animals`.
+예: `dog`가 `animals`의 하위 모듈인 경우 `src/animals/dog.rs` 또는 `src/animals/dog/mod.rs`.
 
-Your IDE might help you create these files automatically when you declare a new module using the `mod` keyword.
+IDE는 `mod` 키워드를 사용하여 새 모듈을 선언할 때 이러한 파일을 자동으로 만드는 데 도움이 될 수 있습니다.
 
-## Item paths and `use` statements
+## 아이템 경로 및 `use` 문
 
-You can access items defined in the same module without any special syntax. You just use their name.
+동일한 모듈에 정의된 아이템은 특별한 구문 없이 접근할 수 있습니다. 그냥 이름을 사용하면 됩니다.
 
 ```rust
 struct Ticket {
-    // [...]
+    // [...] 
 }
 
-// No need to qualify `Ticket` in any way here
-// because we're in the same module
+// 여기서 `Ticket`을 어떤 식으로든 한정할 필요가 없습니다
+// 왜냐하면 우리는 같은 모듈에 있기 때문입니다
 fn mark_ticket_as_done(ticket: Ticket) {
-    // [...]
+    // [...] 
 }
 ```
 
-That's not the case if you want to access an entity from a different module.\
-You have to use a **path** pointing to the entity you want to access.
+다른 모듈의 엔티티에 접근하려면 그렇지 않습니다.
+접근하려는 엔티티를 가리키는 **경로**를 사용해야 합니다.
 
-You can compose the path in various ways:
+경로는 다양한 방법으로 구성할 수 있습니다:
 
-- starting from the root of the current crate, e.g. `crate::module_1::MyStruct`
-- starting from the parent module, e.g. `super::my_function`
-- starting from the current module, e.g. `sub_module_1::MyStruct`
+- 현재 크레이트의 루트에서 시작, 예: `crate::module_1::MyStruct`
+- 부모 모듈에서 시작, 예: `super::my_function`
+- 현재 모듈에서 시작, 예: `sub_module_1::MyStruct`
 
-Both `crate` and `super` are **keywords**.\
-`crate` refers to the root of the current crate, while `super` refers to the parent of the current module.
+`crate`와 `super`는 모두 **키워드**입니다.
+`crate`는 현재 크레이트의 루트를 참조하고, `super`는 현재 모듈의 부모를 참조합니다.
 
-Having to write the full path every time you want to refer to a type can be cumbersome.
-To make your life easier, you can introduce a `use` statement to bring the entity into scope.
+타입을 참조할 때마다 전체 경로를 작성해야 하는 것은 번거로울 수 있습니다.
+삶을 더 쉽게 만들기 위해 `use` 문을 도입하여 엔티티를 범위로 가져올 수 있습니다.
 
 ```rust
-// Bring `MyStruct` into scope
+// `MyStruct`를 범위로 가져오기
 use crate::module_1::module_2::MyStruct;
 
-// Now you can refer to `MyStruct` directly
+// 이제 `MyStruct`를 직접 참조할 수 있습니다
 fn a_function(s: MyStruct) {
-     // [...]
+     // [...] 
 }
 ```
 
-### Star imports
+### 별표 가져오기
 
-You can also import all the items from a module with a single `use` statement.
+단일 `use` 문으로 모듈의 모든 항목을 가져올 수도 있습니다.
 
 ```rust
 use crate::module_1::module_2::*;
 ```
 
-This is known as a **star import**.\
-It is generally discouraged because it can pollute the current namespace, making it hard to understand
-where each name comes from and potentially introducing name conflicts.\
-Nonetheless, it can be useful in some cases, like when writing unit tests. You might have noticed
-that most of our test modules start with a `use super::*;` statement to bring all the items from the parent module
-(the one being tested) into scope.
+이것은 **별표 가져오기**로 알려져 있습니다.
+현재 네임스페이스를 오염시켜 각 이름이 어디에서 왔는지 이해하기 어렵게 만들고 잠재적으로 이름 충돌을 일으킬 수 있으므로 일반적으로 권장되지 않습니다.
+그럼에도 불구하고 단위 테스트를 작성할 때와 같이 일부 경우에는 유용할 수 있습니다. 대부분의 테스트 모듈이 부모 모듈(테스트 대상 모듈)의 모든 항목을 범위로 가져오기 위해 `use super::*;` 문으로 시작하는 것을 눈치채셨을 것입니다.
 
-## Visualizing the module tree
+## 모듈 트리 시각화
 
-If you're struggling to picture the module tree of your project, you can try using
-[`cargo-modules`](https://crates.io/crates/cargo-modules) to visualize it!
+프로젝트의 모듈 트리를 상상하기 어렵다면 [`cargo-modules`](https://crates.io/crates/cargo-modules)를 사용하여 시각화해 보세요!
 
-Refer to their documentation for installation instructions and usage examples.
+설치 지침 및 사용 예제는 해당 문서를 참조하십시오.
+
+```

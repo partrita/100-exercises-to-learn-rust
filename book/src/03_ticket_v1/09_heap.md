@@ -1,78 +1,70 @@
-# Heap
+# 힙
 
-The stack is great, but it can't solve all our problems. What about data whose size is not known at compile time?
-Collections, strings, and other dynamically-sized data cannot be (entirely) stack-allocated.
-That's where the **heap** comes in.
+스택은 훌륭하지만 모든 문제를 해결할 수는 없습니다. 컴파일 타임에 크기를 알 수 없는 데이터는 어떻게 해야 할까요?
+컬렉션, 문자열 및 기타 동적으로 크기가 정해지는 데이터는 (전체적으로) 스택에 할당할 수 없습니다.
+이때 **힙**이 등장합니다.
 
-## Heap allocations
+## 힙 할당
 
-You can visualize the heap as a big chunk of memory—a huge array, if you will.\
-Whenever you need to store data on the heap, you ask a special program, the **allocator**, to reserve for you
-a subset of the heap. We call this interaction (and the memory you reserved) a **heap allocation**.
-If the allocation succeeds, the allocator will give you a **pointer** to the start of the reserved block.
+힙을 큰 메모리 덩어리, 즉 거대한 배열로 시각화할 수 있습니다.\
+힙에 데이터를 저장해야 할 때마다 특별한 프로그램인 **할당자**에게 힙의 일부를 예약해달라고 요청합니다. 이 상호 작용(및 예약한 메모리)을 **힙 할당**이라고 합니다.
+할당이 성공하면 할당자는 예약된 블록의 시작 부분에 대한 **포인터**를 제공합니다.
 
-## No automatic de-allocation
+## 자동 할당 해제 없음
 
-The heap is structured quite differently from the stack.\
-Heap allocations are not contiguous, they can be located anywhere inside the heap.
+힙은 스택과 상당히 다르게 구성되어 있습니다.\
+힙 할당은 연속적이지 않으며 힙 내부 어디에나 위치할 수 있습니다.
 
 ```
 +---+---+---+---+---+---+-...-+-...-+---+---+---+---+---+---+---+
-|  Allocation 1 | Free  | ... | ... |  Allocation N |    Free   |
+|  할당 1 |  여유 | ... | ... |  할당 N |    여유   |
 +---+---+---+---+---+---+ ... + ... +---+---+---+---+---+---+---+
 ```
 
-It's the allocator's job to keep track of which parts of the heap are in use and which are free.
-The allocator won't automatically free the memory you allocated, though: you need to be deliberate about it,
-calling the allocator again to **free** the memory you no longer need.
+힙의 어느 부분이 사용 중이고 어느 부분이 비어 있는지 추적하는 것은 할당자의 역할입니다.
+하지만 할당자는 할당한 메모리를 자동으로 해제하지 않습니다. 더 이상 필요하지 않은 메모리를 **해제**하기 위해 할당자를 다시 호출하여 의도적으로 처리해야 합니다.
 
-## Performance
+## 성능
 
-The heap's flexibility comes at a cost: heap allocations are **slower** than stack allocations.
-There's a lot more bookkeeping involved!\
-If you read articles about performance optimization you'll often be advised to minimize heap allocations
-and prefer stack-allocated data whenever possible.
+힙의 유연성에는 비용이 따릅니다. 힙 할당은 스택 할당보다 **느립니다**.
+훨씬 더 많은 장부 관리가 관련됩니다!\
+성능 최적화에 대한 기사를 읽으면 종종 힙 할당을 최소화하고 가능하면 스택 할당 데이터를 선호하라는 조언을 받게 될 것입니다.
 
-## `String`'s memory layout
+## `String`의 메모리 레이아웃
 
-When you create a local variable of type `String`,
-Rust is forced to allocate on the heap[^empty]: it doesn't know in advance how much text you're going to put in it,
-so it can't reserve the right amount of space on the stack.\
-But a `String` is not _entirely_ heap-allocated, it also keeps some data on the stack. In particular:
+`String` 타입의 지역 변수를 만들 때 Rust는 힙에 할당해야 합니다[^empty]. 어떤 텍스트를 넣을지 미리 알 수 없으므로 스택에 적절한 양의 공간을 예약할 수 없습니다.
+하지만 `String`은 _전체적으로_ 힙에 할당되는 것이 아니라 스택에도 일부 데이터를 유지합니다. 특히:
 
-- The **pointer** to the heap region you reserved.
-- The **length** of the string, i.e. how many bytes are in the string.
-- The **capacity** of the string, i.e. how many bytes have been reserved on the heap.
+- 예약한 힙 영역에 대한 **포인터**.
+- 문자열의 **길이**, 즉 문자열에 있는 바이트 수.
+- 문자열의 **용량**, 즉 힙에 예약된 바이트 수.
 
-Let's look at an example to understand this better:
+이를 더 잘 이해하기 위해 예제를 살펴봅시다:
 
 ```rust
 let mut s = String::with_capacity(5);
 ```
 
-If you run this code, memory will be laid out like this:
+이 코드를 실행하면 메모리는 다음과 같이 배치됩니다:
 
 ```
       +---------+--------+----------+
-Stack | pointer | length | capacity | 
+스택  | 포인터  | 길이   | 용량     |
       |  |      |   0    |    5     |
       +--|------+--------+----------+
          |
          |
          v
        +---+---+---+---+---+
-Heap:  | ? | ? | ? | ? | ? |
+힙:   | ? | ? | ? | ? | ? |
        +---+---+---+---+---+
 ```
 
-We asked for a `String` that can hold up to 5 bytes of text.\
-`String::with_capacity` goes to the allocator and asks for 5 bytes of heap memory. The allocator returns
-a pointer to the start of that memory block.\
-The `String` is empty, though. On the stack, we keep track of this information by distinguishing between
-the length and the capacity: this `String` can hold up to 5 bytes, but it currently holds 0 bytes of
-actual text.
+최대 5바이트의 텍스트를 담을 수 있는 `String`을 요청했습니다.
+`String::with_capacity`는 할당자로 가서 5바이트의 힙 메모리를 요청합니다. 할당자는 해당 메모리 블록의 시작 부분에 대한 포인터를 반환합니다.
+하지만 `String`은 비어 있습니다. 스택에서는 길이와 용량을 구별하여 이 정보를 추적합니다. 이 `String`은 최대 5바이트를 담을 수 있지만 현재는 0바이트의 실제 텍스트를 담고 있습니다.
 
-If you push some text into the `String`, the situation will change:
+`String`에 일부 텍스트를 푸시하면 상황이 바뀝니다:
 
 ```rust
 s.push_str("Hey");
@@ -80,63 +72,52 @@ s.push_str("Hey");
 
 ```
       +---------+--------+----------+
-Stack | pointer | length | capacity |
+스택  | 포인터  | 길이   | 용량     |
       |  |      |   3    |    5     |
       +--|  ----+--------+----------+
          |
          |
          v
        +---+---+---+---+---+
-Heap:  | H | e | y | ? | ? |
+힙:   | H | e | y | ? | ? |
        +---+---+---+---+---+
 ```
 
-`s` now holds 3 bytes of text. Its length is updated to 3, but capacity remains 5.
-Three of the five bytes on the heap are used to store the characters `H`, `e`, and `y`.
+`s`는 이제 3바이트의 텍스트를 담고 있습니다. 길이는 3으로 업데이트되지만 용량은 5로 유지됩니다.
+힙의 5바이트 중 3바이트는 문자 `H`, `e`, `y`를 저장하는 데 사용됩니다.
 
 ### `usize`
 
-How much space do we need to store pointer, length and capacity on the stack?\
-It depends on the **architecture** of the machine you're running on.
+스택에 포인터, 길이 및 용량을 저장하려면 얼마나 많은 공간이 필요할까요?
+이는 실행 중인 시스템의 **아키텍처**에 따라 다릅니다.
 
-Every memory location on your machine has an [**address**](https://en.wikipedia.org/wiki/Memory_address), commonly
-represented as an unsigned integer.
-Depending on the maximum size of the address space (i.e. how much memory your machine can address),
-this integer can have a different size. Most modern machines use either a 32-bit or a 64-bit address space.
+시스템의 모든 메모리 위치에는 일반적으로 부호 없는 정수로 표시되는 [**주소**](https://en.wikipedia.org/wiki/Memory_address)가 있습니다.
+주소 공간의 최대 크기(즉, 시스템이 주소 지정할 수 있는 메모리 양)에 따라 이 정수는 다른 크기를 가질 수 있습니다. 대부분의 최신 시스템은 32비트 또는 64비트 주소 공간을 사용합니다.
 
-Rust abstracts away these architecture-specific details by providing the `usize` type:
-an unsigned integer that's as big as the number of bytes needed to address memory on your machine.
-On a 32-bit machine, `usize` is equivalent to `u32`. On a 64-bit machine, it matches `u64`.
+Rust는 `usize` 타입을 제공하여 이러한 아키텍처별 세부 정보를 추상화합니다.
+`usize`는 시스템에서 메모리를 주소 지정하는 데 필요한 바이트 수만큼 큰 부호 없는 정수입니다.
+32비트 시스템에서 `usize`는 `u32`와 동일합니다. 64비트 시스템에서는 `u64`와 일치합니다.
 
-Capacity, length and pointers are all represented as `usize`s in Rust[^equivalence].
+용량, 길이 및 포인터는 모두 Rust에서 `usize`로 표시됩니다[^equivalence].
 
-### No `std::mem::size_of` for the heap
+### 힙에 대한 `std::mem::size_of` 없음
 
-`std::mem::size_of` returns the amount of space a type would take on the stack,
-which is also known as the **size of the type**.
+`std::mem::size_of`는 타입이 스택에서 차지하는 공간의 양을 반환하며, 이는 **타입의 크기**라고도 합니다.
 
-> What about the memory buffer that `String` is managing on the heap? Isn't that
-> part of the size of `String`?
+> `String`이 힙에서 관리하는 메모리 버퍼는 어떻습니까? 그것은 `String` 크기의 일부가 아닙니까?
 
-No!\
-That heap allocation is a **resource** that `String` is managing.
-It's not considered to be part of the `String` type by the compiler.
+아니요!
+해당 힙 할당은 `String`이 관리하는 **리소스**입니다.
+컴파일러는 이를 `String` 타입의 일부로 간주하지 않습니다.
 
-`std::mem::size_of` doesn't know (or care) about additional heap-allocated data
-that a type might manage or refer to via pointers, as is the case with `String`,
-therefore it doesn't track its size.
+`std::mem::size_of`는 `String`과 같이 타입이 포인터를 통해 관리하거나 참조할 수 있는 추가 힙 할당 데이터에 대해 알지 못하므로(또는 신경 쓰지 않으므로) 크기를 추적하지 않습니다.
 
-Unfortunately there is no equivalent of `std::mem::size_of` to measure the amount of
-heap memory that a certain value is allocating at runtime. Some types might
-provide methods to inspect their heap usage (e.g. `String`'s `capacity` method),
-but there is no general-purpose "API" to retrieve runtime heap usage in Rust.\
-You can, however, use a memory profiler tool (e.g. [DHAT](https://valgrind.org/docs/manual/dh-manual.html)
-or [a custom allocator](https://docs.rs/dhat/latest/dhat/)) to inspect the heap usage of your program.
+불행히도 특정 값이 런타임에 할당하는 힙 메모리 양을 측정하기 위한 `std::mem::size_of`에 해당하는 것은 없습니다. 일부 타입은 힙 사용량을 검사하는 메소드(예: `String`의 `capacity` 메소드)를 제공할 수 있지만 Rust에는 런타임 힙 사용량을 검색하기 위한 일반적인 "API"가 없습니다.
+그러나 메모리 프로파일러 도구(예: [DHAT](https://valgrind.org/docs/manual/dh-manual.html) 또는 [사용자 지정 할당자](https://docs.rs/dhat/latest/dhat/))를 사용하여 프로그램의 힙 사용량을 검사할 수 있습니다.
 
-[^empty]: `std` doesn't allocate if you create an **empty** `String` (i.e. `String::new()`).
-Heap memory will be reserved when you push data into it for the first time.
+[^empty]: `std`는 **빈** `String`(즉, `String::new()`)을 만들면 할당하지 않습니다.
+힙 메모리는 처음으로 데이터를 푸시할 때 예약됩니다.
 
-[^equivalence]: The size of a pointer depends on the operating system too.
-In certain environments, a pointer is **larger** than a memory address (e.g. [CHERI](https://web.archive.org/web/20240517051950/https://blog.acolyer.org/2019/05/28/cheri-abi/)).
-Rust makes the simplifying assumption that pointers are the same size as memory addresses,
-which is true for most modern systems you're likely to encounter.
+[^equivalence]: 포인터의 크기는 운영 체제에 따라 다릅니다.
+특정 환경에서는 포인터가 메모리 주소보다 **큽니다**(예: [CHERI](https://web.archive.org/web/20240517051950/https://blog.acolyer.org/2019/05/28/cheri-abi/)).
+Rust는 포인터가 메모리 주소와 크기가 같다는 단순화된 가정을 하며, 이는 여러분이 접할 가능성이 있는 대부분의 최신 시스템에서 사실입니다.

@@ -1,6 +1,6 @@
-# Traits
+# 트레이트
 
-Let's look again at our `Ticket` type:
+`Ticket` 타입을 다시 살펴봅시다:
 
 ```rust
 pub struct Ticket {
@@ -10,13 +10,13 @@ pub struct Ticket {
 }
 ```
 
-All our tests, so far, have been making assertions using `Ticket`'s fields.
+지금까지 모든 테스트는 `Ticket`의 필드를 사용하여 단언을 수행했습니다.
 
 ```rust
 assert_eq!(ticket.title(), "A new title");
 ```
 
-What if we wanted to compare two `Ticket` instances directly?
+두 `Ticket` 인스턴스를 직접 비교하고 싶다면 어떻게 해야 할까요?
 
 ```rust
 let ticket1 = Ticket::new(/* ... */);
@@ -24,7 +24,7 @@ let ticket2 = Ticket::new(/* ... */);
 ticket1 == ticket2
 ```
 
-The compiler will stop us:
+컴파일러가 우리를 막을 것입니다:
 
 ```text
 error[E0369]: binary operation `==` cannot be applied to type `Ticket`
@@ -38,20 +38,19 @@ error[E0369]: binary operation `==` cannot be applied to type `Ticket`
 note: an implementation of `PartialEq` might be missing for `Ticket`
 ```
 
-`Ticket` is a new type. Out of the box, there is **no behavior attached to it**.\
-Rust doesn't magically infer how to compare two `Ticket` instances just because they contain `String`s.
+`Ticket`은 새로운 타입입니다. 기본적으로 **어떠한 동작도 연결되어 있지 않습니다**.
+Rust는 `String`을 포함하고 있다는 이유만으로 두 `Ticket` 인스턴스를 비교하는 방법을 마술처럼 추론하지 않습니다.
 
-The Rust compiler is nudging us in the right direction though: it's suggesting that we might be missing an implementation
-of `PartialEq`. `PartialEq` is a **trait**!
+하지만 Rust 컴파일러는 우리를 올바른 방향으로 이끌고 있습니다. `PartialEq`의 구현이 누락되었을 수 있다고 제안합니다. `PartialEq`는 **트레이트**입니다!
 
-## What are traits?
+## 트레이트란 무엇인가요?
 
-Traits are Rust's way of defining **interfaces**.\
-A trait defines a set of methods that a type must implement to satisfy the trait's contract.
+트레이트는 Rust에서 **인터페이스**를 정의하는 방법입니다.
+트레이트는 타입이 트레이트의 계약을 만족시키기 위해 구현해야 하는 메소드 집합을 정의합니다.
 
-### Defining a trait
+### 트레이트 정의하기
 
-The syntax for a trait definition goes like this:
+트레이트 정의 구문은 다음과 같습니다:
 
 ```rust
 trait <TraitName> {
@@ -59,7 +58,7 @@ trait <TraitName> {
 }
 ```
 
-We might, for example, define a trait named `MaybeZero` that requires its implementors to define an `is_zero` method:
+예를 들어, 구현자에게 `is_zero` 메소드를 정의하도록 요구하는 `MaybeZero`라는 트레이트를 정의할 수 있습니다:
 
 ```rust
 trait MaybeZero {
@@ -67,20 +66,19 @@ trait MaybeZero {
 }
 ```
 
-### Implementing a trait
+### 트레이트 구현하기
 
-To implement a trait for a type we use the `impl` keyword, just like we do for regular[^inherent] methods,
-but the syntax is a bit different:
+타입에 대한 트레이트를 구현하려면 일반적인[^inherent] 메소드와 마찬가지로 `impl` 키워드를 사용하지만 구문이 약간 다릅니다:
 
 ```rust
 impl <TraitName> for <TypeName> {
     fn <method_name>(<parameters>) -> <return_type> {
-        // Method body
+        // 메소드 본문
     }
 }
 ```
 
-For example, to implement the `MaybeZero` trait for a custom number type, `WrappingU32`:
+예를 들어, 사용자 정의 숫자 타입인 `WrappingU32`에 대해 `MaybeZero` 트레이트를 구현하려면:
 
 ```rust
 pub struct WrappingU32 {
@@ -94,34 +92,33 @@ impl MaybeZero for WrappingU32 {
 }
 ```
 
-### Invoking a trait method
+### 트레이트 메소드 호출하기
 
-To invoke a trait method, we use the `.` operator, just like we do with regular methods:
+트레이트 메소드를 호출하려면 일반적인 메소드와 마찬가지로 `.` 연산자를 사용합니다:
 
 ```rust
 let x = WrappingU32 { inner: 5 };
 assert!(!x.is_zero());
 ```
 
-To invoke a trait method, two things must be true:
+트레이트 메소드를 호출하려면 두 가지가 사실이어야 합니다:
 
-- The type must implement the trait.
-- The trait must be in scope.
+- 타입이 트레이트를 구현해야 합니다.
+- 트레이트가 범위 내에 있어야 합니다.
 
-To satisfy the latter, you may have to add a `use` statement for the trait:
+후자를 만족시키려면 트레이트에 대한 `use` 문을 추가해야 할 수 있습니다:
 
 ```rust
 use crate::MaybeZero;
 ```
 
-This is not necessary if:
+다음과 같은 경우에는 필요하지 않습니다:
 
-- The trait is defined in the same module where the invocation occurs.
-- The trait is defined in the standard library's **prelude**.
-  The prelude is a set of traits and types that are automatically imported into every Rust program.
-  It's as if `use std::prelude::*;` was added at the beginning of every Rust module.
+- 트레이트가 호출이 발생하는 동일한 모듈에 정의된 경우.
+- 트레이트가 표준 라이브러리의 **프렐류드**에 정의된 경우.
+  프렐류드는 모든 Rust 프로그램에 자동으로 가져오는 트레이트 및 타입 집합입니다.
+  모든 Rust 모듈의 시작 부분에 `use std::prelude::*;`가 추가된 것과 같습니다.
 
-You can find the list of traits and types in the prelude in the
-[Rust documentation](https://doc.rust-lang.org/std/prelude/index.html).
+프렐류드의 트레이트 및 타입 목록은 [Rust 문서](https://doc.rust-lang.org/std/prelude/index.html)에서 찾을 수 있습니다.
 
-[^inherent]: A method defined directly on a type, without using a trait, is also known as an **inherent method**.
+[^inherent]: 트레이트를 사용하지 않고 타입에 직접 정의된 메소드는 **고유 메소드**라고도 합니다.

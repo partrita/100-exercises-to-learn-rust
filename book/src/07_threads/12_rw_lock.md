@@ -1,45 +1,40 @@
-# Readers and writers
+# 읽기 및 쓰기
 
-Our new `TicketStore` works, but its read performance is not great: there can only be one client at a time
-reading a specific ticket, because `Mutex<T>` doesn't distinguish between readers and writers.
+새로운 `TicketStore`는 작동하지만, 읽기 성능은 좋지 않습니다: `Mutex<T>`는 읽기자와 쓰기자를 구분하지 않으므로 특정 티켓을 한 번에 한 클라이언트만 읽을 수 있습니다.
 
-We can solve the issue by using a different locking primitive: `RwLock<T>`.\
-`RwLock<T>` stands for **read-write lock**. It allows **multiple readers** to access the data simultaneously,
-but only one writer at a time.
+다른 잠금 프리미티브인 `RwLock<T>`를 사용하여 이 문제를 해결할 수 있습니다.
+`RwLock<T>`는 **읽기-쓰기 잠금**을 의미합니다. **여러 읽기자**가 동시에 데이터에 접근할 수 있도록 허용하지만, 한 번에 한 쓰기자만 허용합니다.
 
-`RwLock<T>` has two methods to acquire a lock: `read` and `write`.\
-`read` returns a guard that allows you to read the data, while `write` returns a guard that allows you to modify it.
+`RwLock<T>`에는 잠금을 획득하는 두 가지 메소드가 있습니다: `read`와 `write`입니다.
+`read`는 데이터를 읽을 수 있는 가드를 반환하고, `write`는 데이터를 수정할 수 있는 가드를 반환합니다.
 
 ```rust
 use std::sync::RwLock;
 
-// An integer protected by a read-write lock
+// 읽기-쓰기 잠금으로 보호되는 정수
 let lock = RwLock::new(0);
 
-// Acquire a read lock on the RwLock
+// RwLock에 대한 읽기 잠금 획득
 let guard1 = lock.read().unwrap();
 
-// Acquire a **second** read lock
-// while the first one is still active
+// 첫 번째 잠금이 여전히 활성화되어 있는 동안
+// **두 번째** 읽기 잠금 획득
 let guard2 = lock.read().unwrap();
 ```
 
-## Trade-offs
+## 장단점
 
-On the surface, `RwLock<T>` seems like a no-brainer: it provides a superset of the functionality of `Mutex<T>`.
-Why would you ever use `Mutex<T>` if you can use `RwLock<T>` instead?
+표면적으로 `RwLock<T>`는 당연한 선택처럼 보입니다: `Mutex<T>`의 기능의 상위 집합을 제공합니다.
+`RwLock<T>`를 사용할 수 있다면 왜 `Mutex<T>`를 사용해야 할까요?
 
-There are two key reasons:
+두 가지 주요 이유가 있습니다:
 
-- Locking a `RwLock<T>` is more expensive than locking a `Mutex<T>`.\
-  This is because `RwLock<T>` has to keep track of the number of active readers and writers, while `Mutex<T>`
-  only has to keep track of whether the lock is held or not.
-  This performance overhead is not an issue if there are more readers than writers, but if the workload
-  is write-heavy `Mutex<T>` might be a better choice.
-- `RwLock<T>` can cause **writer starvation**.\
-  If there are always readers waiting to acquire the lock, writers might never get a chance to run.\
-  `RwLock<T>` doesn't provide any guarantees about the order in which readers and writers are granted access to the lock.
-  It depends on the policy implemented by the underlying OS, which might not be fair to writers.
+- `RwLock<T>`를 잠그는 것은 `Mutex<T>`를 잠그는 것보다 비용이 더 많이 듭니다.
+  이는 `RwLock<T>`가 활성 읽기자 및 쓰기자의 수를 추적해야 하는 반면, `Mutex<T>`는 잠금이 유지되는지 여부만 추적하면 되기 때문입니다.
+  읽기자가 쓰기자보다 많은 경우 이 성능 오버헤드는 문제가 되지 않지만, 워크로드가 쓰기 위주인 경우 `Mutex<T>`가 더 나은 선택일 수 있습니다.
+- `RwLock<T>`는 **쓰기자 기아**를 유발할 수 있습니다.
+  항상 잠금을 획득하기 위해 기다리는 읽기자가 있다면, 쓰기자는 실행될 기회를 얻지 못할 수 있습니다.
+  `RwLock<T>`는 읽기자와 쓰기자에게 잠금에 대한 접근 권한이 부여되는 순서에 대한 어떠한 보장도 제공하지 않습니다.
+  이는 기본 OS에서 구현된 정책에 따라 달라지며, 쓰기자에게 공정하지 않을 수 있습니다.
 
-In our case, we can expect the workload to be read-heavy (since most clients will be reading tickets, not modifying them),
-so `RwLock<T>` is a good choice.
+우리의 경우, 워크로드가 읽기 위주(대부분의 클라이언트가 티켓을 읽고 수정하지 않기 때문)일 것으로 예상되므로 `RwLock<T>`가 좋은 선택입니다.

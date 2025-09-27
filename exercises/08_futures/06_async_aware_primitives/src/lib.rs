@@ -1,9 +1,9 @@
-/// TODO: the code below will deadlock because it's using std's channels,
-///  which are not async-aware.
-///  Rewrite it to use `tokio`'s channels primitive (you'll have to touch
-///  the testing code too, yes).
+/// TODO: 아래 코드는 std의 채널을 사용하기 때문에 교착 상태에 빠집니다.
+///  std의 채널은 비동기를 인식하지 못합니다.
+///  `tokio`의 채널 프리미티브를 사용하도록 다시 작성하세요
+///  (네, 테스트 코드도 수정해야 합니다).
 ///
-/// Can you understand the sequence of events that can lead to a deadlock?
+/// 교착 상태로 이어질 수 있는 이벤트 순서를 이해할 수 있나요?
 use std::sync::mpsc;
 
 pub struct Message {
@@ -11,8 +11,8 @@ pub struct Message {
     response_channel: mpsc::Sender<Message>,
 }
 
-/// Replies with `pong` to any message it receives, setting up a new
-/// channel to continue communicating with the caller.
+/// 수신하는 모든 메시지에 `pong`으로 회신하고,
+/// 호출자와 계속 통신하기 위해 새 채널을 설정합니다.
 pub async fn pong(mut receiver: mpsc::Receiver<Message>) {
     loop {
         if let Ok(msg) = receiver.recv() {

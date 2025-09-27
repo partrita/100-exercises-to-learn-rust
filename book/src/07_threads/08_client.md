@@ -1,8 +1,6 @@
-# A dedicated `Client` type
+# 전용 `Client` 타입
 
-All the interactions from the client side have been fairly low-level: you have to
-manually create a response channel, build the command, send it to the server, and
-then call `recv` on the response channel to get the response.
+클라이언트 측의 모든 상호 작용은 상당히 저수준이었습니다: 응답 채널을 수동으로 생성하고, 명령을 구축하고, 서버로 보내고,
+그런 다음 응답 채널에서 `recv`를 호출하여 응답을 받아야 합니다.
 
-This is a lot of boilerplate code that could be abstracted away, and that's
-exactly what we're going to do in this exercise.
+이것은 추상화될 수 있는 많은 상용구 코드이며, 이 연습 문제에서 정확히 그렇게 할 것입니다.

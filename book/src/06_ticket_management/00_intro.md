@@ -1,18 +1,16 @@
-# Intro
+# 소개
 
-In the previous chapter we modelled `Ticket` in a vacuum: we defined its fields and their constraints, we learned
-how to best represent them in Rust, but we didn't consider how `Ticket` fits into a larger system.
-We'll use this chapter to build a simple workflow around `Ticket`, introducing a (rudimentary) management system to
-store and retrieve tickets.
+이전 챕터에서 우리는 `Ticket`을 진공 상태에서 모델링했습니다. 필드와 제약 조건을 정의하고 Rust에서 이를 가장 잘 표현하는 방법을 배웠지만, `Ticket`이 더 큰 시스템에 어떻게 들어맞는지 고려하지 않았습니다.
+이 챕터에서는 `Ticket`을 중심으로 간단한 워크플로우를 구축하고, 티켓을 저장하고 검색하는 (기초적인) 관리 시스템을 소개할 것입니다.
 
-The task will give us an opportunity to explore new Rust concepts, such as:
+이 작업은 다음과 같은 새로운 Rust 개념을 탐색할 기회를 제공할 것입니다:
 
-- Stack-allocated arrays
-- `Vec`, a growable array type
-- `Iterator` and `IntoIterator`, for iterating over collections
-- Slices (`&[T]`), to work with parts of a collection
-- Lifetimes, to describe how long references are valid
-- `HashMap` and `BTreeMap`, two key-value data structures
-- `Eq` and `Hash`, to compare keys in a `HashMap`
-- `Ord` and `PartialOrd`, to work with a `BTreeMap`
-- `Index` and `IndexMut`, to access elements in a collection
+- 스택 할당 배열
+- `Vec`, 확장 가능한 배열 타입
+- `Iterator` 및 `IntoIterator`, 컬렉션을 반복하기 위해
+- 슬라이스 (`&[T]`), 컬렉션의 일부로 작업하기 위해
+- 라이프타임, 참조가 유효한 기간을 설명하기 위해
+- `HashMap` 및 `BTreeMap`, 두 가지 키-값 데이터 구조
+- `Eq` 및 `Hash`, `HashMap`에서 키를 비교하기 위해
+- `Ord` 및 `PartialOrd`, `BTreeMap`으로 작업하기 위해
+- `Index` 및 `IndexMut`, 컬렉션의 요소에 접근하기 위해

@@ -1,18 +1,15 @@
-# Modelling A Ticket
+# 티켓 모델링
 
-The first chapter should have given you a good grasp over some of Rust's primitive types, operators and
-basic control flow constructs.\
-In this chapter we'll go one step further and cover what makes Rust truly unique: **ownership**.\
-Ownership is what enables Rust to be both memory-safe and performant, with no garbage collector.
+첫 번째 장에서는 Rust의 기본 타입, 연산자 및 기본 제어 흐름 구조에 대해 잘 이해하셨을 것입니다.
+이 장에서는 한 단계 더 나아가 Rust를 진정으로 독특하게 만드는 **소유권**에 대해 다룰 것입니다.
+소유권은 Rust가 가비지 컬렉터 없이 메모리 안전성과 성능을 모두 갖출 수 있게 해주는 것입니다.
 
-As our running example, we'll use a (JIRA-like) ticket, the kind you'd use to track bugs, features, or tasks in
-a software project.\
-We'll take a stab at modeling it in Rust. It'll be the first iteration—it won't be perfect nor very idiomatic
-by the end of the chapter. It'll be enough of a challenge though!\
-To move forward you'll have to pick up several new Rust concepts, such as:
+실행 예제로 소프트웨어 프로젝트에서 버그, 기능 또는 작업을 추적하는 데 사용하는 (JIRA와 유사한) 티켓을 사용할 것입니다.
+Rust에서 모델링을 시도해 볼 것입니다. 첫 번째 반복이 될 것입니다. 이 장이 끝날 때까지 완벽하거나 매우 관용적이지는 않을 것입니다. 하지만 충분한 도전이 될 것입니다!
+앞으로 나아가려면 다음과 같은 몇 가지 새로운 Rust 개념을 익혀야 합니다:
 
-- `struct`s, one of Rust's ways to define custom types
-- Ownership, references and borrowing
-- Memory management: stack, heap, pointers, data layout, destructors
-- Modules and visibility
-- Strings
+- `struct`s, Rust에서 사용자 정의 타입을 정의하는 방법 중 하나
+- 소유권, 참조 및 빌림
+- 메모리 관리: 스택, 힙, 포인터, 데이터 레이아웃, 소멸자
+- 모듈 및 가시성
+- 문자열

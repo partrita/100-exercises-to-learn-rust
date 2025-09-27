@@ -1,20 +1,18 @@
-# Traits
+# 트레이트
 
-In the previous chapter we covered the basics of Rust's type and ownership system.\
-It's time to dig deeper: we'll explore **traits**, Rust's take on interfaces.
+이전 장에서는 Rust의 타입 및 소유권 시스템의 기본 사항을 다루었습니다.\
+이제 더 깊이 파고들 시간입니다. Rust의 인터페이스 방식인 **트레이트**를 탐색해 보겠습니다.
 
-Once you learn about traits, you'll start seeing their fingerprints all over the place.\
-In fact, you've already seen traits in action throughout the previous chapter, e.g. `.into()` invocations as well
-as operators like `==` and `+`.
+트레이트에 대해 배우면 모든 곳에서 그 흔적을 보기 시작할 것입니다.\
+사실, 이전 장 전체에서 `.into()` 호출과 `==` 및 `+`와 같은 연산자 등 트레이트가 작동하는 것을 이미 보았습니다.
 
-On top of traits as a concept, we'll also cover some of the key traits that are defined in Rust's standard library:
+개념으로서의 트레이트 외에도 Rust의 표준 라이브러리에 정의된 몇 가지 주요 트레이트도 다룰 것입니다:
 
-- Operator traits (e.g. `Add`, `Sub`, `PartialEq`, etc.)
-- `From` and `Into`, for infallible conversions
-- `Clone` and `Copy`, for copying values
-- `Deref` and deref coercion
-- `Sized`, to mark types with a known size
-- `Drop`, for custom cleanup logic
+- 연산자 트레이트 (예: `Add`, `Sub`, `PartialEq` 등)
+- 오류 없는 변환을 위한 `From` 및 `Into`
+- 값 복사를 위한 `Clone` 및 `Copy`
+- `Deref` 및 역참조 강제 변환
+- 알려진 크기를 가진 타입을 표시하기 위한 `Sized`
+- 사용자 정의 정리 로직을 위한 `Drop`
 
-Since we'll be talking about conversions, we'll seize the opportunity to plug some of the "knowledge gaps"
-from the previous chapter—e.g. what is `"A title"`, exactly? Time to learn more about slices too!
+변환에 대해 이야기할 것이므로 이전 장의 "지식 격차" 중 일부를 메울 기회를 잡을 것입니다. 예를 들어, `"A title"`은 정확히 무엇일까요? 슬라이스에 대해서도 더 배울 시간입니다!

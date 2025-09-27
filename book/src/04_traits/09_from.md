@@ -1,6 +1,6 @@
-# `From` and `Into`
+# `From` 및 `Into`
 
-Let's go back to where our string journey started:
+문자열 여정이 시작된 곳으로 돌아가 봅시다:
 
 ```rust
 let ticket = Ticket::new(
@@ -10,11 +10,11 @@ let ticket = Ticket::new(
 );
 ```
 
-We now know enough to start unpacking what `.into()` is doing here.
+이제 `.into()`가 여기서 무엇을 하는지 분석할 만큼 충분히 알고 있습니다.
 
-## The problem
+## 문제점
 
-This is the signature of the `new` method:
+`new` 메소드의 시그니처는 다음과 같습니다:
 
 ```rust
 impl Ticket {
@@ -28,14 +28,13 @@ impl Ticket {
 }
 ```
 
-We've also seen that string literals (such as `"A title"`) are of type `&str`.\
-We have a type mismatch here: a `String` is expected, but we have a `&str`.
-No magical coercion will come to save us this time; we need **to perform a conversion**.
+또한 문자열 리터럴(예: `"A title"`)이 `&str` 타입이라는 것도 보았습니다.
+여기서 타입 불일치가 있습니다: `String`이 예상되지만 `&str`이 있습니다.
+이번에는 마법 같은 강제 변환이 우리를 구해주지 않을 것입니다. **변환을 수행해야 합니다**.
 
-## `From` and `Into`
+## `From` 및 `Into`
 
-The Rust standard library defines two traits for **infallible conversions**: `From` and `Into`,
-in the `std::convert` module.
+Rust 표준 라이브러리는 `std::convert` 모듈에서 **실패하지 않는 변환**을 위한 두 가지 트레이트인 `From`과 `Into`를 정의합니다.
 
 ```rust
 pub trait From<T>: Sized {
@@ -47,20 +46,19 @@ pub trait Into<T>: Sized {
 }
 ```
 
-These trait definitions showcase a few concepts that we haven't seen before: **supertraits** and **implicit trait bounds**.
-Let's unpack those first.
+이러한 트레이트 정의는 이전에 보지 못했던 몇 가지 개념을 보여줍니다: **슈퍼트레이트**와 **암시적 트레이트 바운드**입니다.
+먼저 그것들을 풀어봅시다.
 
-### Supertrait / Subtrait
+### 슈퍼트레이트 / 서브트레이트
 
-The `From: Sized` syntax implies that `From` is a **subtrait** of `Sized`: any type that
-implements `From` must also implement `Sized`.
-Alternatively, you could say that `Sized` is a **supertrait** of `From`.
+`From: Sized` 구문은 `From`이 `Sized`의 **서브트레이트**임을 의미합니다: `From`을 구현하는 모든 타입은 `Sized`도 구현해야 합니다.
+또는 `Sized`가 `From`의 **슈퍼트레이트**라고 말할 수도 있습니다.
 
-### Implicit trait bounds
+### 암시적 트레이트 바운드
 
-Every time you have a generic type parameter, the compiler implicitly assumes that it's `Sized`.
+제네릭 타입 매개변수가 있을 때마다 컴파일러는 암시적으로 그것이 `Sized`라고 가정합니다.
 
-For example:
+예를 들어:
 
 ```rust
 pub struct Foo<T> {
@@ -68,7 +66,7 @@ pub struct Foo<T> {
 }
 ```
 
-is actually equivalent to:
+는 실제로 다음과 동일합니다:
 
 ```rust
 pub struct Foo<T: Sized> 
@@ -77,7 +75,7 @@ pub struct Foo<T: Sized>
 }
 ```
 
-In the case of `From<T>`, the trait definition is equivalent to:
+`From<T>`의 경우, 트레이트 정의는 다음과 동일합니다:
 
 ```rust
 pub trait From<T: Sized>: Sized {
@@ -85,41 +83,36 @@ pub trait From<T: Sized>: Sized {
 }
 ```
 
-In other words, _both_ `T` and the type implementing `From<T>` must be `Sized`, even
-though the former bound is implicit.
+즉, `T`와 `From<T>`를 구현하는 타입 _모두_ `Sized`여야 합니다. 전자의 바운드는 암시적이지만 말입니다.
 
-### Negative trait bounds
+### 부정 트레이트 바운드
 
-You can opt out of the implicit `Sized` bound with a **negative trait bound**:
+**부정 트레이트 바운드**를 사용하여 암시적인 `Sized` 바운드를 선택 해제할 수 있습니다:
 
 ```rust
 pub struct Foo<T: ?Sized> {
     //            ^^^^^^^
-    //            This is a negative trait bound
+    //            이것은 부정 트레이트 바운드입니다
     inner: T,
 }
 ```
 
-This syntax reads as "`T` may or may not be `Sized`", and it allows you to
-bind `T` to a DST (e.g. `Foo<str>`). It is a special case, though: negative trait bounds are exclusive to `Sized`,
-you can't use them with other traits.
+이 구문은 "`T`는 `Sized`일 수도 있고 아닐 수도 있다"로 읽히며, `T`를 DST에 바인딩할 수 있게 해줍니다(예: `Foo<str>`). 하지만 이것은 특별한 경우입니다: 부정 트레이트 바운드는 `Sized`에만 국한되며, 다른 트레이트와 함께 사용할 수 없습니다.
 
-## `&str` to `String`
+## `&str`에서 `String`으로
 
-In [`std`'s documentation](https://doc.rust-lang.org/std/convert/trait.From.html#implementors)
-you can see which `std` types implement the `From` trait.\
-You'll find that `String` implements `From<&str> for String`. Thus, we can write:
+[`std`의 문서](https://doc.rust-lang.org/std/convert/trait.From.html#implementors)에서 어떤 `std` 타입이 `From` 트레이트를 구현하는지 볼 수 있습니다.
+`String`이 `From<&str> for String`을 구현한다는 것을 알 수 있습니다. 따라서 다음과 같이 작성할 수 있습니다:
 
 ```rust
 let title = String::from("A title");
 ```
 
-We've been primarily using `.into()`, though.\
-If you check out the [implementors of `Into`](https://doc.rust-lang.org/std/convert/trait.Into.html#implementors)
-you won't find `Into<String> for &str`. What's going on?
+하지만 우리는 주로 `.into()`를 사용해 왔습니다.
+[`Into`의 구현자](https://doc.rust-lang.org/std/convert/trait.Into.html#implementors)를 확인하면 `Into<String> for &str`을 찾을 수 없습니다. 무슨 일일까요?
 
-`From` and `Into` are **dual traits**.\
-In particular, `Into` is implemented for any type that implements `From` using a **blanket implementation**:
+`From`과 `Into`는 **이중 트레이트**입니다.
+특히, `Into`는 **블랭킷 구현**을 사용하여 `From`을 구현하는 모든 타입에 대해 구현됩니다:
 
 ```rust
 impl<T, U> Into<U> for T
@@ -132,17 +125,16 @@ where
 }
 ```
 
-If a type `U` implements `From<T>`, then `Into<U> for T` is automatically implemented. That's why
-we can write `let title = "A title".into();`.
+타입 `U`가 `From<T>`를 구현하면 `Into<U> for T`가 자동으로 구현됩니다. 이것이 `let title = "A title".into();`라고 쓸 수 있는 이유입니다.
 
 ## `.into()`
 
-Every time you see `.into()`, you're witnessing a conversion between types.\
-What's the target type, though?
+`.into()`를 볼 때마다 타입 간의 변환을 목격하는 것입니다.
+하지만 대상 타입은 무엇일까요?
 
-In most cases, the target type is either:
+대부분의 경우 대상 타입은 다음 중 하나입니다:
 
-- Specified by the signature of a function/method (e.g. `Ticket::new` in our example above)
-- Specified in the variable declaration with a type annotation (e.g. `let title: String = "A title".into();`)
+- 함수/메소드의 시그니처에 의해 지정됨 (예: 위 예제의 `Ticket::new`)
+- 타입 어노테이션이 있는 변수 선언에 지정됨 (예: `let title: String = "A title".into();`)
 
-`.into()` will work out of the box as long as the compiler can infer the target type from the context without ambiguity.
+컴파일러가 모호함 없이 컨텍스트에서 대상 타입을 추론할 수 있는 한 `.into()`는 즉시 작동합니다.

@@ -1,28 +1,25 @@
 # `Sync`
 
-Before we wrap up this chapter, let's talk about another key trait in Rust's standard library: `Sync`.
+이 챕터를 마무리하기 전에 Rust 표준 라이브러리의 또 다른 핵심 트레이트인 `Sync`에 대해 이야기해 봅시다.
 
-`Sync` is an auto trait, just like `Send`.\
-It is automatically implemented by all types that can be safely **shared** between threads.
+`Sync`는 `Send`와 마찬가지로 자동 트레이트입니다.
+스레드 간에 안전하게 **공유**될 수 있는 모든 타입에 의해 자동으로 구현됩니다.
 
-In other words: `T` is Sync if `&T` is `Send`.
+즉, `&T`가 `Send`이면 `T`는 `Sync`입니다.
 
-## `T: Sync` doesn't imply `T: Send`
+## `T: Sync`는 `T: Send`를 의미하지 않습니다
 
-It's important to note that `T` can be `Sync` without being `Send`.\
-For example: `MutexGuard` is not `Send`, but it is `Sync`.
+`T`가 `Send`가 아니면서 `Sync`일 수 있다는 점에 유의하는 것이 중요합니다.
+예를 들어: `MutexGuard`는 `Send`가 아니지만 `Sync`입니다.
 
-It isn't `Send` because the lock must be released on the same thread that acquired it, therefore we don't
-want `MutexGuard` to be dropped on a different thread.\
-But it is `Sync`, because giving a `&MutexGuard` to another thread has no impact on where the lock is released.
+`Send`가 아닌 이유는 잠금이 획득된 스레드와 동일한 스레드에서 해제되어야 하므로, `MutexGuard`가 다른 스레드에서 삭제되는 것을 원하지 않기 때문입니다.
+하지만 `Sync`인 이유는 `&MutexGuard`를 다른 스레드에 제공하는 것이 잠금이 해제되는 위치에 영향을 미치지 않기 때문입니다.
 
-## `T: Send` doesn't imply `T: Sync`
+## `T: Send`는 `T: Sync`를 의미하지 않습니다
 
-The opposite is also true: `T` can be `Send` without being `Sync`.\
-For example: `RefCell<T>` is `Send` (if `T` is `Send`), but it is not `Sync`.
+반대도 마찬가지입니다: `T`가 `Sync`가 아니면서 `Send`일 수 있습니다.
+예를 들어: `RefCell<T>`는 `Send`이지만 (`T`가 `Send`인 경우) `Sync`는 아닙니다.
 
-`RefCell<T>` performs runtime borrow checking, but the counters it uses to track borrows are not thread-safe.
-Therefore, having multiple threads holding a `&RefCell` would lead to a data race, with potentially
-multiple threads obtaining mutable references to the same data. Hence `RefCell` is not `Sync`.\
-`Send` is fine, instead, because when we send a `RefCell` to another thread we're not
-leaving behind any references to the data it contains, hence no risk of concurrent mutable access.
+`RefCell<T>`는 런타임 빌림 검사를 수행하지만, 빌림을 추적하는 데 사용하는 카운터는 스레드 안전하지 않습니다.
+따라서 여러 스레드가 `&RefCell`을 보유하면 데이터 경쟁이 발생하여 잠재적으로 여러 스레드가 동일한 데이터에 대한 가변 참조를 얻을 수 있습니다. 따라서 `RefCell`은 `Sync`가 아닙니다.
+`Send`는 괜찮습니다. `RefCell`을 다른 스레드로 보낼 때 포함된 데이터에 대한 참조를 남기지 않으므로 동시 가변 접근의 위험이 없기 때문입니다.

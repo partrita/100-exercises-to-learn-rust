@@ -1,10 +1,10 @@
-// This is our last exercise. Let's go down a more unstructured path!
-// Try writing an **asynchronous REST API** to expose the functionality
-// of the ticket management system we built throughout the course.
-// It should expose endpoints to:
-//  - Create a ticket
-//  - Retrieve ticket details
-//  - Patch a ticket
+// 이번이 마지막 연습 문제입니다. 좀 더 자유로운 방식으로 진행해 봅시다!
+// 과정 내내 만들었던 티켓 관리 시스템의 기능을 외부로 노출하는
+// **비동기 REST API**를 작성해 보세요.
+// API는 다음 엔드포인트를 제공해야 합니다:
+//  - 티켓 생성
+//  - 티켓 상세 정보 조회
+//  - 티켓 수정
 //
-// Use Rust's package registry, crates.io, to find the dependencies you need
-// (if any) to build this system.
+// 이 시스템을 구축하는 데 필요한 종속성(dependency)이 있다면
+// Rust의 패키지 레지스트리인 crates.io에서 찾아보세요.

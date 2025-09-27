@@ -1,38 +1,30 @@
-# Visibility
+# 가시성
 
-When you start breaking down your code into multiple modules, you need to start thinking about **visibility**.
-Visibility determines which regions of your code (or other people's code) can access a given entity,
-be it a struct, a function, a field, etc.
+코드를 여러 모듈로 나누기 시작하면 **가시성**에 대해 생각해야 합니다.
+가시성은 구조체, 함수, 필드 등 주어진 엔티티에 접근할 수 있는 코드 영역(또는 다른 사람의 코드)을 결정합니다.
 
-## Private by default
+## 기본적으로 비공개
 
-By default, everything in Rust is **private**.\
-A private entity can only be accessed:
+기본적으로 Rust의 모든 것은 **비공개**입니다.\ 비공개 엔티티는 다음에만 접근할 수 있습니다:
 
-1. within the same module where it's defined, or
-2. by one of its submodules
+1. 정의된 동일한 모듈 내에서, 또는
+2. 하위 모듈 중 하나에 의해
 
-We've used this extensively in the previous exercises:
+이전 연습 문제에서 이것을 광범위하게 사용했습니다:
 
-- `create_todo_ticket` worked (once you added a `use` statement) because `helpers` is a submodule of the crate root,
-  where `Ticket` is defined. Therefore, `create_todo_ticket` can access `Ticket` without any issues even
-  though `Ticket` is private.
-- All our unit tests are defined in a submodule of the code they're testing, so they can access everything without
-  restrictions.
+- `create_todo_ticket`은 `helpers`가 `Ticket`이 정의된 크레이트 루트의 하위 모듈이기 때문에 (일단 `use` 문을 추가하면) 작동했습니다. 따라서 `create_todo_ticket`은 `Ticket`이 비공개임에도 불구하고 문제 없이 `Ticket`에 접근할 수 있습니다.
+- 모든 단위 테스트는 테스트 대상 코드의 하위 모듈에 정의되어 있으므로 제한 없이 모든 것에 접근할 수 있습니다.
 
-## Visibility modifiers
+## 가시성 한정자
 
-You can modify the default visibility of an entity using a **visibility modifier**.\
-Some common visibility modifiers are:
+**가시성 한정자**를 사용하여 엔티티의 기본 가시성을 수정할 수 있습니다. 일반적인 가시성 한정자는 다음과 같습니다:
 
-- `pub`: makes the entity **public**, i.e. accessible from outside the module where it's defined, potentially from
-  other crates.
-- `pub(crate)`: makes the entity public within the same **crate**, but not outside of it.
-- `pub(super)`: makes the entity public within the parent module.
-- `pub(in path::to::module)`: makes the entity public within the specified module.
+- `pub`: 엔티티를 **공개**로 만듭니다. 즉, 정의된 모듈 외부에서, 잠재적으로 다른 크레이트에서 접근할 수 있습니다.
+- `pub(crate)`: 엔티티를 동일한 **크레이트** 내에서 공개로 만들지만 외부에서는 공개하지 않습니다.
+- `pub(super)`: 엔티티를 부모 모듈 내에서 공개로 만듭니다.
+- `pub(in path::to::module)`: 엔티티를 지정된 모듈 내에서 공개로 만듭니다.
 
-You can use these modifiers on modules, structs, functions, fields, etc.
-For example:
+이러한 한정자를 모듈, 구조체, 함수, 필드 등에 사용할 수 있습니다. 예를 들어:
 
 ```rust
 pub struct Configuration {
@@ -41,5 +33,4 @@ pub struct Configuration {
 }
 ```
 
-`Configuration` is public, but you can only access the `version` field from within the same crate.
-The `active` field, instead, is private and can only be accessed from within the same module or one of its submodules.
+`Configuration`은 공개이지만 `version` 필드는 동일한 크레이트 내에서만 접근할 수 있습니다. `active` 필드는 비공개이며 동일한 모듈 또는 하위 모듈 중 하나에서만 접근할 수 있습니다.

@@ -1,16 +1,14 @@
-# Two-way communication
+# 양방향 통신
 
-In our current client-server implementation, communication flows in one direction: from the client to the server.\
-The client has no way of knowing if the server received the message, executed it successfully, or failed.
-That's not ideal.
+현재 클라이언트-서버 구현에서 통신은 한 방향으로 흐릅니다: 클라이언트에서 서버로.
+클라이언트는 서버가 메시지를 받았는지, 성공적으로 실행했는지, 아니면 실패했는지 알 방법이 없습니다.
+이것은 이상적이지 않습니다.
 
-To solve this issue, we can introduce a two-way communication system.
+이 문제를 해결하기 위해 양방향 통신 시스템을 도입할 수 있습니다.
 
-## Response channel
+## 응답 채널
 
-We need a way for the server to send a response back to the client.\
-There are various ways to do this, but the simplest option is to include a `Sender` channel in
-the message that the client sends to the server. After processing the message, the server can use
-this channel to send a response back to the client.
+서버가 클라이언트에게 응답을 다시 보낼 방법이 필요합니다.
+이를 수행하는 다양한 방법이 있지만, 가장 간단한 옵션은 클라이언트가 서버로 보내는 메시지에 `Sender` 채널을 포함하는 것입니다. 메시지를 처리한 후 서버는 이 채널을 사용하여 클라이언트에게 응답을 다시 보낼 수 있습니다.
 
-This is a fairly common pattern in Rust applications built on top of message-passing primitives.
+이것은 메시지 전달 프리미티브를 기반으로 구축된 Rust 애플리케이션에서 상당히 일반적인 패턴입니다.

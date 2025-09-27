@@ -1,7 +1,7 @@
-// TODO: You don't actually have to change anything in the library itself!
-//  We mostly had to **remove** code (the client type, the launch function, the command enum)
-//  that's no longer necessary.
-//  Fix the `todo!()` in the testing code and see how the new design can be used.
+// TODO: 라이브러리 자체에서는 아무것도 변경할 필요가 없습니다!
+//  더 이상 필요 없는 코드(클라이언트 타입, 실행 함수, 커맨드 열거형)를
+//  대부분 **제거**해야 했습니다.
+//  테스트 코드의 `todo!()`를 수정하고 새로운 디자인이 어떻게 사용될 수 있는지 확인하세요.
 
 pub mod data;
 pub mod store;

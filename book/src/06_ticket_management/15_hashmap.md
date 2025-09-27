@@ -1,16 +1,14 @@
 # `HashMap`
 
-Our implementation of `Index`/`IndexMut` is not ideal: we need to iterate over the entire
-`Vec` to retrieve a ticket by id; the algorithmic complexity is `O(n)`, where
-`n` is the number of tickets in the store.
+`Index`/`IndexMut` 구현은 이상적이지 않습니다: ID로 티켓을 검색하기 위해 전체 `Vec`을 반복해야 합니다. 알고리즘 복잡도는 `O(n)`이며, 여기서 `n`은 저장소의 티켓 수입니다.
 
-We can do better by using a different data structure for storing tickets: a `HashMap<K, V>`.
+티켓을 저장하기 위해 다른 데이터 구조인 `HashMap<K, V>`를 사용하여 더 잘할 수 있습니다.
 
 ```rust
 use std::collections::HashMap;
 
-// Type inference lets us omit an explicit type signature (which
-// would be `HashMap<String, String>` in this example).
+// 타입 추론을 통해 명시적인 타입 시그니처를 생략할 수 있습니다 (이 예에서는
+// `HashMap<String, String>`이 될 것입니다).
 let mut book_reviews = HashMap::new();
 
 book_reviews.insert(
@@ -19,19 +17,17 @@ book_reviews.insert(
 );
 ```
 
-`HashMap` works with key-value pairs. It's generic over both: `K` is the generic
-parameter for the key type, while `V` is the one for the value type.
+`HashMap`은 키-값 쌍으로 작동합니다. `K`는 키 타입의 제네릭 매개변수이고, `V`는 값 타입의 제네릭 매개변수입니다.
 
-The expected cost of insertions, retrievals and removals is **constant**, `O(1)`.
-That sounds perfect for our usecase, doesn't it?
+삽입, 검색 및 제거의 예상 비용은 **상수**, `O(1)`입니다.
+우리의 사용 사례에 완벽하게 들리지 않나요?
 
-## Key requirements
+## 키 요구 사항
 
-There are no trait bounds on `HashMap`'s struct definition, but you'll find some
-on its methods. Let's look at `insert`, for example:
+`HashMap`의 구조체 정의에는 트레이트 바운드가 없지만, 메소드에는 일부가 있습니다. 예를 들어 `insert`를 살펴봅시다:
 
 ```rust
-// Slightly simplified
+// 약간 단순화됨
 impl<K, V> HashMap<K, V>
 where
     K: Eq + Hash,
@@ -42,31 +38,29 @@ where
 }
 ```
 
-The key type must implement the `Eq` and `Hash` traits.\
-Let's dig into those two.
+키 타입은 `Eq` 및 `Hash` 트레이트를 구현해야 합니다.
+이 두 가지에 대해 자세히 알아봅시다.
 
 ## `Hash`
 
-A hashing function (or hasher) maps a potentially infinite set of a values (e.g.
-all possible strings) to a bounded range (e.g. a `u64` value).\
-There are many different hashing functions around, each with different properties
-(speed, collision risk, reversibility, etc.).
+해싱 함수(또는 해셔)는 잠재적으로 무한한 값 집합(예: 모든 가능한 문자열)을 제한된 범위(예: `u64` 값)에 매핑합니다.
+속도, 충돌 위험, 가역성 등 각각 다른 속성을 가진 많은 해싱 함수가 있습니다.
 
-A `HashMap`, as the name suggests, uses a hashing function behind the scene.
-It hashes your key and then uses that hash to store/retrieve the associated value.
-This strategy requires the key type must be hashable, hence the `Hash` trait bound on `K`.
+`HashMap`은 이름에서 알 수 있듯이 내부적으로 해싱 함수를 사용합니다.
+키를 해시한 다음 해당 해시를 사용하여 관련 값을 저장/검색합니다.
+이 전략은 키 타입이 해시 가능해야 하므로 `K`에 `Hash` 트레이트 바운드가 필요합니다.
 
-You can find the `Hash` trait in the `std::hash` module:
+`Hash` 트레이트는 `std::hash` 모듈에서 찾을 수 있습니다:
 
 ```rust
 pub trait Hash {
-    // Required method
+    // 필수 메소드
     fn hash<H>(&self, state: &mut H)
        where H: Hasher;
 }
 ```
 
-You will rarely implement `Hash` manually. Most of the times you'll derive it:
+`Hash`를 수동으로 구현하는 경우는 거의 없습니다. 대부분의 경우 derive할 것입니다:
 
 ```rust
 #[derive(Hash)]
@@ -78,28 +72,24 @@ struct Person {
 
 ## `Eq`
 
-`HashMap` must be able to compare keys for equality. This is particularly important
-when dealing with hash collisions—i.e. when two different keys hash to the same value.
+`HashMap`은 키를 동등성으로 비교할 수 있어야 합니다. 이것은 해시 충돌을 처리할 때 특히 중요합니다. 즉, 두 개의 다른 키가 동일한 값으로 해시될 때입니다.
 
-You may wonder: isn't that what the `PartialEq` trait is for? Almost!\
-`PartialEq` is not enough for `HashMap` because it doesn't guarantee reflexivity, i.e. `a == a` is always `true`.\
-For example, floating point numbers (`f32` and `f64`) implement `PartialEq`,
-but they don't satisfy the reflexivity property: `f32::NAN == f32::NAN` is `false`.\
-Reflexivity is crucial for `HashMap` to work correctly: without it, you wouldn't be able to retrieve a value
-from the map using the same key you used to insert it.
+궁금할 수 있습니다: `PartialEq` 트레이트가 이를 위한 것이 아닌가요? 거의 그렇습니다!
+`PartialEq`는 `HashMap`에 충분하지 않습니다. 왜냐하면 `a == a`가 항상 `true`라는 반사성을 보장하지 않기 때문입니다.
+예를 들어, 부동 소수점 숫자(`f32` 및 `f64`)는 `PartialEq`를 구현하지만, 반사성 속성을 만족하지 않습니다: `f32::NAN == f32::NAN`은 `false`입니다.
+반사성은 `HashMap`이 올바르게 작동하는 데 중요합니다: 없으면 값을 삽입하는 데 사용한 것과 동일한 키를 사용하여 맵에서 값을 검색할 수 없습니다.
 
-The `Eq` trait extends `PartialEq` with the reflexivity property:
+`Eq` 트레이트는 `PartialEq`를 반사성 속성으로 확장합니다:
 
 ```rust
 pub trait Eq: PartialEq {
-    // No additional methods
+    // 추가 메소드 없음
 }
 ```
 
-It's a marker trait: it doesn't add any new methods, it's just a way for you to say to the compiler
-that the equality logic implemented in `PartialEq` is reflexive.
+이것은 마커 트레이트입니다: 새로운 메소드를 추가하지 않고, `PartialEq`에 구현된 동등성 로직이 반사적이라는 것을 컴파일러에게 알려주는 방법일 뿐입니다.
 
-You can derive `Eq` automatically when you derive `PartialEq`:
+`PartialEq`를 derive할 때 `Eq`를 자동으로 derive할 수 있습니다:
 
 ```rust
 #[derive(PartialEq, Eq)]
@@ -109,8 +99,7 @@ struct Person {
 }
 ```
 
-## `Eq` and `Hash` are linked
+## `Eq`와 `Hash`는 연결되어 있습니다
 
-There is an implicit contract between `Eq` and `Hash`: if two keys are equal, their hashes must be equal too.
-This is crucial for `HashMap` to work correctly. If you break this contract, you'll get nonsensical results
-when using `HashMap`.
+`Eq`와 `Hash` 사이에는 암시적인 계약이 있습니다: 두 키가 같으면 해시도 같아야 합니다.
+이것은 `HashMap`이 올바르게 작동하는 데 중요합니다. 이 계약을 위반하면 `HashMap`을 사용할 때 비합리적인 결과가 나옵니다.

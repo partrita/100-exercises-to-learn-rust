@@ -1,20 +1,19 @@
-# Mutable indexing
+# 가변 인덱싱
 
-`Index` allows read-only access. It doesn't let you mutate the value you
-retrieved.
+`Index`는 읽기 전용 접근을 허용합니다. 검색한 값을 변경할 수 없습니다.
 
 ## `IndexMut`
 
-If you want to allow mutability, you need to implement the `IndexMut` trait.
+가변성을 허용하려면 `IndexMut` 트레이트를 구현해야 합니다.
 
 ```rust
-// Slightly simplified
+// 약간 단순화됨
 pub trait IndexMut<Idx>: Index<Idx>
 {
-    // Required method
+    // 필수 메소드
     fn index_mut(&mut self, index: Idx) -> &mut Self::Output;
 }
 ```
 
-`IndexMut` can only be implemented if the type already implements `Index`,
-since it unlocks an _additional_ capability.
+`IndexMut`는 타입이 이미 `Index`를 구현하는 경우에만 구현될 수 있습니다.
+이는 _추가적인_ 기능을 잠금 해제하기 때문입니다.

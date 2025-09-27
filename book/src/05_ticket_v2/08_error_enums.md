@@ -1,19 +1,17 @@
-# Error enums
+# 오류 열거형
 
-Your solution to the previous exercise may have felt awkward: matching on strings is not ideal!\
-A colleague might rework the error messages returned by `Ticket::new` (e.g. to improve readability) and,
-all of a sudden, your calling code would break.
+이전 연습 문제에 대한 여러분의 해결책은 어색하게 느껴졌을 수 있습니다: 문자열에 대해 매칭하는 것은 이상적이지 않습니다!
+동료가 `Ticket::new`가 반환하는 오류 메시지를 (예: 가독성 향상을 위해) 재작업하면 갑자기 호출 코드가 깨질 수 있습니다.
 
-You already know the machinery required to fix this: enums!
+이 문제를 해결하는 데 필요한 메커니즘을 이미 알고 있습니다: 열거형입니다!
 
-## Reacting to errors
+## 오류에 대응하기
 
-When you want to allow the caller to behave differently based on the specific error that occurred, you can
-use an enum to represent the different error cases:
+발생한 특정 오류에 따라 호출자가 다르게 동작하도록 허용하려면, 열거형을 사용하여 다른 오류 케이스를 나타낼 수 있습니다:
 
 ```rust
-// An error enum to represent the different error cases
-// that may occur when parsing a `u32` from a string.
+// 문자열에서 `u32`를 파싱할 때 발생할 수 있는
+// 다른 오류 케이스를 나타내는 오류 열거형.
 enum U32ParseError {
     NotANumber,
     TooLarge,
@@ -21,10 +19,8 @@ enum U32ParseError {
 }
 ```
 
-Using an error enum, you're encoding the different error cases in the type system—they become part of the
-signature of the fallible function.\
-This simplifies error handling for the caller, as they can use a `match` expression to react to the different
-error cases:
+오류 열거형을 사용하면 타입 시스템에 다른 오류 케이스를 인코딩하게 됩니다. 이는 실패 가능한 함수의 시그니처의 일부가 됩니다.
+호출자는 `match` 표현식을 사용하여 다른 오류 케이스에 대응할 수 있으므로 오류 처리가 단순화됩니다:
 
 ```rust
 match s.parse_u32() {

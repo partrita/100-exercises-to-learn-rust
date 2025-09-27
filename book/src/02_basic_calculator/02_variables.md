@@ -1,55 +1,46 @@
-# Variables
+# 변수
 
-In Rust, you can use the `let` keyword to declare **variables**.\
-For example:
+Rust에서는 `let` 키워드를 사용하여 **변수**를 선언할 수 있습니다. 예를 들어:
 
 ```rust
 let x = 42;
 ```
 
-Above we defined a variable `x` and assigned it the value `42`.
+위에서는 `x`라는 변수를 정의하고 값 `42`를 할당했습니다.
 
-## Type
+## 타입
 
-Every variable in Rust must have a type. It can either be inferred by the compiler or explicitly specified by the
-developer.
+Rust의 모든 변수는 타입을 가져야 합니다. 컴파일러에 의해 추론되거나 개발자가 명시적으로 지정할 수 있습니다.
 
-### Explicit type annotation
+### 명시적 타입 어노테이션
 
-You can specify the variable type by adding a colon `:` followed by the type after the variable name. For example:
+변수 이름 뒤에 콜론 `:`과 타입을 추가하여 변수 타입을 지정할 수 있습니다. 예를 들어:
 
 ```rust
-// let <variable_name>: <type> = <expression>;
+// let <변수_이름>: <타입> = <표현식>;
 let x: u32 = 42;
 ```
 
-In the example above, we explicitly constrained the type of `x` to be `u32`.
+위 예제에서는 `x`의 타입을 `u32`로 명시적으로 제한했습니다.
 
-### Type inference
+### 타입 추론
 
-If we don't specify the type of a variable, the compiler will try to infer it based on the context in which the variable
-is used.
+변수의 타입을 지정하지 않으면 컴파일러는 변수가 사용되는 컨텍스트를 기반으로 타입을 추론하려고 시도합니다.
 
 ```rust
 let x = 42;
 let y: u32 = x;
 ```
 
-In the example above, we didn't specify the type of `x`.\
-`x` is later assigned to `y`, which is explicitly typed as `u32`. Since Rust doesn't perform automatic type coercion,
-the compiler infers the type of `x` to be `u32`—the same as `y` and the only type that will allow the program to compile
-without errors.
+위 예제에서는 `x`의 타입을 지정하지 않았습니다. `x`는 나중에 `u32`로 명시적으로 타입이 지정된 `y`에 할당됩니다. Rust는 자동 타입 강제 변환을 수행하지 않으므로 컴파일러는 `x`의 타입을 `u32`로 추론합니다. 이는 `y`와 동일하며 프로그램이 오류 없이 컴파일되도록 하는 유일한 타입입니다.
 
-### Inference limitations
+### 추론의 한계
 
-The compiler sometimes needs a little help to infer the correct variable type based on its usage.\
-In those cases you'll get a compilation error and the compiler will ask you to provide an explicit type hint to
-disambiguate the situation.
+컴파일러는 때때로 사용법에 따라 올바른 변수 타입을 추론하는 데 약간의 도움이 필요합니다. 이러한 경우 컴파일 오류가 발생하고 컴파일러는 상황을 명확히 하기 위해 명시적인 타입 힌트를 제공하도록 요청합니다.
 
-## Function arguments are variables
+## 함수 인자는 변수입니다
 
-Not all heroes wear capes, not all variables are declared with `let`.\
-Function arguments are variables too!
+모든 영웅이 망토를 입는 것은 아니며, 모든 변수가 `let`으로 선언되는 것도 아닙니다. 함수 인자도 변수입니다!
 
 ```rust
 fn add_one(x: u32) -> u32 {
@@ -57,30 +48,24 @@ fn add_one(x: u32) -> u32 {
 }
 ```
 
-In the example above, `x` is a variable of type `u32`.\
-The only difference between `x` and a variable declared with `let` is that functions arguments **must** have their type
-explicitly declared. The compiler won't infer it for you.\
-This constraint allows the Rust compiler (and us humans!) to understand the function's signature without having to look
-at its implementation. That's a big boost for compilation speed[^speed]!
+위 예제에서 `x`는 `u32` 타입의 변수입니다. `x`와 `let`으로 선언된 변수의 유일한 차이점은 함수 인자는 타입을 **반드시** 명시적으로 선언해야 한다는 것입니다. 컴파일러가 대신 추론해주지 않습니다. 이 제약 조건 덕분에 Rust 컴파일러(그리고 우리 인간!)는 함수의 구현을 보지 않고도 함수의 시그니처를 이해할 수 있습니다. 이는 컴파일 속도에 큰 도움이 됩니다[^speed]!
 
-## Initialization
+## 초기화
 
-You don't have to initialize a variable when you declare it.\
-For example
+변수를 선언할 때 초기화할 필요는 없습니다. 예를 들어
 
 ```rust
 let x: u32;
 ```
 
-is a valid variable declaration.\
-However, you must initialize the variable before using it. The compiler will throw an error if you don't:
+는 유효한 변수 선언입니다. 하지만 사용하기 전에 변수를 초기화해야 합니다. 그렇지 않으면 컴파일러가 오류를 발생시킵니다:
 
 ```rust
 let x: u32;
 let y = x + 1;
 ```
 
-will throw a compilation error:
+는 컴파일 오류를 발생시킵니다:
 
 ```text
 error[E0381]: used binding `x` isn't initialized
@@ -97,4 +82,4 @@ help: consider assigning a value
   |            +++
 ```
 
-[^speed]: The Rust compiler needs all the help it can get when it comes to compilation speed.
+[^speed]: Rust 컴파일러는 컴파일 속도에 관한 한 모든 도움이 필요합니다.

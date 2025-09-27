@@ -1,5 +1,5 @@
-# Wrapping up
+# 마무리
 
-We've covered a lot of foundational Rust concepts in this chapter.\
-Before moving on, let's go through one last exercise to consolidate what we've learned.
-You'll have minimal guidance this time—just the exercise description and the tests to guide you.
+이 장에서는 많은 기본적인 Rust 개념을 다루었습니다.
+넘어가기 전에, 배운 내용을 통합하기 위해 마지막 연습 문제를 하나 더 풀어봅시다.
+이번에는 최소한의 안내만 제공됩니다. 연습 문제 설명과 테스트만으로 안내를 받게 됩니다.

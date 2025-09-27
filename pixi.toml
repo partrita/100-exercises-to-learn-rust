@@ -1,0 +1,14 @@
+[workspace]
+authors = ["fkt <deepthought@postech.ac.kr>"]
+channels = ["conda-forge"]
+name = "100-exercises-to-learn-rust"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+rust = ">=1.90.0,<1.91"
+openssl = ">=3.5.3,<4"
+pkg-config = ">=0.29.2,<0.30"
+compilers = ">=1.11.0,<2"

@@ -1,110 +1,77 @@
-# Overflow
+# 오버플로
 
-The factorial of a number grows quite fast.\
-For example, the factorial of 20 is 2,432,902,008,176,640,000. That's already bigger than the maximum value for a
-32-bit integer, 2,147,483,647.
+숫자의 팩토리얼은 매우 빠르게 증가합니다.\n예를 들어, 20의 팩토리얼은 2,432,902,008,176,640,000입니다. 이는 이미 32비트 정수의 최대값인 2,147,483,647보다 큽니다.
 
-When the result of an arithmetic operation is bigger than the maximum value for a given integer type,
-we are talking about **an integer overflow**.
+산술 연산의 결과가 주어진 정수 타입의 최대값보다 클 때, 우리는 **정수 오버플로**에 대해 이야기합니다.
 
-Integer overflows are an issue because they violate the contract for arithmetic operations.\
-The result of an arithmetic operation between two integers of a given type should be another integer of the same type.
-But the _mathematically correct result_ doesn't fit into that integer type!
+정수 오버플로는 산술 연산에 대한 계약을 위반하기 때문에 문제입니다.\n주어진 타입의 두 정수 간의 산술 연산 결과는 동일한 타입의 다른 정수여야 합니다.
+하지만 _수학적으로 올바른 결과_는 해당 정수 타입에 맞지 않습니다!
 
-> If the result is smaller than the minimum value for a given integer type, we refer to the event as **an integer
-> underflow**.\
-> For brevity, we'll only talk about integer overflows for the rest of this section, but keep in mind that
-> everything we say applies to integer underflows as well.
->
-> The `speed` function you wrote in the ["Variables" section](02_variables.md) underflowed for some input
-> combinations.
-> E.g. if `end` is smaller than `start`, `end - start` will underflow the `u32` type since the result is supposed
-> to be negative but `u32` can't represent negative numbers.
+> 결과가 주어진 정수 타입의 최소값보다 작으면 **정수 언더플로**라고 합니다.\n> 간결성을 위해 이 섹션의 나머지 부분에서는 정수 오버플로에 대해서만 이야기하지만, 우리가 말하는 모든 것이 정수 언더플로에도 적용된다는 점을 명심하십시오.
+> 
+> ["변수" 섹션](02_variables.md)에서 작성한 `speed` 함수는 일부 입력 조합에 대해 언더플로가 발생했습니다.
+> 예를 들어, `end`가 `start`보다 작으면 `end - start`는 결과가 음수여야 하지만 `u32`는 음수를 나타낼 수 없으므로 `u32` 타입을 언더플로합니다.
 
-## No automatic promotion
+## 자동 승격 없음
 
-One possible approach would be automatically promote the result to a bigger integer type.
-E.g. if you're summing two `u8` integers and the result is 256 (`u8::MAX + 1`), Rust could choose to interpret the
-result as `u16`, the next integer type that's big enough to hold 256.
+한 가지 가능한 접근 방식은 결과를 더 큰 정수 타입으로 자동 승격하는 것입니다.
+예를 들어, 두 개의 `u8` 정수를 더하고 결과가 256(`u8::MAX + 1`)인 경우 Rust는 결과를 256을 담을 수 있을 만큼 큰 다음 정수 타입인 `u16`으로 해석하도록 선택할 수 있습니다.
 
-But, as we've discussed before, Rust is quite picky about type conversions. Automatic integer promotion
-is not Rust's solution to the integer overflow problem.
+하지만 이전에 논의했듯이 Rust는 타입 변환에 대해 매우 까다롭습니다. 자동 정수 승격은 정수 오버플로 문제에 대한 Rust의 해결책이 아닙니다.
 
-## Alternatives
+## 대안
 
-Since we ruled out automatic promotion, what can we do when an integer overflow occurs?\
-It boils down to two different approaches:
+자동 승격을 배제했으므로 정수 오버플로가 발생했을 때 무엇을 할 수 있을까요?\n이는 두 가지 다른 접근 방식으로 요약됩니다:
 
-- Reject the operation
-- Come up with a "sensible" result that fits into the expected integer type
+- 연산 거부
+- 예상 정수 타입에 맞는 "합리적인" 결과 도출
 
-### Reject the operation
+### 연산 거부
 
-This is the most conservative approach: we stop the program when an integer overflow occurs.\
-That's done via a panic, the mechanism we've already seen in the ["Panics" section](04_panics.md).
+이것은 가장 보수적인 접근 방식입니다: 정수 오버플로가 발생하면 프로그램을 중지합니다.\n이는 ["패닉" 섹션](04_panics.md)에서 이미 본 메커니즘인 패닉을 통해 수행됩니다.
 
-### Come up with a "sensible" result
+### "합리적인" 결과 도출
 
-When the result of an arithmetic operation is bigger than the maximum value for a given integer type, you can
-choose to **wrap around**.\
-If you think of all the possible values for a given integer type as a circle, wrapping around means that when you
-reach the maximum value, you start again from the minimum value.
+산술 연산의 결과가 주어진 정수 타입의 최대값보다 클 때 **래핑(wrapping around)**을 선택할 수 있습니다.\n주어진 정수 타입에 대한 모든 가능한 값을 원으로 생각하면, 래핑은 최대값에 도달했을 때 최소값에서 다시 시작하는 것을 의미합니다.
 
-For example, if you do a **wrapping addition** between 1 and 255 (=`u8::MAX`), the result is 0 (=`u8::MIN`).
-If you're working with signed integers, the same principle applies. E.g. adding 1 to 127 (=`i8::MAX`) with wrapping
-will give you -128 (=`i8::MIN`).
+예를 들어, 1과 255(=`u8::MAX`) 사이에 **래핑 덧셈**을 수행하면 결과는 0(=`u8::MIN`)입니다.
+부호 있는 정수로 작업하는 경우에도 동일한 원칙이 적용됩니다. 예를 들어, 래핑으로 127(=`i8::MAX`)에 1을 더하면 -128(=`i8::MIN`)이 됩니다.
 
 ## `overflow-checks`
 
-Rust lets you, the developer, choose which approach to use when an integer overflow occurs.
-The behaviour is controlled by the `overflow-checks` profile setting.
+Rust는 정수 오버플로가 발생했을 때 사용할 접근 방식을 개발자인 당신이 선택할 수 있도록 합니다.
+동작은 `overflow-checks` 프로필 설정에 의해 제어됩니다.
 
-If `overflow-checks` is set to `true`, Rust will **panic at runtime** when an integer operation overflows.
-If `overflow-checks` is set to `false`, Rust will **wrap around** when an integer operation overflows.
+`overflow-checks`가 `true`로 설정되면 정수 연산이 오버플로될 때 Rust는 **런타임에 패닉**을 일으킵니다.
+`overflow-checks`가 `false`로 설정되면 정수 연산이 오버플로될 때 Rust는 **래핑**합니다.
 
-You may be wondering—what is a profile setting? Let's get into that!
+프로필 설정이 무엇인지 궁금할 것입니다. 그것에 대해 알아봅시다!
 
-## Profiles
+## 프로필
 
-A [**profile**](https://doc.rust-lang.org/cargo/reference/profiles.html) is a set of configuration options that can be
-used to customize the way Rust code is compiled.
+[**프로필**](https://doc.rust-lang.org/cargo/reference/profiles.html)은 Rust 코드가 컴파일되는 방식을 사용자 정의하는 데 사용할 수 있는 구성 옵션 집합입니다.
 
-Cargo provides 4 built-in profiles: `dev`, `release`, `test`, and `bench`.\
-The `dev` profile is used every time you run `cargo build`, `cargo run` or `cargo test`. It's aimed at local
-development,
-therefore it sacrifices runtime performance in favor of faster compilation times and a better debugging experience.\
-The `release` profile, instead, is optimized for runtime performance but incurs longer compilation times. You need
-to explicitly request via the `--release` flag—e.g. `cargo build --release` or `cargo run --release`.
-The `test` profile is the default profile used by `cargo test`. The `test` profile inherits the settings from the `dev` profile.
-The `bench` profile is the default profile used by `cargo bench`. The `bench` profile inherits from the `release` profile.
-Use `dev` for iterative development and debugging, `release` for optimized production builds,\
-`test` for correctness testing, and `bench` for performance benchmarking.
+Cargo는 `dev`, `release`, `test`, `bench`의 4가지 내장 프로필을 제공합니다.\n`dev` 프로필은 `cargo build`, `cargo run` 또는 `cargo test`를 실행할 때마다 사용됩니다. 로컬 개발을 목표로 하므로 런타임 성능을 희생하는 대신 더 빠른 컴파일 시간과 더 나은 디버깅 환경을 제공합니다.\n`release` 프로필은 런타임 성능에 최적화되어 있지만 컴파일 시간이 더 깁니다. `--release` 플래그를 통해 명시적으로 요청해야 합니다(예: `cargo build --release` 또는 `cargo run --release`).
+`test` 프로필은 `cargo test`에서 사용하는 기본 프로필입니다. `test` 프로필은 `dev` 프로필의 설정을 상속합니다.
+`bench` 프로필은 `cargo bench`에서 사용하는 기본 프로필입니다. `bench` 프로필은 `release` 프로필에서 상속됩니다.
+반복적인 개발 및 디버깅에는 `dev`를 사용하고, 최적화된 프로덕션 빌드에는 `release`를 사용하고,
+정확성 테스트에는 `test`를 사용하고, 성능 벤치마킹에는 `bench`를 사용하십시오.
 
-> "Have you built your project in release mode?" is almost a meme in the Rust community.\
-> It refers to developers who are not familiar with Rust and complain about its performance on
-> social media (e.g. Reddit, Twitter) before realizing they haven't built their project in
-> release mode.
+> "프로젝트를 릴리스 모드로 빌드했습니까?"는 Rust 커뮤니티에서 거의 밈입니다.\n> Rust에 익숙하지 않고 소셜 미디어(예: Reddit, Twitter)에서 성능에 대해 불평하는 개발자를 가리키는 말입니다. 프로젝트를 릴리스 모드로 빌드하지 않았다는 사실을 깨닫기 전까지 말입니다.
 
-You can also define custom profiles or customize the built-in ones.
+사용자 정의 프로필을 정의하거나 내장 프로필을 사용자 정의할 수도 있습니다.
 
 ### `overflow-check`
 
-By default, `overflow-checks` is set to:
+기본적으로 `overflow-checks`는 다음과 같이 설정됩니다:
 
-- `true` for the `dev` profile
-- `false` for the `release` profile
+- `dev` 프로필의 경우 `true`
+- `release` 프로필의 경우 `false`
 
-This is in line with the goals of the two profiles.\
-`dev` is aimed at local development, so it panics in order to highlight potential issues as early as possible.\
-`release`, instead, is tuned for runtime performance: checking for overflows would slow down the program, so it
-prefers to wrap around.
+이는 두 프로필의 목표와 일치합니다.\n`dev`는 로컬 개발을 목표로 하므로 가능한 한 빨리 잠재적인 문제를 강조하기 위해 패닉을 일으킵니다.\n`release`는 런타임 성능을 위해 조정되었습니다. 오버플로를 확인하면 프로그램이 느려지므로 래핑하는 것을 선호합니다.
 
-At the same time, having different behaviours for the two profiles can lead to subtle bugs.\
-Our recommendation is to enable `overflow-checks` for both profiles: it's better to crash than to silently produce
-incorrect results. The runtime performance hit is negligible in most cases; if you're working on a performance-critical
-application, you can run benchmarks to decide if it's something you can afford.
+동시에 두 프로필에 대해 다른 동작을 갖는 것은 미묘한 버그로 이어질 수 있습니다.\n우리의 권장 사항은 두 프로필 모두에 대해 `overflow-checks`를 활성화하는 것입니다. 조용히 잘못된 결과를 생성하는 것보다 충돌하는 것이 좋습니다. 런타임 성능 저하는 대부분의 경우 무시할 수 있습니다. 성능이 중요한 애플리케이션에서 작업하는 경우 벤치마크를 실행하여 감당할 수 있는지 결정할 수 있습니다.
 
-## Further reading
+## 추가 자료
 
-- Check out ["Myths and legends about integer overflow in Rust"](https://huonw.github.io/blog/2016/04/myths-and-legends-about-integer-overflow-in-rust/)
-  for an in-depth discussion about integer overflow in Rust.
+- Rust의 정수 오버플로에 대한 심층적인 논의는 ["Rust의 정수 오버플로에 대한 신화와 전설"](https://huonw.github.io/blog/2016/04/myths-and-legends-about-integer-overflow-in-rust/)을 확인하십시오.
