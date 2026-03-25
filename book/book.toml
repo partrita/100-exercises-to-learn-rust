@@ -3,7 +3,7 @@ authors = ["Luca Palmieri"]
 language = "ko"
 multilingual = false
 src = "src"
-title = "100 Exercises To Learn Rust"
+title = "100개의 연습 문제로 Rust 배우기"
 
 [preprocessor.exercise-linker]
 exercise_root_url = "https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises"

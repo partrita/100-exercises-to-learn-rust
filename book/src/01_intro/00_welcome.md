@@ -36,9 +36,11 @@ Rust의 문법, 타입 시스템, 표준 라이브러리 및 생태계에 대해
 
 ```bash
 # GitHub에 SSH 키가 설정된 경우
-git clone git@github.com:mainmatter/100-exercises-to-learn-rust.git
+git clone git@github.com:partrita/100-exercises-to-learn-rust.git
 # 그렇지 않은 경우 HTTPS URL을 사용하세요:
-#   https://github.com/mainmatter/100-exercises-to-learn-rust.git
+#   https://github.com/partrita/100-exercises-to-learn-rust.git
+# github cli를 사용한 방법
+gh repo clone partrita/100-exercises-to-learn-rust
 ```
 
 또한, 진행 상황을 쉽게 추적하고 필요한 경우 기본 저장소에서 업데이트를 가져올 수 있도록 브랜치에서 작업하는 것을 권장합니다:
