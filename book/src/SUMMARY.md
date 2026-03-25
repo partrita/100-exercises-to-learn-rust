@@ -1,4 +1,4 @@
-# 요약
+# Summary
 
 - [환영합니다](01_intro/00_welcome.md)
   - [문법](01_intro/01_syntax.md)
