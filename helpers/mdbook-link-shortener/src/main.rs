@@ -1,6 +1,6 @@
 use clap::Parser;
 use mdbook::errors::Error;
-use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
+use mdbook::{parse_input, Preprocessor};
 use mdbook_link_shortener::LinkShortener;
 use semver::{Version, VersionReq};
 use std::io;
@@ -30,7 +30,7 @@ fn main() -> Result<(), anyhow::Error> {
     let preprocessor = LinkShortener::new();
 
     if let Some(SubCommand::Supports(Supports { renderer })) = cli.sub {
-        let code = if preprocessor.supports_renderer(&renderer) {
+        let code = if preprocessor.supports_renderer(&renderer).unwrap_or(false) {
             0
         } else {
             1
@@ -44,7 +44,7 @@ fn main() -> Result<(), anyhow::Error> {
 }
 
 fn handle_preprocessing(pre: &dyn Preprocessor) -> Result<(), Error> {
-    let (ctx, book) = CmdPreprocessor::parse_input(io::stdin())?;
+    let (ctx, book) = parse_input(io::stdin())?;
 
     let book_version = Version::parse(&ctx.mdbook_version)?;
     let version_req = VersionReq::parse(mdbook::MDBOOK_VERSION)?;

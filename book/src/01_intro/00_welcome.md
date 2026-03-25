@@ -22,7 +22,7 @@ Rust의 문법, 타입 시스템, 표준 라이브러리 및 생태계에 대해
 
 ## 형식
 
-과정 자료는 [브라우저에서](https://rust-exercises.com/100-exercises/) 보거나 오프라인 읽기를 위해 [PDF 파일로 다운로드](https://rust-exercises.com/100-exercises-to-learn-rust.pdf)할 수 있습니다.
+과정 자료는 [브라우저에서](https://rust-exercises.com/100-exercises/) 볼 수 있습니다.
 과정 자료를 인쇄하고 싶다면 [Amazon에서 페이퍼백 사본을 구매](https://www.amazon.com/dp/B0DJ14KQQG/)하세요.
 
 ## 구조

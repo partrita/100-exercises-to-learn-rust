@@ -1,7 +1,6 @@
 use anyhow::{Context, Error};
-use mdbook::book::Book;
-use mdbook::preprocess::{Preprocessor, PreprocessorContext};
-use mdbook::BookItem;
+use mdbook::book::{Book, BookItem};
+use mdbook::{Preprocessor, PreprocessorContext};
 
 pub struct ExerciseLinker;
 
@@ -17,27 +16,20 @@ impl Preprocessor for ExerciseLinker {
     }
 
     fn run(&self, ctx: &PreprocessorContext, mut book: Book) -> Result<Book, Error> {
-        let config = ctx
+        let root_url: String = ctx
             .config
-            .get_preprocessor(self.name())
-            .context("Failed to get preprocessor configuration")?;
-        let key = String::from("exercise_root_url");
-        let root_url = config
-            .get(&key)
-            .context("Failed to get `exercise_root_url`")?;
-        let root_url = root_url
-            .as_str()
-            .context("`exercise_root_url` is not a string")?
-            .to_owned();
+            .get("preprocessor.exercise-linker.exercise_root_url")
+            .context("Failed to get `exercise_root_url` from configuration")?
+            .context("`exercise_root_url` is missing from configuration")?;
 
-        book.sections
+        book.items
             .iter_mut()
             .for_each(|i| process_book_item(i, &ctx.renderer, &root_url));
         Ok(book)
     }
 
-    fn supports_renderer(&self, _renderer: &str) -> bool {
-        true
+    fn supports_renderer(&self, _renderer: &str) -> Result<bool, Error> {
+        Ok(true)
     }
 }
 
