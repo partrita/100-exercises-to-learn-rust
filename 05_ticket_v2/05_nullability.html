@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>널 허용성 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>널 허용성(Nullability) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,46 +178,36 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="널-허용성"><a class="header" href="#널-허용성">널 허용성</a></h1>
-<p><code>assigned</code> 메소드의 구현은 상당히 무뚝뚝합니다: 할 일 및 완료된 티켓에 대해 패닉을 일으키는 것은 이상적이지 않습니다.
-<strong>Rust의 <code>Option</code> 타입</strong>을 사용하면 더 잘할 수 있습니다.</p>
-<h2 id="option"><a class="header" href="#option"><code>Option</code></a></h2>
-<p><code>Option</code>은 <strong>널 허용 값</strong>을 나타내는 Rust 타입입니다.
-이것은 Rust의 표준 라이브러리에 정의된 열거형입니다:</p>
+                        <h1 id="널-허용성nullability"><a class="header" href="#널-허용성nullability">널 허용성(Nullability)</a></h1>
+<p>지금까지의 <code>assigned_to</code> 구현은 조금 거칠었습니다. ’할 일’이나 ‘완료’ 상태인 티켓에 대해 무조건 패닉을 일으키는 것은 그리 좋은 방법이 아니죠. 이때 <strong>Rust의 <code>Option</code> 타입</strong>을 활용하면 훨씬 세련되게 처리할 수 있습니다.</p>
+<h2 id="option"><a class="header" href="#option">Option</a></h2>
+<p><code>Option</code>은 값이 존재할 수도 있고 없을 수도 있는 **널 허용 값(Nullable value)**을 나타내는 Rust의 기본 타입입니다. 표준 라이브러리에는 다음과 같이 열거형으로 정의되어 있습니다.</p>
 <pre><code class="language-rust">enum Option&lt;T&gt; {
     Some(T),
     None,
 }</code></pre>
-<p><code>Option</code>은 값이 존재할 수도 있고(<code>Some(T)</code>) 없을 수도 있다(<code>None</code>)는 아이디어를 인코딩합니다.
-또한 <strong>두 경우를 모두 명시적으로 처리</strong>하도록 강제합니다. 널 허용 값으로 작업하면서 <code>None</code> 케이스 처리를 잊어버리면 컴파일러 오류가 발생합니다.
-이것은 다른 언어의 “암시적” 널 허용성에 비해 상당한 개선입니다. 다른 언어에서는 <code>null</code> 확인을 잊어버려 런타임 오류를 유발할 수 있습니다.</p>
-<h2 id="option의-정의"><a class="header" href="#option의-정의"><code>Option</code>의 정의</a></h2>
-<p><code>Option</code>의 정의는 이전에 보지 못했던 Rust 구문을 사용합니다: <strong>튜플과 유사한 베리언트</strong>입니다.</p>
-<h3 id="튜플과-유사한-베리언트"><a class="header" href="#튜플과-유사한-베리언트">튜플과 유사한 베리언트</a></h3>
-<p><code>Option</code>에는 <code>Some(T)</code>와 <code>None</code> 두 가지 베리언트가 있습니다.
-<code>Some</code>은 <strong>튜플과 유사한 베리언트</strong>입니다: <strong>이름 없는 필드</strong>를 가지는 베리언트입니다.</p>
-<p>튜플과 유사한 베리언트는 저장할 필드가 하나만 있을 때, 특히 <code>Option</code>과 같은 “래퍼” 타입을 볼 때 자주 사용됩니다.</p>
-<h3 id="튜플과-유사한-구조체"><a class="header" href="#튜플과-유사한-구조체">튜플과 유사한 구조체</a></h3>
-<p>열거형에만 국한된 것은 아닙니다. 튜플과 유사한 구조체도 정의할 수 있습니다:</p>
+<p><code>Option</code>은 값이 있으면 <code>Some(T)</code>, 없으면 <code>None</code>이라는 정보를 명확하게 담고 있습니다. 또한 Rust는 개발자가 <strong>두 가지 경우를 모두 명시적으로 처리</strong>하도록 강제합니다. 만약 <code>None</code>인 경우를 깜빡하고 처리하지 않으면 컴파일 에러가 발생하죠. 이는 ‘암시적으로’ 널을 허용하는 다른 언어들에 비해 엄청난 장점입니다. 널 체크를 잊어서 발생하는 런타임 에러를 사전에 방지할 수 있기 때문입니다.</p>
+<h2 id="option의-정의-살펴보기"><a class="header" href="#option의-정의-살펴보기">Option의 정의 살펴보기</a></h2>
+<p><code>Option</code>의 정의를 보면 이전에 보지 못했던 새로운 구문이 등장합니다. 바로 **튜플 형태의 베리언트(Tuple-like variants)**입니다.</p>
+<h3 id="튜플-형태의-베리언트tuple-like-variants"><a class="header" href="#튜플-형태의-베리언트tuple-like-variants">튜플 형태의 베리언트(Tuple-like variants)</a></h3>
+<p><code>Option</code>에는 <code>Some(T)</code>와 <code>None</code>이라는 두 베리언트가 있습니다. 여기서 <code>Some</code>은 <strong>이름 없는 필드</strong>를 가지는 <strong>튜플 형태의 베리언트</strong>입니다.</p>
+<p>이런 형태는 필드가 하나뿐이거나, <code>Option</code>처럼 무언가를 감싸는 ‘래퍼(Wrapper)’ 타입에서 자주 사용됩니다.</p>
+<h3 id="튜플-형태의-구조체tuple-like-structs"><a class="header" href="#튜플-형태의-구조체tuple-like-structs">튜플 형태의 구조체(Tuple-like structs)</a></h3>
+<p>열거형뿐만 아니라 구조체도 튜플 형태로 정의할 수 있습니다.</p>
 <pre><code class="language-rust">struct Point(i32, i32);</code></pre>
-<p>그런 다음 위치 인덱스를 사용하여 <code>Point</code> 인스턴스의 두 필드에 접근할 수 있습니다:</p>
+<p>이렇게 정의한 <code>Point</code> 인스턴스의 필드에는 인덱스를 사용해 접근할 수 있습니다.</p>
 <pre><code class="language-rust">let point = Point(3, 4);
 let x = point.0;
 let y = point.1;</code></pre>
-<h3 id="튜플"><a class="header" href="#튜플">튜플</a></h3>
-<p>아직 튜플을 보지 않았는데 무언가가 튜플과 유사하다고 말하는 것은 이상합니다!
-튜플은 원시 Rust 타입의 또 다른 예입니다.
-(잠재적으로 다른) 타입을 가진 고정된 수의 값을 함께 그룹화합니다:</p>
-<pre><code class="language-rust">// 두 값, 동일한 타입
-let first: (i32, i32) = (3, 4);
-// 세 값, 다른 타입
-let second: (i32, u32, u8) = (-42, 3, 8);</code></pre>
-<p>구문은 간단합니다: 괄호 사이에 값의 타입을 쉼표로 구분하여 나열합니다.
-점 표기법과 필드 인덱스를 사용하여 튜플의 필드에 접근할 수 있습니다:</p>
+<h3 id="튜플tuples"><a class="header" href="#튜플tuples">튜플(Tuples)</a></h3>
+<p>방금 ’튜플 형태’라는 말을 썼는데, 정작 튜플이 무엇인지 아직 배우지 않았네요! 튜플은 여러 가지 타입의 값들을 하나의 단위로 묶어주는 Rust의 기본 타입입니다.</p>
+<pre><code class="language-rust">// 같은 타입의 값 두 개를 묶은 튜플 let first: (i32, i32) = (3, 4);
+// 서로 다른 타입의 값 세 개를 묶은 튜플 let second: (i32, u32, u8) = (-42, 3, 8);</code></pre>
+<p>문법은 아주 간단합니다. 괄호 안에 값의 타입들을 쉼표로 구분해 적어주면 됩니다. 각 값에 접근할 때는 점(<code>.</code>) 표기법과 인덱스를 사용합니다.</p>
 <pre><code class="language-rust">assert_eq!(second.0, -42);
 assert_eq!(second.1, 3);
 assert_eq!(second.2, 8);</code></pre>
-<p>튜플은 전용 구조체 타입을 정의하기 귀찮을 때 값을 함께 그룹화하는 편리한 방법입니다.</p>
+<p>튜플은 굳이 전용 구조체 타입을 따로 정의하기에는 번거로운, 간단한 데이터 묶음을 만들 때 매우 유용합니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f4x"><code>05_ticket_v2/05_nullability</code></a></p>
 

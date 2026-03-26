@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>변수 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>변수(Variables) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,37 +178,37 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="변수"><a class="header" href="#변수">변수</a></h1>
-<p>Rust에서는 <code>let</code> 키워드를 사용하여 <strong>변수</strong>를 선언할 수 있습니다. 예를 들어:</p>
+                        <h1 id="변수variables"><a class="header" href="#변수variables">변수(Variables)</a></h1>
+<p>Rust에서는 <code>let</code> 키워드를 사용하여 <strong>변수</strong>를 선언합니다. 예를 들어 다음과 같이 작성할 수 있습니다.</p>
 <pre><code class="language-rust">let x = 42;</code></pre>
-<p>위에서는 <code>x</code>라는 변수를 정의하고 값 <code>42</code>를 할당했습니다.</p>
-<h2 id="타입"><a class="header" href="#타입">타입</a></h2>
-<p>Rust의 모든 변수는 타입을 가져야 합니다. 컴파일러에 의해 추론되거나 개발자가 명시적으로 지정할 수 있습니다.</p>
-<h3 id="명시적-타입-어노테이션"><a class="header" href="#명시적-타입-어노테이션">명시적 타입 어노테이션</a></h3>
-<p>변수 이름 뒤에 콜론 <code>:</code>과 타입을 추가하여 변수 타입을 지정할 수 있습니다. 예를 들어:</p>
+<p>위 코드는 <code>x</code>라는 이름의 변수를 정의하고, 여기에 <code>42</code>라는 값을 할당한 것입니다.</p>
+<h2 id="타입type"><a class="header" href="#타입type">타입(Type)</a></h2>
+<p>Rust의 모든 변수는 타입을 가져야 합니다. 컴파일러가 상황을 보고 타입을 알아서 **추론(Inference)**하거나, 개발자가 직접 **명시(Annotation)**할 수 있습니다.</p>
+<h3 id="명시적-타입-어노테이션explicit-type-annotation"><a class="header" href="#명시적-타입-어노테이션explicit-type-annotation">명시적 타입 어노테이션(Explicit Type Annotation)</a></h3>
+<p>변수 이름 뒤에 콜론 <code>:</code>과 타입을 추가하여 변수의 타입을 직접 지정할 수 있습니다.</p>
 <pre><code class="language-rust">// let &lt;변수_이름&gt;: &lt;타입&gt; = &lt;표현식&gt;;
 let x: u32 = 42;</code></pre>
-<p>위 예제에서는 <code>x</code>의 타입을 <code>u32</code>로 명시적으로 제한했습니다.</p>
-<h3 id="타입-추론"><a class="header" href="#타입-추론">타입 추론</a></h3>
-<p>변수의 타입을 지정하지 않으면 컴파일러는 변수가 사용되는 컨텍스트를 기반으로 타입을 추론하려고 시도합니다.</p>
+<p>위 예제에서는 <code>x</code>의 타입을 <code>u32</code>로 명시했습니다.</p>
+<h3 id="타입-추론type-inference"><a class="header" href="#타입-추론type-inference">타입 추론(Type Inference)</a></h3>
+<p>타입을 직접 적지 않으면, 컴파일러는 변수가 어떻게 사용되는지 보고 타입을 추론합니다.</p>
 <pre><code class="language-rust">let x = 42;
 let y: u32 = x;</code></pre>
-<p>위 예제에서는 <code>x</code>의 타입을 지정하지 않았습니다. <code>x</code>는 나중에 <code>u32</code>로 명시적으로 타입이 지정된 <code>y</code>에 할당됩니다. Rust는 자동 타입 강제 변환을 수행하지 않으므로 컴파일러는 <code>x</code>의 타입을 <code>u32</code>로 추론합니다. 이는 <code>y</code>와 동일하며 프로그램이 오류 없이 컴파일되도록 하는 유일한 타입입니다.</p>
+<p>위의 예에서 <code>x</code>에는 타입을 지정하지 않았지만, 나중에 <code>u32</code> 타입인 <code>y</code>에 할당됩니다. Rust는 타입을 자동으로 바꿔주지(Implicit coercion) 않으므로, 컴파일러는 <code>x</code>의 타입을 <code>u32</code>로 추론하게 됩니다. 이것이 프로그램이 오류 없이 컴파일될 수 있는 유일한 길이기 때문입니다.</p>
 <h3 id="추론의-한계"><a class="header" href="#추론의-한계">추론의 한계</a></h3>
-<p>컴파일러는 때때로 사용법에 따라 올바른 변수 타입을 추론하는 데 약간의 도움이 필요합니다. 이러한 경우 컴파일 오류가 발생하고 컴파일러는 상황을 명확히 하기 위해 명시적인 타입 힌트를 제공하도록 요청합니다.</p>
-<h2 id="함수-인자는-변수입니다"><a class="header" href="#함수-인자는-변수입니다">함수 인자는 변수입니다</a></h2>
-<p>모든 영웅이 망토를 입는 것은 아니며, 모든 변수가 <code>let</code>으로 선언되는 것도 아닙니다. 함수 인자도 변수입니다!</p>
+<p>컴파일러가 주변 맥락만으로는 타입을 정확히 알아내지 못할 때도 있습니다. 이럴 때는 컴파일 오류가 발생하며, 컴파일러는 개발자에게 명시적으로 타입 힌트를 달아달라고 요청하게 됩니다.</p>
+<h2 id="함수-매개변수function-parameters도-변수입니다"><a class="header" href="#함수-매개변수function-parameters도-변수입니다">함수 매개변수(Function parameters)도 변수입니다</a></h2>
+<p>모든 변수가 <code>let</code>으로만 선언되는 것은 아닙니다. 함수 매개변수도 결국 변수와 같습니다!</p>
 <pre><code class="language-rust">fn add_one(x: u32) -&gt; u32 {
     x + 1
 }</code></pre>
-<p>위 예제에서 <code>x</code>는 <code>u32</code> 타입의 변수입니다. <code>x</code>와 <code>let</code>으로 선언된 변수의 유일한 차이점은 함수 인자는 타입을 <strong>반드시</strong> 명시적으로 선언해야 한다는 것입니다. 컴파일러가 대신 추론해주지 않습니다. 이 제약 조건 덕분에 Rust 컴파일러(그리고 우리 인간!)는 함수의 구현을 보지 않고도 함수의 시그니처를 이해할 수 있습니다. 이는 컴파일 속도에 큰 도움이 됩니다<sup class="footnote-reference" id="fr-speed-1"><a href="#footnote-speed">1</a></sup>!</p>
-<h2 id="초기화"><a class="header" href="#초기화">초기화</a></h2>
-<p>변수를 선언할 때 초기화할 필요는 없습니다. 예를 들어</p>
+<p>위 예제에서 <code>x</code>는 <code>u32</code> 타입의 변수입니다. <code>let</code> 변수와 한 가지 다른 점이 있다면, 함수 매개변수는 타입을 <strong>반드시</strong> 명시해야 한다는 것입니다. 컴파일러가 대신 추론해주지 않거든요. 덕분에 컴파일러(와 우리 인간!)는 함수 안의 코드를 일일이 들여다보지 않고도 함수의 시그니처만 보고 어떤 역할을 하는지 바로 이해할 수 있습니다. 이는 컴파일 속도를 높이는 데에도 큰 도움이 됩니다<sup class="footnote-reference" id="fr-speed-1"><a href="#footnote-speed">1</a></sup>!</p>
+<h2 id="초기화initialization"><a class="header" href="#초기화initialization">초기화(Initialization)</a></h2>
+<p>변수를 선언할 때 꼭 바로 값을 넣어줄 필요는 없습니다.</p>
 <pre><code class="language-rust">let x: u32;</code></pre>
-<p>는 유효한 변수 선언입니다. 하지만 사용하기 전에 변수를 초기화해야 합니다. 그렇지 않으면 컴파일러가 오류를 발생시킵니다:</p>
+<p>이렇게 선언만 하는 것도 가능합니다. 다만, 해당 변수를 실제로 <strong>사용하기 전에는 반드시 초기화</strong>해야 합니다. 그렇지 않으면 컴파일러가 다음과 같은 친절한(?) 오류를 띄울 것입니다.</p>
 <pre><code class="language-rust">let x: u32;
 let y = x + 1;</code></pre>
-<p>는 컴파일 오류를 발생시킵니다:</p>
+<p>컴파일 결과:</p>
 <pre><code class="language-text">error[E0381]: used binding `x` isn't initialized
  --&gt; src/main.rs:3:9
   |
@@ -222,13 +222,13 @@ help: consider assigning a value
 2 | let x: u32 = 0;
   |            +++
 </code></pre>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/ffy"><code>02_basic_calculator/02_variables</code></a></p>
 <hr>
 <ol class="footnote-definition">
 <li id="footnote-speed">
-<p>Rust 컴파일러는 컴파일 속도에 관한 한 모든 도움이 필요합니다.</p>
-<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
- <a href="#fr-speed-1">↩</a></li>
+<p>Rust 컴파일러의 속도를 조금이라도 높이기 위해서는 가능한 모든 힌트가 필요합니다. <a href="#fr-speed-1">↩</a></p>
+</li>
 </ol>
 
                     </main>

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>트레이트 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>트레이트(Traits) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,19 +178,19 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="트레이트"><a class="header" href="#트레이트">트레이트</a></h1>
-<p>이전 장에서는 Rust의 타입 및 소유권 시스템의 기본 사항을 다루었습니다.<br>이제 더 깊이 파고들 시간입니다. Rust의 인터페이스 방식인 <strong>트레이트</strong>를 탐색해 보겠습니다.</p>
-<p>트레이트에 대해 배우면 모든 곳에서 그 흔적을 보기 시작할 것입니다.<br>사실, 이전 장 전체에서 <code>.into()</code> 호출과 <code>==</code> 및 <code>+</code>와 같은 연산자 등 트레이트가 작동하는 것을 이미 보았습니다.</p>
-<p>개념으로서의 트레이트 외에도 Rust의 표준 라이브러리에 정의된 몇 가지 주요 트레이트도 다룰 것입니다:</p>
+                        <h1 id="트레이트-traits"><a class="header" href="#트레이트-traits">트레이트 (Traits)</a></h1>
+<p>이전 장에서는 Rust의 타입 시스템과 소유권(Ownership)의 기초를 살펴보았습니다. 이제 한 단계 더 깊이 들어가 볼 시간입니다. 이번 장에서는 Rust에서 인터페이스를 다루는 방식인 **트레이트(Traits)**에 대해 알아보겠습니다.</p>
+<p>트레이트를 배우고 나면 Rust 코드 곳곳에서 그 흔적을 발견하게 될 것입니다. 사실 여러분은 이미 이전 장에서 <code>.into()</code> 호출이나 <code>==</code>, <code>+</code> 같은 연산자를 사용하며 트레이트가 작동하는 모습을 간접적으로 경험했습니다.</p>
+<p>이번 장에서는 트레이트의 기본 개념뿐만 아니라, Rust 표준 라이브러리에 정의된 핵심 트레이트들도 함께 다룰 예정입니다.</p>
 <ul>
-<li>연산자 트레이트 (예: <code>Add</code>, <code>Sub</code>, <code>PartialEq</code> 등)</li>
-<li>오류 없는 변환을 위한 <code>From</code> 및 <code>Into</code></li>
-<li>값 복사를 위한 <code>Clone</code> 및 <code>Copy</code></li>
-<li><code>Deref</code> 및 역참조 강제 변환</li>
-<li>알려진 크기를 가진 타입을 표시하기 위한 <code>Sized</code></li>
-<li>사용자 정의 정리 로직을 위한 <code>Drop</code></li>
+<li><strong>연산자 트레이트</strong>: <code>Add</code>, <code>Sub</code>, <code>PartialEq</code> 등</li>
+<li><strong>변환 트레이트</strong>: 오류 없는 타입 변환을 위한 <code>From</code> 및 <code>Into</code></li>
+<li><strong>복사 트레이트</strong>: 값의 복제를 위한 <code>Clone</code> 및 <code>Copy</code></li>
+<li><strong>역참조 트레이트</strong>: <code>Deref</code>와 역참조 강제 변환(Deref coercion)</li>
+<li><strong>크기 트레이트</strong>: 컴파일 타임에 크기가 알려진 타입을 나타내는 <code>Sized</code></li>
+<li><strong>정리 트레이트</strong>: 사용자 정의 리소스 정리 로직을 위한 <code>Drop</code></li>
 </ul>
-<p>변환에 대해 이야기할 것이므로 이전 장의 “지식 격차” 중 일부를 메울 기회를 잡을 것입니다. 예를 들어, <code>"A title"</code>은 정확히 무엇일까요? 슬라이스에 대해서도 더 배울 시간입니다!</p>
+<p>타입 변환에 대해 배우면서 그동안 미뤄두었던 “지식의 빈틈“도 채워볼 것입니다. 예를 들어, <code>"A title"</code> 같은 문자열 리터럴의 정체는 무엇일까요? 이제 **슬라이스(Slices)**에 대해서도 더 자세히 알아볼 시간입니다!</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f2d"><code>04_traits/00_intro</code></a></p>
 

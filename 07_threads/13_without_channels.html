@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>채널 없이 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>채널 없는 방식 - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,35 +178,30 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="설계-검토"><a class="header" href="#설계-검토">설계 검토</a></h1>
-<p>우리가 거쳐온 여정을 잠시 검토해 봅시다.</p>
-<h2 id="채널-직렬화를-통한-잠금-없음"><a class="header" href="#채널-직렬화를-통한-잠금-없음">채널 직렬화를 통한 잠금 없음</a></h2>
-<p>다중 스레드 티켓 저장소의 첫 번째 구현은 다음을 사용했습니다:</p>
+                        <h1 id="설계-검토-채널-없이-구현하기"><a class="header" href="#설계-검토-채널-없이-구현하기">설계 검토: 채널 없이 구현하기</a></h1>
+<p>지금까지 우리가 걸어온 여정을 잠시 돌아봅시다.</p>
+<h2 id="채널-직렬화serialization를-통한-동기화"><a class="header" href="#채널-직렬화serialization를-통한-동기화">채널 직렬화(Serialization)를 통한 동기화</a></h2>
+<p>첫 번째 다중 스레드 티켓 저장소는 다음과 같은 방식이었습니다.</p>
 <ul>
-<li>공유 상태를 유지하는 단일 장기 실행 스레드 (서버)</li>
-<li>자체 스레드에서 채널을 통해 요청을 보내는 여러 클라이언트.</li>
+<li>공유 데이터를 관리하며 항상 실행 중인 <strong>서버(Server) 스레드</strong> 한 개</li>
+<li>채널을 통해 요청을 보내는 <strong>여러 클라이언트(Client)</strong></li>
 </ul>
-<p>서버가 상태를 수정하는 유일한 주체였기 때문에 상태 잠금은 필요하지 않았습니다. 이는 “수신함” 채널이 들어오는 요청을 자연스럽게 <strong>직렬화</strong>했기 때문입니다: 서버는 요청을 하나씩 처리했습니다.
-패치 동작과 관련하여 이 접근 방식의 한계에 대해서는 이미 논의했지만, 원래 설계의 성능 영향에 대해서는 논의하지 않았습니다: 서버는 읽기를 포함하여 한 번에 하나의 요청만 처리할 수 있었습니다.</p>
-<h2 id="세분화된-잠금"><a class="header" href="#세분화된-잠금">세분화된 잠금</a></h2>
-<p>그런 다음 각 티켓이 자체 잠금으로 보호되고 클라이언트가 적절한 잠금을 획득하여 티켓을 읽거나 원자적으로 수정할지 독립적으로 결정할 수 있는 더 정교한 설계로 이동했습니다.</p>
-<p>이 설계는 더 나은 병렬 처리(즉, 여러 클라이언트가 동시에 티켓을 읽을 수 있음)를 허용하지만, 여전히 근본적으로 <strong>직렬적</strong>입니다: 서버는 명령을 하나씩 처리합니다. 특히, 클라이언트에게 잠금을 하나씩 할당합니다.</p>
-<p>채널을 완전히 제거하고 클라이언트가 <code>TicketStore</code>에 직접 접근하도록 허용하여 접근을 동기화하기 위해 잠금에만 의존할 수 있을까요?</p>
-<h2 id="채널-제거"><a class="header" href="#채널-제거">채널 제거</a></h2>
-<p>해결해야 할 두 가지 문제가 있습니다:</p>
+<p>서버 스레드만이 데이터에 직접 접근할 수 있었기 때문에, 별도의 잠금이 필요 없었죠. 채널이 들어오는 모든 요청을 **직렬화(Serialization)**하여 한 줄로 세워주었기 때문입니다. 하지만 서버가 한 번에 하나의 요청만 처리할 수 있어 조회의 효율성이 떨어진다는 단점이 있었습니다.</p>
+<h2 id="세분화된-잠금fine-grained-locking"><a class="header" href="#세분화된-잠금fine-grained-locking">세분화된 잠금(Fine-grained Locking)</a></h2>
+<p>그다음 우리는 각 티켓이 개별 잠금을 가지는 더 정교한 구조로 이동했습니다. 클라이언트가 직접 잠금을 획득해 데이터를 읽거나 원자적으로 수정할 수 있게 되었죠.</p>
+<p>이 방식은 병렬 처리가 가능해졌지만, 여전히 서버 스레드가 명령을 하나씩 꺼내 잠금을 할당하는 <strong>직렬적인 방식</strong>에 의존하고 있었습니다. 그렇다면 채널을 아예 없애고 클라이언트가 <code>TicketStore</code>에 직접 접근하게 만들 수는 없을까요?</p>
+<h2 id="채널channel-제거하기"><a class="header" href="#채널channel-제거하기">채널(Channel) 제거하기</a></h2>
+<p>채널을 제거하려면 두 가지 숙제를 해결해야 합니다.</p>
 <ul>
-<li>스레드 간 <code>TicketStore</code> 공유</li>
-<li>저장소 접근 동기화</li>
+<li>여러 스레드 사이에서 <code>TicketStore</code> 공유하기</li>
+<li>데이터 접근 동기화하기</li>
 </ul>
-<h3 id="스레드-간-ticketstore-공유"><a class="header" href="#스레드-간-ticketstore-공유">스레드 간 <code>TicketStore</code> 공유</a></h3>
-<p>모든 스레드가 동일한 상태를 참조하기를 원합니다. 그렇지 않으면 실제로 다중 스레드 시스템이 아니라 병렬로 여러 단일 스레드 시스템을 실행하는 것과 같습니다.
-스레드 간에 잠금을 공유하려고 할 때 이미 이 문제에 직면했습니다: <code>Arc</code>를 사용할 수 있습니다.</p>
-<h3 id="저장소-접근-동기화"><a class="header" href="#저장소-접근-동기화">저장소 접근 동기화</a></h3>
-<p>채널이 제공하는 직렬화 덕분에 여전히 잠금 없는 상호 작용이 하나 있습니다: 저장소에서 티켓을 삽입(또는 제거)하는 것입니다.
-채널을 제거하면 <code>TicketStore</code> 자체에 대한 접근을 동기화하기 위해 (또 다른) 잠금을 도입해야 합니다.</p>
-<p><code>Mutex</code>를 사용하면 각 티켓에 대해 추가 <code>RwLock</code>을 사용하는 것은 의미가 없습니다: <code>Mutex</code>는 이미 전체 저장소에 대한 접근을 직렬화할 것이므로 어쨌든 티켓을 병렬로 읽을 수 없을 것입니다.
-대신 <code>RwLock</code>을 사용하면 티켓을 병렬로 읽을 수 있습니다. 티켓을 삽입하거나 제거하는 동안 모든 읽기를 일시 중지하기만 하면 됩니다.</p>
-<p>이 경로를 따라가서 어디로 이어지는지 봅시다.</p>
+<h3 id="스레드-간-ticketstore-공유하기"><a class="header" href="#스레드-간-ticketstore-공유하기">스레드 간 <code>TicketStore</code> 공유하기</a></h3>
+<p>모든 스레드가 동일한 상태를 바라보게 만들어야 합니다. 우리는 이미 스레드 간에 무언가를 공유할 때 어떤 해결책이 있는지 알고 있죠. 바로 **<code>Arc</code>**를 활용하는 것입니다.</p>
+<h3 id="접근-동기화하기"><a class="header" href="#접근-동기화하기">접근 동기화하기</a></h3>
+<p>채널이 사라지면 <code>TicketStore</code> 자체에 대한 동기화 문제도 새로 생깁니다. 예전에는 채널 덕분에 티켓을 새로 추가하거나 삭제하는 과정이 자동으로 줄을 섰지만(직렬화), 이제는 저장소 자체에 대한 잠금도 필요하게 된 것이죠.</p>
+<p>전체 저장소를 <code>Mutex</code>로 보호한다면 각 티켓마다 <code>RwLock</code>을 두는 것은 큰 의미가 없게 됩니다. 어차피 저장소 잠금이 풀릴 때까지 기다려야 하니까요. 반면에 저장소 전체를 <code>RwLock</code>으로 보호한다면, 티켓 조회는 병렬로 처리하면서 티켓의 삽입/삭제 시에만 모든 작업을 잠시 멈추게 할 수 있습니다.</p>
+<p>이제 이 방향으로 코드를 작성하면 어떤 결과가 나오는지 살펴봅시다!</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fxc"><code>07_threads/13_without_channels</code></a></p>
 

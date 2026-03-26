@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>크기 조정 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>크기 조정(Resizing) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,21 +178,18 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="크기-조정"><a class="header" href="#크기-조정">크기 조정</a></h1>
-<p><code>Vec</code>이 “확장 가능한” 벡터 타입이라고 말했지만, 그것이 무엇을 의미할까요?
-최대 용량에 도달한 <code>Vec</code>에 요소를 삽입하려고 하면 어떻게 될까요?</p>
+                        <h1 id="크기-조정resizing"><a class="header" href="#크기-조정resizing">크기 조정(Resizing)</a></h1>
+<p><code>Vec</code>이 “확장 가능한” 타입이라고 말씀드렸는데, 실제로 어떻게 늘어나는 것일까요? 만약 최대 용량(Capacity)에 도달한 <code>Vec</code>에 요소를 추가로 넣으려 하면 어떻게 될까요?</p>
 <pre><code class="language-rust">let mut numbers = Vec::with_capacity(3);
 numbers.push(1);
 numbers.push(2);
-numbers.push(3); // 최대 용량 도달
-numbers.push(4); // 여기서 무슨 일이 일어날까요?</code></pre>
-<p><code>Vec</code>은 <strong>자체적으로 크기를 조정</strong>할 것입니다.
-할당자에게 새로운 (더 큰) 힙 메모리 청크를 요청하고, 요소를 복사한 다음, 이전 메모리를 해제합니다.</p>
-<p>이 작업은 새로운 메모리 할당과 기존 모든 요소 복사를 포함하므로 비용이 많이 들 수 있습니다.</p>
+numbers.push(3); // 용량이 꽉 찼습니다!
+numbers.push(4); // 이때 무슨 일이 일어날까요?</code></pre>
+<p>이런 경우 <code>Vec</code>은 **자체적으로 크기를 조정(Resizing)**합니다. 더 구체적으로는 메모리 할당자(Allocator)에게 더 큰 새로운 힙 메모리 공간을 요청한 뒤, 기존 요소들을 새 공간으로 모두 복사하고, 이전에 사용하던 메모리는 해제합니다. 이 과정을 **재할당(Reallocation)**이라고 부릅니다.</p>
+<p>이 작업은 새로운 메모리 할당과 데이터 복사를 동반하므로, 요소가 많을수록 비용이 꽤 발생할 수 있습니다.</p>
 <h2 id="vecwith_capacity"><a class="header" href="#vecwith_capacity"><code>Vec::with_capacity</code></a></h2>
-<p><code>Vec</code>에 저장할 요소의 대략적인 수를 알고 있다면, <code>Vec::with_capacity</code> 메소드를 사용하여 충분한 메모리를 미리 할당할 수 있습니다.
-이렇게 하면 <code>Vec</code>이 커질 때 새로운 할당을 피할 수 있지만, 실제 사용량을 과대평가하면 메모리를 낭비할 수 있습니다.</p>
-<p>경우에 따라 평가하십시오.</p>
+<p>만약 벡터에 담을 요소의 대략적인 개수를 미리 알고 있다면, <code>Vec::with_capacity</code> 메서드를 사용하는 것이 좋습니다. 처음부터 충분한 메모리를 미리 확보해 두면, 벡터가 커질 때 발생하는 불필요한 재할당을 피할 수 있습니다.</p>
+<p>다만, 너무 많은 공간을 미리 잡아두면 메모리가 낭비될 수 있으니 상황에 맞춰 적절히 선택하는 것이 중요합니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f4k"><code>06_ticket_management/03_resizing</code></a></p>
 

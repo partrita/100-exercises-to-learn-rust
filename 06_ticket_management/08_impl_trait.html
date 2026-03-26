@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -179,43 +179,33 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="impl-trait"><a class="header" href="#impl-trait"><code>impl Trait</code></a></h1>
-<p><code>TicketStore::to_dos</code>는 <code>Vec&lt;&amp;Ticket&gt;</code>을 반환합니다.
-이 시그니처는 <code>to_dos</code>가 호출될 때마다 새로운 힙 할당을 도입하며, 이는 호출자가 결과로 무엇을 해야 하는지에 따라 불필요할 수 있습니다.
-<code>to_dos</code>가 <code>Vec</code> 대신 반복자를 반환하여 호출자가 결과를 <code>Vec</code>으로 수집할지 아니면 단순히 반복할지 결정할 수 있도록 하는 것이 더 좋을 것입니다.</p>
-<p>하지만 그것은 까다롭습니다!
-아래에 구현된 <code>to_dos</code>의 반환 타입은 무엇일까요?</p>
+<p><code>TicketStore::to_dos</code>는 <code>Vec&lt;&amp;Ticket&gt;</code>을 반환합니다. 하지만 이 시그니처는 <code>to_dos</code>가 호출될 때마다 새로운 힙 할당을 발생시키는데, 호출자가 결과물을 가지고 무엇을 하느냐에 따라 이는 불필요한 낭비가 될 수 있습니다. 만약 <code>to_dos</code>가 <code>Vec</code> 대신 반복자(Iterator)를 직접 반환한다면, 호출자가 이를 다시 <code>Vec</code>으로 모을지 아니면 그저 루프를 돌며 소비할지 스스로 결정할 수 있어 더 효율적일 것입니다.</p>
+<p>하지만 여기엔 한 가지 까다로운 점이 있습니다. 아래처럼 구현했을 때, <code>to_dos</code>의 반환 타입은 정확히 무엇이 되어야 할까요?</p>
 <pre><code class="language-rust">impl TicketStore {
     pub fn to_dos(&amp;self) -&gt; ??? {
         self.tickets.iter().filter(|t| t.status == Status::ToDo)
     }
 }</code></pre>
 <h2 id="이름-없는-타입"><a class="header" href="#이름-없는-타입">이름 없는 타입</a></h2>
-<p><code>filter</code> 메소드는 <code>std::iter::Filter</code>의 인스턴스를 반환하며, 다음과 같은 정의를 가집니다:</p>
+<p><code>filter</code> 메서드는 <code>std::iter::Filter</code> 구조체의 인스턴스를 반환하며, 그 정의는 다음과 같습니다.</p>
 <pre><code class="language-rust">pub struct Filter&lt;I, P&gt; { /* 필드 생략 */ }</code></pre>
-<p>여기서 <code>I</code>는 필터링되는 반복자의 타입이고 <code>P</code>는 요소를 필터링하는 데 사용되는 술어입니다.
-이 경우 <code>I</code>는 <code>std::slice::Iter&lt;'_, Ticket&gt;</code>이라는 것을 알지만, <code>P</code>는 무엇일까요?
-<code>P</code>는 클로저, 즉 <strong>익명 함수</strong>입니다. 이름에서 알 수 있듯이 클로저는 이름이 없으므로 코드에 작성할 수 없습니다.</p>
-<p>Rust에는 이에 대한 해결책이 있습니다: <strong>impl Trait</strong>입니다.</p>
+<p>여기서 <code>I</code>는 필터링할 반복자의 타입이고, <code>P</code>는 필터링 조건으로 사용되는 조건자(Predicate)입니다. 이 경우 <code>I</code>가 <code>std::slice::Iter&lt;'_, Ticket&gt;</code>이라는 것은 알 수 있지만, <code>P</code>는 무엇일까요? <code>P</code>는 우리가 전달한 클로저, 즉 <strong>익명 함수</strong>입니다. 이름 그대로 “이름이 없는” 함수이기 때문에, 우리가 직접 코드에 그 타입 이름을 적어줄 방법이 없습니다.</p>
+<p>Rust는 이 문제를 해결하기 위해 **<code>impl Trait</code>**라는 기능을 제공합니다.</p>
 <h2 id="impl-trait-1"><a class="header" href="#impl-trait-1"><code>impl Trait</code></a></h2>
-<p><code>impl Trait</code>는 타입의 이름을 지정하지 않고 타입을 반환할 수 있게 해주는 기능입니다.
-타입이 구현하는 트레이트를 선언하기만 하면 Rust가 나머지를 알아서 처리합니다.</p>
-<p>이 경우, <code>Ticket</code>에 대한 참조 반복자를 반환하고 싶습니다:</p>
+<p><code>impl Trait</code>는 구체적인 타입 이름을 명시하지 않고도 특정 트레이트를 구현한 타입을 반환할 수 있게 해주는 기능입니다. 반환할 타입이 어떤 트레이트를 만족하는지만 선언하면, 나머지는 Rust 컴파일러가 알아서 처리합니다.</p>
+<p>우리 예제에서는 <code>Ticket</code>에 대한 참조를 내뱉는 반복자를 반환하고 싶으므로 다음과 같이 작성할 수 있습니다.</p>
 <pre><code class="language-rust">impl TicketStore {
     pub fn to_dos(&amp;self) -&gt; impl Iterator&lt;Item = &amp;Ticket&gt; {
         self.tickets.iter().filter(|t| t.status == Status::ToDo)
     }
 }</code></pre>
-<p>그게 다입니다!</p>
-<h2 id="제네릭"><a class="header" href="#제네릭">제네릭?</a></h2>
-<p>반환 위치의 <code>impl Trait</code>는 제네릭 매개변수가 <strong>아닙니다</strong>.</p>
-<p>제네릭은 함수의 호출자가 채우는 타입에 대한 자리 표시자입니다.
-제네릭 매개변수가 있는 함수는 <strong>다형적</strong>입니다: 다른 타입으로 호출될 수 있으며, 컴파일러는 각 타입에 대해 다른 구현을 생성합니다.</p>
-<p><code>impl Trait</code>의 경우는 그렇지 않습니다.
-<code>impl Trait</code>가 있는 함수의 반환 타입은 컴파일 타임에 <strong>고정</strong>되며, 컴파일러는 이에 대한 단일 구현을 생성합니다.
-이것이 <code>impl Trait</code>가 <strong>불투명 반환 타입</strong>이라고도 불리는 이유입니다: 호출자는 반환 값의 정확한 타입을 알지 못하고, 지정된 트레이트를 구현한다는 것만 압니다. 하지만 컴파일러는 정확한 타입을 알고 있으며, 다형성은 관련되지 않습니다.</p>
+<p>간단하죠!</p>
+<h2 id="제네릭과-다른-점"><a class="header" href="#제네릭과-다른-점">제네릭과 다른 점</a></h2>
+<p>반환 위치에 쓰인 <code>impl Trait</code>는 제네릭 매개변수가 아닙니다.</p>
+<p>제네릭은 함수를 호출하는 쪽에서 타입을 결정하는 자리 표시자입니다. 따라서 제네릭 매개변수가 있는 함수는 **다형적(Polymorphic)**입니다. 즉, 서로 다른 타입으로 호출될 수 있으며 컴파일러는 각 타입에 맞는 구현을 각각 생성합니다.</p>
+<p>반면 <code>impl Trait</code>는 그렇지 않습니다. <code>impl Trait</code>를 사용하는 함수의 반환 타입은 컴파일 시점에 단 하나의 타입으로 <strong>고정</strong>되며, 컴파일러는 그에 대한 단일 구현만을 만듭니다. 호출하는 쪽에서는 반환되는 값의 구체적인 타입을 알 수 없고 단지 지정된 트레이트를 구현하고 있다는 사실만 알 수 있기 때문에, 이를 **불투명 반환 타입(Opaque return type)**이라고도 부릅니다. 비록 호출자에게는 불투명하지만 컴파일러는 실제 타입을 정확히 알고 있으므로 다형성과는 거리가 있습니다.</p>
 <h2 id="rpit"><a class="header" href="#rpit">RPIT</a></h2>
-<p>RFC나 Rust에 대한 심층 분석을 읽다 보면 <strong>RPIT</strong>라는 약어를 접할 수 있습니다.
-이는 **“Return Position Impl Trait”**의 약자이며, 반환 위치에서 <code>impl Trait</code>를 사용하는 것을 의미합니다.</p>
+<p>Rust 관련 기술 문서나 RFC를 읽다 보면 <strong>RPIT</strong>라는 용어를 마주칠 수 있습니다. 이는 **“Return Position Impl Trait”**의 약자로, 말 그대로 반환 위치에서 사용된 <code>impl Trait</code>를 의미합니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fx4"><code>06_ticket_management/08_impl_trait</code></a></p>
 

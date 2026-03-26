@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>구조체 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>구조체(Structs) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,44 +178,43 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="구조체"><a class="header" href="#구조체">구조체</a></h1>
-<p>각 티켓에 대해 세 가지 정보를 추적해야 합니다:</p>
+                        <h1 id="구조체struct"><a class="header" href="#구조체struct">구조체(Struct)</a></h1>
+<p>각 티켓에 대해서는 세 가지 정보를 관리해야 합니다:</p>
 <ul>
 <li>제목</li>
 <li>설명</li>
 <li>상태</li>
 </ul>
-<p>이를 나타내기 위해 <a href="https://ruex.io/f26"><code>String</code></a>을 사용하여 시작할 수 있습니다. <code>String</code>은 Rust의 표준 라이브러리에 정의된 타입으로, <a href="https://ruex.io/f2v">UTF-8 인코딩된</a> 텍스트를 나타냅니다.</p>
-<p>하지만 이 세 가지 정보를 단일 엔티티로 <strong>결합</strong>하려면 어떻게 해야 할까요?</p>
+<p>이 정보들을 표현하기 위해 가장 먼저 <a href="https://ruex.io/f26"><code>String</code></a> 타입을 떠올릴 수 있습니다. <code>String</code>은 Rust 표준 라이브러리에 정의된 타입으로, <a href="https://ruex.io/f2v">UTF-8 방식</a>으로 인코딩된 텍스트를 담는 데 사용됩니다.</p>
+<p>그런데 이 세 가지 정보를 하나의 덩어리, 즉 ’단일 엔티티(Entity)’로 묶으려면 어떻게 해야 할까요?</p>
 <h2 id="struct-정의하기"><a class="header" href="#struct-정의하기"><code>struct</code> 정의하기</a></h2>
-<p><code>struct</code>는 <strong>새로운 Rust 타입</strong>을 정의합니다.</p>
+<p><code>struct</code>(구조체)를 사용하면 Rust에서 <strong>새로운 타입</strong>을 직접 정의할 수 있습니다.</p>
 <pre><code class="language-rust">struct Ticket {
     title: String,
     description: String,
     status: String
 }</code></pre>
-<p>구조체는 다른 프로그래밍 언어에서 클래스나 객체라고 부르는 것과 매우 유사합니다.</p>
-<h2 id="필드-정의하기"><a class="header" href="#필드-정의하기">필드 정의하기</a></h2>
-<p>새로운 타입은 다른 타입을 <strong>필드</strong>로 결합하여 만들어집니다. 각 필드는 이름과 타입을 가져야 하며, 콜론 <code>:</code>으로 구분됩니다. 필드가 여러 개인 경우 쉼표 <code>,</code>로 구분됩니다.</p>
-<p>아래 <code>Configuration</code> 구조체에서 볼 수 있듯이 필드는 동일한 타입일 필요가 없습니다:</p>
+<p>구조체는 다른 프로그래밍 언어에서 흔히 접하는 클래스(Class)나 객체(Object)와 매우 비슷한 개념이라고 생각하시면 됩니다.</p>
+<h2 id="필드field-정의하기"><a class="header" href="#필드field-정의하기">필드(Field) 정의하기</a></h2>
+<p>새로운 타입은 여러 다른 타입들을 **필드(Field)**로 결합하여 만들어집니다. 각 필드는 이름과 타입을 가져야 하며, 그 사이를 콜론 <code>:</code>으로 구분합니다. 필드가 여러 개라면 쉼표 <code>,</code>로 각각을 나열합니다.</p>
+<p>아래 <code>Configuration</code> 구조체 예시처럼, 모든 필드가 같은 타입일 필요는 없습니다:</p>
 <pre><code class="language-rust">struct Configuration {
    version: u32,
    active: bool
 }</code></pre>
-<h2 id="인스턴스화"><a class="header" href="#인스턴스화">인스턴스화</a></h2>
-<p>각 필드의 값을 지정하여 구조체의 인스턴스를 만들 수 있습니다:</p>
+<h2 id="인스턴스화instantiation"><a class="header" href="#인스턴스화instantiation">인스턴스화(Instantiation)</a></h2>
+<p>각 필드에 구체적인 값을 지정해 주면 구조체의 인스턴스(Instance)를 생성할 수 있습니다:</p>
 <pre><code class="language-rust">// 구문: &lt;구조체이름&gt; { &lt;필드_이름&gt;: &lt;값&gt;, ... }
 let ticket = Ticket {
     title: "Build a ticket system".into(),
     description: "A Kanban board".into(),
     status: "Open".into()
 };</code></pre>
-<h2 id="필드-접근하기"><a class="header" href="#필드-접근하기">필드 접근하기</a></h2>
-<p><code>.</code> 연산자를 사용하여 구조체의 필드에 접근할 수 있습니다:</p>
-<pre><code class="language-rust">// 필드 접근
-let x = ticket.description;</code></pre>
-<h2 id="메소드"><a class="header" href="#메소드">메소드</a></h2>
-<p><strong>메소드</strong>를 정의하여 구조체에 동작을 첨부할 수 있습니다. <code>Ticket</code> 구조체를 예로 들어 보겠습니다:</p>
+<h2 id="필드에-접근하기"><a class="header" href="#필드에-접근하기">필드에 접근하기</a></h2>
+<p>마침표 <code>.</code> 연산자를 이용하면 구조체의 특정 필드 값에 접근할 수 있습니다:</p>
+<pre><code class="language-rust">// 필드 접근 let x = ticket.description;</code></pre>
+<h2 id="메서드method"><a class="header" href="#메서드method">메서드(Method)</a></h2>
+<p>**메서드(Method)**를 정의하면 구조체에 특정한 동작을 부여할 수 있습니다. <code>Ticket</code> 구조체를 예로 들어 보겠습니다:</p>
 <pre><code class="language-rust">impl Ticket {
     fn is_open(self) -&gt; bool {
         self.status == "Open"
@@ -224,42 +223,42 @@ let x = ticket.description;</code></pre>
 
 // 구문:
 // impl &lt;구조체이름&gt; {
-//    fn &lt;메소드_이름&gt;(&lt;매개변수&gt;) -&gt; &lt;반환_타입&gt; {
-//        // 메소드 본문
+//    fn &lt;메서드_이름&gt;(&lt;매개변수&gt;) -&gt; &lt;반환_타입&gt; {
+//        // 메서드 본문
 //    }
 // }</code></pre>
-<p>메소드는 함수와 매우 유사하지만 두 가지 주요 차이점이 있습니다:</p>
+<p>메서드는 함수와 매우 비슷하지만, 다음과 같은 두 가지 큰 차이점이 있습니다:</p>
 <ol>
-<li>메소드는 <strong><code>impl</code> 블록</strong> 내부에 정의되어야 합니다.</li>
-<li>메소드는 첫 번째 매개변수로 <code>self</code>를 사용할 수 있습니다. <code>self</code>는 키워드이며 메소드가 호출되는 구조체의 인스턴스를 나타냅니다.</li>
+<li>메서드는 반드시 <strong><code>impl</code> 블록</strong> 안에 정의해야 합니다.</li>
+<li>메서드는 첫 번째 매개변수로 <code>self</code>를 사용할 수 있습니다. <code>self</code>는 예약어(Keyword)로, 해당 메서드가 호출되는 구조체의 인스턴스 자신을 가리킵니다.</li>
 </ol>
 <h3 id="self"><a class="header" href="#self"><code>self</code></a></h3>
-<p>메소드가 첫 번째 매개변수로 <code>self</code>를 사용하는 경우 <strong>메소드 호출 구문</strong>을 사용하여 호출할 수 있습니다:</p>
-<pre><code class="language-rust">// 메소드 호출 구문: &lt;인스턴스&gt;.&lt;메소드_이름&gt;(&lt;매개변수&gt;)
+<p>메서드가 첫 번째 매개변수로 <code>self</code>를 사용하는 경우, <strong>메서드 호출 구문</strong>을 사용하여 호출할 수 있습니다:</p>
+<pre><code class="language-rust">// 메서드 호출 구문: &lt;인스턴스&gt;.&lt;메서드_이름&gt;(&lt;매개변수&gt;)
 let is_open = ticket.is_open();</code></pre>
-<p>이것은 <a href="../02_basic_calculator/09_saturating.html">이전 장</a>에서 <code>u32</code> 값에 대해 포화 산술 연산을 수행하는 데 사용한 것과 동일한 호출 구문입니다.</p>
-<h3 id="정적-메소드"><a class="header" href="#정적-메소드">정적 메소드</a></h3>
-<p>메소드가 첫 번째 매개변수로 <code>self</code>를 사용하지 않으면 <strong>정적 메소드</strong>입니다.</p>
+<p>이것은 <a href="../02_basic_calculator/09_saturating.html">이전 장</a>에서 <code>u32</code> 값에 대해 포화 산술 연산을 수행할 때 사용했던 것과 동일한 호출 방식입니다.</p>
+<h3 id="정적-메서드static-method"><a class="header" href="#정적-메서드static-method">정적 메서드(Static Method)</a></h3>
+<p>만약 메서드의 첫 번째 매개변수가 <code>self</code>가 아니라면, 이를 **정적 메서드(Static Method)**라고 부릅니다.</p>
 <pre><code class="language-rust">struct Configuration {
     version: u32,
     active: bool
 }
 
 impl Configuration {
-    // `default`는 `Configuration`의 정적 메소드입니다.
+    // `default`는 `Configuration`의 정적 메서드입니다.
     fn default() -&gt; Configuration {
         Configuration { version: 0, active: false }
     }
 }</code></pre>
-<p>정적 메소드를 호출하는 유일한 방법은 <strong>함수 호출 구문</strong>을 사용하는 것입니다:</p>
-<pre><code class="language-rust">// 함수 호출 구문: &lt;구조체이름&gt;::&lt;메소드_이름&gt;(&lt;매개변수&gt;)
+<p>정적 메서드는 <strong>함수 호출 구문</strong>을 통해서만 호출할 수 있습니다:</p>
+<pre><code class="language-rust">// 함수 호출 구문: &lt;구조체이름&gt;::&lt;메서드_이름&gt;(&lt;매개변수&gt;)
 let default_config = Configuration::default();</code></pre>
-<h3 id="동등성"><a class="header" href="#동등성">동등성</a></h3>
-<p>첫 번째 매개변수로 <code>self</code>를 사용하는 메소드에도 함수 호출 구문을 사용할 수 있습니다:</p>
+<h3 id="호출-방식의-유연성"><a class="header" href="#호출-방식의-유연성">호출 방식의 유연성</a></h3>
+<p>첫 번째 매개변수로 <code>self</code>를 사용하는 일반 메서드 역시 함수 호출 구문으로 호출할 수 있습니다:</p>
 <pre><code class="language-rust">// 함수 호출 구문:
-//   &lt;구조체이름&gt;::&lt;메소드_이름&gt;(&lt;인스턴스&gt;, &lt;매개변수&gt;)
+//   &lt;구조체이름&gt;::&lt;메서드_이름&gt;(&lt;인스턴스&gt;, &lt;매개변수&gt;)
 let is_open = Ticket::is_open(ticket);</code></pre>
-<p>함수 호출 구문은 <code>ticket</code>이 메소드의 첫 번째 매개변수인 <code>self</code>로 사용되고 있음을 매우 명확하게 하지만, 확실히 더 장황합니다. 가능하면 메소드 호출 구문을 선호하십시오.</p>
+<p>함수 호출 구문을 쓰면 <code>ticket</code>이 메서드의 첫 번째 매개변수인 <code>self</code>로 전달된다는 점이 명확히 드러나지만, 코드가 다소 길어집니다. 따라서 특별한 이유가 없다면 <strong>메서드 호출 구문</strong>을 사용하는 것이 일반적입니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f28"><code>03_ticket_v1/01_struct</code></a></p>
 

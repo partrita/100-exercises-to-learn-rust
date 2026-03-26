@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>포화 연산 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>포화 연산(Saturating operations) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,35 +178,31 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="경우별-동작"><a class="header" href="#경우별-동작">경우별 동작</a></h1>
-<p><code>overflow-checks</code>는 무딘 도구입니다. 전체 프로그램에 영향을 미치는 전역 설정입니다.
-컨텍스트에 따라 정수 오버플로를 다르게 처리하고 싶을 때가 종종 있습니다. 때로는 래핑이 올바른 선택이고, 다른 때는 패닉이 더 좋습니다.</p>
-<h2 id="wrapping_-메소드"><a class="header" href="#wrapping_-메소드"><code>wrapping_</code> 메소드</a></h2>
-<p><code>wrapping_</code> 메소드<sup class="footnote-reference" id="fr-method-1"><a href="#footnote-method">1</a></sup>를 사용하여 연산별로 래핑 산술을 선택할 수 있습니다.
-예를 들어, <code>wrapping_add</code>를 사용하여 래핑으로 두 정수를 더할 수 있습니다:</p>
+                        <h1 id="상황에-따른-세밀한-제어"><a class="header" href="#상황에-따른-세밀한-제어">상황에 따른 세밀한 제어</a></h1>
+<p>앞서 살펴본 <code>overflow-checks</code> 설정은 프로그램 전체에 영향을 미치는 다소 투박한 도구입니다. 하지만 실제 개발을 하다 보면, 어떤 상황에서는 래핑(Wrapping)이 정답이고, 또 어떤 때는 패닉(Panic)이 더 적절할 수 있습니다. 즉, 문맥에 따라 오버플로우를 다르게 처리하고 싶을 때가 많죠.</p>
+<h2 id="wrapping_-메서드"><a class="header" href="#wrapping_-메서드"><code>wrapping_</code> 메서드</a></h2>
+<p>특정 연산에서 오직 래핑 방식만 사용하고 싶다면 <code>wrapping_</code> 메서드<sup class="footnote-reference" id="fr-method-1"><a href="#footnote-method">1</a></sup>를 쓰면 됩니다. 예를 들어 <code>wrapping_add</code>를 사용하면 다음과 같이 래핑 덧셈을 수행할 수 있습니다.</p>
 <pre><code class="language-rust">let x = 255u8;
 let y = 1u8;
 let sum = x.wrapping_add(y);
 assert_eq!(sum, 0);</code></pre>
-<h2 id="saturating_-메소드"><a class="header" href="#saturating_-메소드"><code>saturating_</code> 메소드</a></h2>
-<p>또는 <code>saturating_</code> 메소드를 사용하여 <strong>포화 산술</strong>을 선택할 수 있습니다.
-래핑하는 대신 포화 산술은 정수 타입의 최대값 또는 최소값을 반환합니다.
-예를 들어:</p>
+<h2 id="saturating_-메서드"><a class="header" href="#saturating_-메서드"><code>saturating_</code> 메서드</a></h2>
+<p>혹은 **포화 연산(Saturating arithmetic)**을 선택할 수도 있습니다. <code>saturating_</code> 메서드를 사용하면 되는데요,
+포화 연산은 값이 한계를 넘어섰을 때 다시 처음으로 돌아가는(래핑) 대신, 해당 타입의 최대값이나 최소값에서 멈추는 방식입니다.</p>
+<p>예를 들어 다음과 같이 동작합니다.</p>
 <pre><code class="language-rust">let x = 255u8;
 let y = 1u8;
 let sum = x.saturating_add(y);
 assert_eq!(sum, 255);</code></pre>
-<p><code>255 + 1</code>은 <code>256</code>이고, 이는 <code>u8::MAX</code>보다 크므로 결과는 <code>u8::MAX</code>(255)입니다.
-언더플로의 경우 반대 현상이 발생합니다: <code>0 - 1</code>은 <code>-1</code>이고, 이는 <code>u8::MIN</code>보다 작으므로 결과는 <code>u8::MIN</code>(0)입니다.</p>
-<p><code>overflow-checks</code> 프로필 설정을 통해서는 포화 연산을 얻을 수 없습니다. 산술 연산을 수행할 때 명시적으로 선택해야 합니다.</p>
+<p><code>255 + 1</code>은 원래 <code>256</code>이지만, <code>u8</code> 타입의 최대값인 255를 넘을 수 없으므로 결과는 255가 됩니다. 언더플로우의 경우도 마찬가지입니다. <code>0 - 1</code>의 결과는 <code>u8</code>의 최소값인 0에서 멈추게 됩니다.</p>
+<p>포화 연산은 프로필 설정(<code>overflow-checks</code>)으로는 지정할 수 없습니다. 따라서 포화 연산이 필요한 곳마다 직접 메서드를 호출해서 명시적으로 선택해 주어야 합니다.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f22"><code>02_basic_calculator/09_saturating</code></a></p>
 <hr>
 <ol class="footnote-definition">
 <li id="footnote-method">
-<p>메소드를 특정 타입에 “연결된” 함수로 생각할 수 있습니다.
-메소드(및 정의 방법)는 다음 장에서 다룰 것입니다.</p>
-<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
- <a href="#fr-method-1">↩</a></li>
+<p>메서드(Method)는 특정 타입에 “연결된” 함수라고 생각하시면 됩니다. 메서드와 그 정의 방법은 다음 장에서 자세히 다룰 예정입니다. <a href="#fr-method-1">↩</a></p>
+</li>
 </ol>
 
                     </main>

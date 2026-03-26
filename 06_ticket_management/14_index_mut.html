@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,18 +178,17 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="가변-인덱싱"><a class="header" href="#가변-인덱싱">가변 인덱싱</a></h1>
-<p><code>Index</code>는 읽기 전용 접근을 허용합니다. 검색한 값을 변경할 수 없습니다.</p>
-<h2 id="indexmut"><a class="header" href="#indexmut"><code>IndexMut</code></a></h2>
-<p>가변성을 허용하려면 <code>IndexMut</code> 트레이트를 구현해야 합니다.</p>
-<pre><code class="language-rust">// 약간 단순화됨
+                        <h1 id="가변-인덱싱mutable-indexing"><a class="header" href="#가변-인덱싱mutable-indexing">가변 인덱싱(Mutable Indexing)</a></h1>
+<p>앞서 살펴본 <code>Index</code> 트레이트는 오직 읽기 전용 접근만을 허용합니다. 즉, 인덱싱을 통해 가져온 값을 직접 수정할 수는 없죠.</p>
+<h2 id="indexmut-트레이트"><a class="header" href="#indexmut-트레이트"><code>IndexMut</code> 트레이트</a></h2>
+<p>가변적으로 인덱싱한 값을 수정하고 싶다면 <code>IndexMut</code> 트레이트를 구현해야 합니다.</p>
+<pre><code class="language-rust">// 약간 단순화된 정의입니다.
 pub trait IndexMut&lt;Idx&gt;: Index&lt;Idx&gt;
 {
     // 필수 메소드
     fn index_mut(&amp;mut self, index: Idx) -&gt; &amp;mut Self::Output;
 }</code></pre>
-<p><code>IndexMut</code>는 타입이 이미 <code>Index</code>를 구현하는 경우에만 구현될 수 있습니다.
-이는 <em>추가적인</em> 기능을 잠금 해제하기 때문입니다.</p>
+<p>한 가지 눈여겨볼 점은 <code>IndexMut</code>이 <code>Index</code> 트레이트를 상속받는다는 것입니다. 따라서 <code>IndexMut</code>을 구현하려면 먼저 <code>Index</code> 트레이트가 구현되어 있어야 합니다. 이는 가변 접근이라는 <strong>추가적인</strong> 기능을 제공하기 위한 것이기 때문입니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fxn"><code>06_ticket_management/14_index_mut</code></a></p>
 

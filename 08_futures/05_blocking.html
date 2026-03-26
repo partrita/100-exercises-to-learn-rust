@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>런타임 블로킹 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>런타임 블로킹(Blocking) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,45 +178,30 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="런타임을-차단하지-마세요"><a class="header" href="#런타임을-차단하지-마세요">런타임을 차단하지 마세요</a></h1>
-<p>양보 지점으로 돌아가 봅시다.
-스레드와 달리, <strong>Rust 태스크는 선점될 수 없습니다</strong>.</p>
-<p><code>tokio</code>는 자체적으로 태스크를 일시 중지하고 다른 태스크를 대신 실행하도록 결정할 수 없습니다.
-제어는 태스크가 양보할 때 <strong>독점적으로</strong> 실행기로 돌아갑니다. 즉,
-<code>Future::poll</code>이 <code>Poll::Pending</code>을 반환하거나, <code>async fn</code>의 경우,
-퓨처를 <code>.await</code>할 때입니다.</p>
-<p>이것은 런타임에 위험을 노출합니다: 태스크가 절대 양보하지 않으면 런타임은 절대
-다른 태스크를 실행할 수 없을 것입니다. 이것을 <strong>런타임 차단</strong>이라고 합니다.</p>
-<h2 id="차단이란-무엇인가요"><a class="header" href="#차단이란-무엇인가요">차단이란 무엇인가요?</a></h2>
-<p>얼마나 오래 걸려야 너무 오래 걸리는 것일까요? 태스크가 양보하지 않고 얼마나 많은 시간을 보낼 수 있어야
-문제가 될까요?</p>
-<p>이는 런타임, 애플리케이션, 진행 중인 태스크 수 및
-다른 많은 요인에 따라 달라집니다. 하지만 일반적인 경험칙으로, 양보 지점 사이에 100
-마이크로초 미만을 소비하도록 노력하십시오.</p>
-<h2 id="결과"><a class="header" href="#결과">결과</a></h2>
-<p>런타임을 차단하면 다음으로 이어질 수 있습니다:</p>
+                        <h1 id="런타임을-차단하지-마세요-dont-block-the-runtime"><a class="header" href="#런타임을-차단하지-마세요-dont-block-the-runtime">런타임을 차단하지 마세요 (Don’t Block the Runtime)</a></h1>
+<p>다시 양보 지점(Yield points) 이야기로 돌아가 봅시다. 스레드와 달리, <strong>Rust의 태스크는 선점(Preemption)될 수 없습니다.</strong></p>
+<p><code>tokio</code> 런타임이 임의로 태스크를 중단시키고 다른 태스크를 실행하도록 결정할 수 없다는 뜻입니다. 제어권은 태스크가 <strong>명시적으로</strong> 양보할 때만 실행기에게 돌아갑니다. 즉, <code>Future::poll</code>이 <code>Poll::Pending</code>을 반환하거나, 비동기 함수 내에서 <code>.await</code>를 호출할 때만 제어권이 넘어갑니다.</p>
+<p>이런 구조는 런타임에 위험 요인이 될 수 있습니다. 만약 어떤 태스크가 절대 양보하지 않는다면, 런타임은 영영 다른 태스크를 실행할 기회를 얻지 못할 것입니다. 이를 **런타임 차단(Blocking the runtime)**이라고 부릅니다.</p>
+<h2 id="차단blocking이란-무엇일까요"><a class="header" href="#차단blocking이란-무엇일까요">’차단(Blocking)’이란 무엇일까요?</a></h2>
+<p>얼마나 오래 걸려야 ’너무 길다’고 할 수 있을까요? 태스크가 양보 없이 어느 정도의 시간을 보내면 문제가 될까요?</p>
+<p>이는 런타임 설정, 애플리케이션의 성격, 진행 중인 태스크의 수 등 많은 요인에 따라 달라집니다. 하지만 일반적인 가이드라인으로는, 양보 지점 사이의 실행 시간이 **100 마이크로초(μs)**를 넘지 않도록 노력하는 것이 좋습니다.</p>
+<h2 id="차단-시-발생하는-문제"><a class="header" href="#차단-시-발생하는-문제">차단 시 발생하는 문제</a></h2>
+<p>런타임이 차단되면 다음과 같은 심각한 문제가 발생할 수 있습니다:</p>
 <ul>
-<li><strong>교착 상태</strong>: 양보하지 않는 태스크가 다른 태스크가
-완료되기를 기다리고 있고, 그 태스크가 첫 번째 태스크가 양보하기를 기다리고 있다면 교착 상태가 발생합니다.
-런타임이 다른 태스크를 다른 스레드에서 스케줄링할 수 없는 한 진행할 수 없습니다.</li>
-<li><strong>기아</strong>: 다른 태스크가 실행되지 못하거나 오랜 지연 후에 실행될 수 있으며, 이는
-성능 저하(예: 높은 테일 지연 시간)로 이어질 수 있습니다.</li>
+<li><strong>교착 상태 (Deadlock)</strong>: 양보하지 않는 태스크 A가 태스크 B의 완료를 기다리고 있고, 태스크 B는 태스크 A가 제어권을 양보하기를 기다리고 있다면 전체 시스템이 멈춰버립니다. 다른 스레드에서 태스크를 실행할 수 없는 상황이라면 영구적인 교착 상태에 빠집니다.</li>
+<li><strong>기아 현상 (Starvation)</strong>: 다른 태스크들이 실행 기회를 잡지 못해 응답이 지연됩니다. 이는 전체적인 성능 저하와 높은 응답 지연 시간(Tail latency)으로 이어집니다.</li>
 </ul>
-<h2 id="차단은-항상-명확하지-않습니다"><a class="header" href="#차단은-항상-명확하지-않습니다">차단은 항상 명확하지 않습니다</a></h2>
-<p>일부 유형의 작업은 일반적으로 비동기 코드에서 피해야 합니다. 예를 들어:</p>
+<h2 id="차단은-생각보다-교묘합니다"><a class="header" href="#차단은-생각보다-교묘합니다">차단은 생각보다 교묘합니다</a></h2>
+<p>어떤 작업들은 비동기 코드에서 특히 주의해야 합니다. 대표적으로 다음과 같은 것들이 있습니다:</p>
 <ul>
-<li>동기 I/O. 얼마나 오래 걸릴지 예측할 수 없으며, 100 마이크로초보다
-오래 걸릴 가능성이 높습니다.</li>
-<li>비용이 많이 드는 CPU 바운드 계산.</li>
+<li><strong>동기 I/O</strong>: 작업 완료까지 얼마나 걸릴지 예측할 수 없으며, 100 마이크로초를 훌쩍 넘길 가능성이 매우 높습니다.</li>
+<li><strong>고비용 CPU 연산</strong>: 계산량이 많은 작업들입니다.</li>
 </ul>
-<p>후자 범주는 항상 명확하지는 않습니다. 예를 들어, 몇 개의 요소가 있는 벡터를 정렬하는 것은 문제가 되지 않습니다.
-벡터에 수십억 개의 항목이 있는 경우 그 평가는 달라집니다.</p>
+<p>CPU 연산의 경우 판단이 쉽지 않을 때가 있습니다. 예를 들어 몇 개의 요소를 가진 벡터를 정렬하는 것은 문제가 없지만, 수십억 개의 데이터를 정렬한다면 이야기가 완전히 달라지죠.</p>
 <h2 id="차단을-피하는-방법"><a class="header" href="#차단을-피하는-방법">차단을 피하는 방법</a></h2>
-<p>좋습니다. 그렇다면 차단으로 분류되거나 차단으로 분류될 위험이 있는 작업을 <em>반드시</em> 수행해야 한다고 가정할 때 런타임을 차단하는 것을 어떻게 피할 수 있을까요?
-작업을 다른 스레드로 이동해야 합니다. 소위
-런타임 스레드, 즉 <code>tokio</code>가 태스크를 실행하는 데 사용하는 스레드를 사용하고 싶지 않을 것입니다.</p>
-<p><code>tokio</code>는 이 목적을 위해 <strong>차단 풀</strong>이라고 하는 전용 스레드 풀을 제공합니다.
-<code>tokio::task::spawn_blocking</code> 함수를 사용하여 차단 풀에서 동기 작업을 생성할 수 있습니다. <code>spawn_blocking</code>은 작업이 완료될 때 작업 결과로 해결되는 퓨처를 반환합니다.</p>
+<p>그렇다면 차단이 발생할 위험이 있는 작업을 <em>꼭</em> 수행해야 할 때는 어떻게 해야 할까요? 그 작업을 다른 스레드로 옮겨야 합니다. 이때 <code>tokio</code>가 비동기 태스크를 실행하는 데 사용하는 소위 ’런타임 스레드’는 건드리지 않는 것이 좋습니다.</p>
+<p>대신 <code>tokio</code>는 이런 목적을 위해 **차단 풀(Blocking pool)**이라는 전용 스레드 풀을 제공합니다.
+<code>tokio::task::spawn_blocking</code> 함수를 사용하여 차단 풀에서 동기 작업을 실행할 수 있습니다. <code>spawn_blocking</code>은 작업이 완료되었을 때 그 결과를 담은 퓨처를 반환합니다.</p>
 <pre><code class="language-rust">use tokio::task;
 
 fn expensive_computation() -&gt; u64 {
@@ -224,16 +209,15 @@ fn expensive_computation() -&gt; u64 {
 }
 
 async fn run() {
+    // 무거운 작업을 차단 풀로 보냅니다.
     let handle = task::spawn_blocking(expensive_computation);
-    // 그 동안 다른 작업 수행
+    // 그동안 비동기 런타임에서는 다른 작업을 수행할 수 있습니다.
     let result = handle.await.unwrap();
 }</code></pre>
-<p>차단 풀은 장기 실행됩니다. <code>spawn_blocking</code>은
-<code>std::thread::spawn</code>을 통해 직접 새 스레드를 생성하는 것보다 빨라야 합니다.
-스레드 초기화 비용이 여러 호출에 걸쳐 상각되기 때문입니다.</p>
-<h2 id="추가-자료"><a class="header" href="#추가-자료">추가 자료</a></h2>
+<p>차단 풀은 스레드를 재사용하도록 설계되었습니다. 따라서 매번 <code>std::thread::spawn</code>으로 새 스레드를 만드는 것보다 효율적입니다. 스레드 생성 비용을 여러 번의 호출에 걸쳐 분담하기 때문입니다.</p>
+<h2 id="더-읽어보기"><a class="header" href="#더-읽어보기">더 읽어보기</a></h2>
 <ul>
-<li>이 주제에 대한 <a href="https://ruex.io/f6v">Alice Ryhl의 블로그 게시물</a>을 확인하십시오.</li>
+<li>이 주제에 대해 더 자세히 알고 싶다면 <a href="https://ruex.io/f6v">Alice Ryhl의 블로그 포스트</a>를 참고해 보세요.</li>
 </ul>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f68"><code>08_futures/05_blocking</code></a></p>

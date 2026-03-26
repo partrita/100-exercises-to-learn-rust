@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>문자열 슬라이스 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>문자열 슬라이스(String slices) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,20 +178,17 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="문자열-슬라이스"><a class="header" href="#문자열-슬라이스">문자열 슬라이스</a></h1>
-<p>이전 챕터에서 <code>"To-Do"</code>나 <code>"A ticket description"</code>과 같은 <strong>문자열 리터럴</strong>이 코드에서 꽤 많이 사용되는 것을 보셨을 겁니다.
-항상 <code>.to_string()</code>이나 <code>.into()</code> 호출이 뒤따랐습니다. 이제 그 이유를 이해할 시간입니다!</p>
-<h2 id="문자열-리터럴"><a class="header" href="#문자열-리터럴">문자열 리터럴</a></h2>
-<p>원시 텍스트를 큰따옴표로 묶어 문자열 리터럴을 정의합니다:</p>
+                        <h1 id="문자열-슬라이스-string-slices"><a class="header" href="#문자열-슬라이스-string-slices">문자열 슬라이스 (String Slices)</a></h1>
+<p>이전 장에서 <code>"To-Do"</code>나 <code>"A ticket description"</code>처럼 코드 안에 적힌 **문자열 리터럴(String literals)**을 많이 보셨을 겁니다. 그리고 항상 그 뒤에 <code>.to_string()</code>이나 <code>.into()</code>가 따라왔었죠. 이제 그 이유를 알아볼 때입니다!</p>
+<h2 id="문자열-리터럴-string-literals"><a class="header" href="#문자열-리터럴-string-literals">문자열 리터럴 (String Literals)</a></h2>
+<p>따옴표로 감싸서 텍스트를 정의하면 그것이 문자열 리터럴입니다.</p>
 <pre><code class="language-rust">let s = "Hello, world!";</code></pre>
-<p><code>s</code>의 타입은 <code>&amp;str</code>이며, <strong>문자열 슬라이스에 대한 참조</strong>입니다.</p>
-<h2 id="메모리-레이아웃"><a class="header" href="#메모리-레이아웃">메모리 레이아웃</a></h2>
-<p><code>&amp;str</code>과 <code>String</code>은 다른 타입이며, 서로 교환할 수 없습니다.
-<a href="../03_ticket_v1/09_heap.html">이전 탐색</a>에서 <code>String</code>의 메모리 레이아웃을 다시 떠올려 봅시다.
-다음을 실행하면:</p>
+<p>여기서 <code>s</code>의 타입은 <code>&amp;str</code>이며, 이는 <strong>문자열 슬라이스에 대한 참조</strong>입니다.</p>
+<h2 id="메모리-레이아웃-memory-layout"><a class="header" href="#메모리-레이아웃-memory-layout">메모리 레이아웃 (Memory Layout)</a></h2>
+<p><code>&amp;str</code>과 <code>String</code>은 서로 다른 타입이며 마음대로 바꿔 쓸 수 없습니다. <code>String</code>의 메모리 구조를 다시 떠올려 봅시다.</p>
 <pre><code class="language-rust">let mut s = String::with_capacity(5);
 s.push_str("Hello");</code></pre>
-<p>메모리에서 다음과 같은 시나리오를 얻게 됩니다:</p>
+<p>위 코드를 실행하면 메모리 구조는 다음과 같아집니다:</p>
 <pre><code class="language-text">      +---------+--------+----------+
 스택  | 포인터  | 길이   | 용량     | 
       |  |      |   5    |    5     |
@@ -203,32 +200,14 @@ s.push_str("Hello");</code></pre>
 힙:    | H | e | l | l | o |
        +---+---+---+---+---+
 </code></pre>
-<p>기억하신다면, 우리는 <a href="../03_ticket_v1/10_references_in_memory.html">또한</a> <code>&amp;String</code>이 메모리에 어떻게 배치되는지 살펴보았습니다:</p>
-<pre><code class="language-text">     --------------------------------------
-     |                                    |         
-+----v----+--------+----------+      +----|----+
-| 포인터  | 길이   | 용량     |      | 포인터  |
-|    |    |   5    |    5     |      |         |
-+----|----+--------+----------+      +---------+
-     |        s                          &amp;s 
-     |       
-     v       
-   +---+---+---+---+---+
-   | H | e | l | l | o |
-   +---+---+---+---+---+
-</code></pre>
-<p><code>&amp;String</code>은 <code>String</code>의 메타데이터가 저장된 메모리 위치를 가리킵니다.
-포인터를 따라가면 힙에 할당된 데이터에 도달합니다. 특히, 문자열의 첫 번째 바이트인 <code>H</code>에 도달합니다.</p>
-<p><code>s</code>의 <strong>부분 문자열</strong>을 나타내는 타입을 원한다면 어떻게 해야 할까요? 예를 들어 <code>Hello</code>의 <code>ello</code>처럼요?</p>
-<h2 id="문자열-슬라이스-1"><a class="header" href="#문자열-슬라이스-1">문자열 슬라이스</a></h2>
-<p>A <code>&amp;str</code>은 문자열에 대한 <strong>뷰</strong>이며, 다른 곳에 저장된 UTF-8 바이트 시퀀스에 대한 <strong>참조</strong>입니다.
-예를 들어, 다음과 같이 <code>String</code>에서 <code>&amp;str</code>을 만들 수 있습니다:</p>
+<p>그리고 <code>&amp;String</code>은 <code>String</code>의 메타데이터가 저장된 스택 주소를 가리키는 포인터였죠. 그렇다면 문자열 전체가 아니라 <code>Hello</code>의 <code>ello</code>처럼 <strong>일부만</strong> 가리키고 싶을 때는 어떻게 해야 할까요?</p>
+<h2 id="문자열-슬라이스-string-slices-1"><a class="header" href="#문자열-슬라이스-string-slices-1">문자열 슬라이스 (String Slices)</a></h2>
+<p><code>&amp;str</code>은 문자열의 특정 부분을 비추는 **뷰(View)**이자, 어딘가에 저장된 UTF-8 바이트 시퀀스를 가리키는 **참조(Reference)**입니다.</p>
 <pre><code class="language-rust">let mut s = String::with_capacity(5);
 s.push_str("Hello");
-// `String`에서 문자열 슬라이스 참조를 만듭니다, 
-// 첫 번째 바이트를 건너뜁니다.
+// 첫 번째 바이트를 건너뛰고 문자열 슬라이스를 만듭니다.
 let slice: &amp;str = &amp;s[1..];</code></pre>
-<p>메모리에서는 다음과 같이 보일 것입니다:</p>
+<p>메모리에서는 이렇게 표현됩니다:</p>
 <pre><code class="language-text">                    s                              slice
       +---------+--------+----------+      +---------+--------+
 스택  | 포인터  | 길이   | 용량     |      | 포인터  | 길이   |
@@ -244,19 +223,15 @@ let slice: &amp;str = &amp;s[1..];</code></pre>
                |                                |
                +--------------------------------+
 </code></pre>
-<p><code>slice</code>는 스택에 두 가지 정보를 저장합니다:</p>
-<ul>
-<li>슬라이스의 첫 번째 바이트에 대한 포인터.</li>
-<li>슬라이스의 길이.</li>
-</ul>
-<p><code>slice</code>는 데이터를 소유하지 않고 단지 가리킬 뿐입니다: <code>String</code>의 힙 할당 데이터에 대한 <strong>참조</strong>입니다.
-<code>slice</code>가 삭제될 때, 힙 할당 데이터는 <code>s</code>가 여전히 소유하고 있기 때문에 해제되지 않습니다.
-이것이 <code>slice</code>에 <code>capacity</code> 필드가 없는 이유입니다: 데이터를 소유하지 않으므로 할당된 공간의 양을 알 필요가 없습니다. 참조하는 데이터에만 관심이 있습니다.</p>
+<p><code>slice</code>는 스택에 두 가지 정보를 담습니다:</p>
+<ol>
+<li>슬라이스의 시작점을 가리키는 포인터</li>
+<li>슬라이스의 길이</li>
+</ol>
+<p><code>slice</code>는 데이터를 소유하지 않고 그저 가리킬 뿐입니다. <code>slice</code>가 사라져도 힙에 있는 실제 데이터는 여전히 <code>s</code>가 소유하고 있으므로 해제되지 않습니다. 그래서 <code>slice</code>에는 <code>capacity</code>(용량) 필드가 없습니다. 자기가 데이터를 소유한 것이 아니니 용량을 알 필요가 없는 것이죠.</p>
 <h2 id="str-vs-string"><a class="header" href="#str-vs-string"><code>&amp;str</code> vs <code>&amp;String</code></a></h2>
-<p>경험상, 텍스트 데이터에 대한 참조가 필요할 때마다 <code>&amp;String</code> 대신 <code>&amp;str</code>을 사용하십시오.
-<code>&amp;str</code>은 더 유연하며 일반적으로 Rust 코드에서 더 관용적으로 간주됩니다.</p>
-<p>메소드가 <code>&amp;String</code>을 반환하면, 반환하는 참조와 <strong>정확히 일치하는</strong> 힙 할당 UTF-8 텍스트가 어딘가에 있다는 것을 약속하는 것입니다.
-대신 메소드가 <code>&amp;str</code>을 반환하면 훨씬 더 많은 자유가 있습니다: <em>어딘가에</em> 텍스트 데이터 묶음이 있고 그 중 일부가 필요한 것과 일치하므로 해당 부분에 대한 참조를 반환한다고 말하는 것뿐입니다.</p>
+<p>함수를 만들 때 텍스트 데이터를 참조로 받고 싶다면, 특별한 이유가 없는 한 <code>&amp;String</code>보다는 <code>&amp;str</code>을 쓰시는 것이 좋습니다. <code>&amp;str</code>이 훨씬 유연하고 관용적인 표현(Idiomatic)이기 때문입니다.</p>
+<p>메서드가 <code>&amp;String</code>을 반환한다면, 어딘가에 정확히 그 내용과 일치하는 힙 할당 UTF-8 데이터가 있음을 보장하는 셈입니다. 반면 <code>&amp;str</code>을 반환하는 것은 “어딘가에 데이터 뭉치가 있고, 그중에서 당신이 필요한 부분이 여기 있으니 보세요“라고 말하는 것과 같아서 훨씬 자유롭습니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fzr"><code>04_traits/06_str_slice</code></a></p>
 

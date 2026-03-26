@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,36 +178,30 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="iter"><a class="header" href="#iter"><code>.iter()</code></a></h1>
-<p><code>IntoIterator</code>는 반복자를 생성하기 위해 <code>self</code>를 <strong>소비</strong>합니다.</p>
-<p>이것은 장점이 있습니다: 반복자에서 <strong>소유된</strong> 값을 얻습니다.
-예를 들어: <code>Vec&lt;Ticket&gt;</code>에서 <code>.into_iter()</code>를 호출하면 <code>Ticket</code> 값을 반환하는 반복자를 얻게 됩니다.</p>
-<p>이것은 또한 단점입니다: <code>into_iter()</code>를 호출한 후에는 원본 컬렉션을 더 이상 사용할 수 없습니다.
-컬렉션을 소비하지 않고, 대신 값에 대한 <strong>참조</strong>를 보면서 컬렉션을 반복하고 싶은 경우가 종종 있습니다.
-<code>Vec&lt;Ticket&gt;</code>의 경우, <code>&amp;Ticket</code> 값을 반복하고 싶을 것입니다.</p>
-<p>대부분의 컬렉션은 컬렉션 요소에 대한 참조를 반환하는 <code>.iter()</code>라는 메소드를 노출합니다.
-예를 들어:</p>
+                        <h1 id="iter-메서드"><a class="header" href="#iter-메서드"><code>.iter()</code> 메서드</a></h1>
+<p><code>IntoIterator</code>는 반복자를 만들기 위해 <code>self</code>를 **소비(Consume)**합니다.</p>
+<p>이는 한편으로 장점이 됩니다. 반복자로부터 <strong>소유권이 있는(Owned)</strong> 값을 직접 얻을 수 있기 때문입니다. 예를 들어, <code>Vec&lt;Ticket&gt;</code>에서 <code>.into_iter()</code>를 호출하면 각 티켓의 값을 직접 반환하는 반복자를 얻게 됩니다.</p>
+<p>하지만 동시에 단점도 있습니다. <code>into_iter()</code>를 호출하고 나면 원본 컬렉션을 더 이상 사용할 수 없게 되기 때문입니다. 하지만 실제로는 컬렉션을 없애지 않고, 그 안에 담긴 값들을 **참조(Reference)**만 하면서 순회하고 싶은 경우가 훨씬 많습니다. <code>Vec&lt;Ticket&gt;</code>이라면 <code>&amp;Ticket</code>을 얻고 싶은 것이죠.</p>
+<p>그래서 대부분의 컬렉션은 요소에 대한 참조를 반환하는 <code>.iter()</code> 메서드를 따로 제공합니다.</p>
 <pre><code class="language-rust">let numbers: Vec&lt;u32&gt; = vec![1, 2];
-// 여기서 `n`은 `&amp;u32` 타입입니다
+// 여기서 `n`은 `&amp;u32` 타입입니다.
 for n in numbers.iter() {
     // [...]
 }</code></pre>
-<p>이 패턴은 <strong>컬렉션에 대한 참조</strong>에 대해 <code>IntoIterator</code>를 구현하여 단순화할 수 있습니다.
-위의 예에서 <code>&amp;Vec&lt;Ticket&gt;</code>이 될 것입니다.
-표준 라이브러리는 이 작업을 수행하며, 이것이 다음 코드가 작동하는 이유입니다:</p>
+<p>이 패턴은 <strong>컬렉션의 참조</strong> 자체에 대해 <code>IntoIterator</code>를 구현함으로써 더 단순하게 만들 수 있습니다. 위 예시라면 <code>&amp;Vec&lt;u32&gt;</code>에 대해 <code>IntoIterator</code>를 구현하는 식입니다. 표준 라이브러리에는 이미 이 구현이 되어 있기 때문에 아래와 같은 코드가 가능합니다.</p>
 <pre><code class="language-rust">let numbers: Vec&lt;u32&gt; = vec![1, 2];
-// 여기서 `n`은 `&amp;u32` 타입입니다
-// 명시적으로 `.iter()`를 호출할 필요가 없었습니다
-// `for` 루프에서 `&amp;numbers`를 사용하는 것으로 충분했습니다
+// 여기서 `n`은 `&amp;u32` 타입입니다.
+// 굳이 `.iter()`를 명시적으로 호출할 필요 없이,
+// `for` 루프에 `&amp;numbers`를 넘겨주는 것만으로 충분합니다.
 for n in &amp;numbers {
     // [...]
 }</code></pre>
-<p>두 가지 옵션을 모두 제공하는 것이 관용적입니다:</p>
-<ul>
-<li>컬렉션에 대한 참조에 대한 <code>IntoIterator</code> 구현.</li>
-<li>컬렉션 요소에 대한 참조를 반환하는 <code>.iter()</code> 메소드.</li>
-</ul>
-<p>전자는 <code>for</code> 루프에서 편리하고, 후자는 더 명시적이며 다른 컨텍스트에서 사용할 수 있습니다.</p>
+<p>Rust에서는 다음과 같이 두 가지 옵션을 모두 제공하는 것이 **관용적(Idiomatic)**입니다.</p>
+<ol>
+<li>컬렉션의 참조(<code>&amp;T</code>)에 대한 <code>IntoIterator</code> 구현</li>
+<li>컬렉션 요소의 참조를 반환하는 <code>.iter()</code> 메서드 제공</li>
+</ol>
+<p>첫 번째 방식은 <code>for</code> 루프에서 쓰기 아주 편리하고, 두 번째 방식은 의도가 더 명확하게 드러나며 다른 여러 상황에서도 유연하게 사용할 수 있습니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f4g"><code>06_ticket_management/05_iter</code></a></p>
 

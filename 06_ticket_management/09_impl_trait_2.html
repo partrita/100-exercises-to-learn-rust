@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>impl Trait, 2부 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>impl Trait 2부 - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,16 +178,15 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="인자-위치의-impl-trait"><a class="header" href="#인자-위치의-impl-trait">인자 위치의 <code>impl Trait</code></a></h1>
-<p>이전 섹션에서 <code>impl Trait</code>가 타입의 이름을 지정하지 않고 타입을 반환하는 데 어떻게 사용될 수 있는지 보았습니다.
-동일한 구문은 <strong>인자 위치</strong>에서도 사용될 수 있습니다:</p>
+                        <h1 id="인자argument-위치에서의-impl-trait"><a class="header" href="#인자argument-위치에서의-impl-trait">인자(Argument) 위치에서의 <code>impl Trait</code></a></h1>
+<p>이전 섹션에서 <code>impl Trait</code>를 사용해 타입 이름을 명시하지 않고도 특정 트레이트를 구현하는 타입을 반환하는 방법을 살펴보았습니다. 동일한 구문을 <strong>인자(argument) 위치</strong>에서도 사용할 수 있습니다.</p>
 <pre><code class="language-rust">fn print_iter(iter: impl Iterator&lt;Item = i32&gt;) {
     for i in iter {
         println!("{}", i);
     }
 }</code></pre>
-<p><code>print_iter</code>는 <code>i32</code> 반복자를 받아 각 요소를 출력합니다.
-<strong>인자 위치</strong>에서 사용될 때, <code>impl Trait</code>는 트레이트 바운드가 있는 제네릭 매개변수와 동일합니다:</p>
+<p>위의 <code>print_iter</code> 함수는 <code>i32</code> 타입 요소를 생성하는 반복자(iterator)를 인자로 받아 각 요소를 출력합니다.
+<strong>인자 위치</strong>에서 사용되는 <code>impl Trait</code>는 트레이트 바운드(trait bound)가 지정된 제네릭(generic) 매개변수와 동일하게 작동합니다.</p>
 <pre><code class="language-rust">fn print_iter&lt;T&gt;(iter: T) 
 where
     T: Iterator&lt;Item = i32&gt;
@@ -197,8 +196,7 @@ where
     }
 }</code></pre>
 <h2 id="단점"><a class="header" href="#단점">단점</a></h2>
-<p>경험상, 인자 위치에서는 <code>impl Trait</code>보다 제네릭을 선호하십시오.
-제네릭은 호출자가 터보피시 구문(<code>::&lt;&gt;</code>)을 사용하여 인수의 타입을 명시적으로 지정할 수 있게 해주며, 이는 모호성을 해소하는 데 유용할 수 있습니다. <code>impl Trait</code>의 경우는 그렇지 않습니다.</p>
+<p>경험상, 인자 위치에서는 <code>impl Trait</code>보다 제네릭을 사용하는 것이 더 좋습니다. 제네릭을 사용하면 호출하는 쪽에서 터보피시(turbofish) 구문(<code>::&lt;&gt;</code>)을 통해 인자의 타입을 명시적으로 지정할 수 있어, 타입 모호성을 해결하는 데 유리하기 때문입니다. 반면 <code>impl Trait</code>는 이러한 명시적 타입 지정이 불가능합니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fxx"><code>06_ticket_management/09_impl_trait_2</code></a></p>
 

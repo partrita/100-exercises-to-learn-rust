@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>티켓 관리 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>티켓 관리 시스템 - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -179,19 +179,19 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="소개"><a class="header" href="#소개">소개</a></h1>
-<p>이전 챕터에서 우리는 <code>Ticket</code>을 진공 상태에서 모델링했습니다. 필드와 제약 조건을 정의하고 Rust에서 이를 가장 잘 표현하는 방법을 배웠지만, <code>Ticket</code>이 더 큰 시스템에 어떻게 들어맞는지 고려하지 않았습니다.
-이 챕터에서는 <code>Ticket</code>을 중심으로 간단한 워크플로우를 구축하고, 티켓을 저장하고 검색하는 (기초적인) 관리 시스템을 소개할 것입니다.</p>
-<p>이 작업은 다음과 같은 새로운 Rust 개념을 탐색할 기회를 제공할 것입니다:</p>
+<p>이전 장에서 우리는 <code>Ticket</code> 구조체를 개별적으로 모델링해 보았습니다. 필드와 제약 조건을 정의하고 Rust에서 이를 가장 잘 표현하는 방법은 배웠지만, <code>Ticket</code>이 더 큰 시스템 내에서 어떻게 상호작용하는지는 아직 살펴보지 않았습니다.</p>
+<p>이번 장에서는 <code>Ticket</code>을 중심으로 간단한 워크플로우를 구축해 보겠습니다. 티켓을 저장하고 검색하는 기초적인 관리 시스템을 구현하며 Rust의 다양한 기능들을 익혀볼 것입니다.</p>
+<p>이 과정을 통해 다음과 같은 새로운 Rust 개념들을 탐색하게 됩니다:</p>
 <ul>
-<li>스택 할당 배열</li>
-<li><code>Vec</code>, 확장 가능한 배열 타입</li>
-<li><code>Iterator</code> 및 <code>IntoIterator</code>, 컬렉션을 반복하기 위해</li>
-<li>슬라이스 (<code>&amp;[T]</code>), 컬렉션의 일부로 작업하기 위해</li>
-<li>라이프타임, 참조가 유효한 기간을 설명하기 위해</li>
-<li><code>HashMap</code> 및 <code>BTreeMap</code>, 두 가지 키-값 데이터 구조</li>
-<li><code>Eq</code> 및 <code>Hash</code>, <code>HashMap</code>에서 키를 비교하기 위해</li>
-<li><code>Ord</code> 및 <code>PartialOrd</code>, <code>BTreeMap</code>으로 작업하기 위해</li>
-<li><code>Index</code> 및 <code>IndexMut</code>, 컬렉션의 요소에 접근하기 위해</li>
+<li><strong>배열(Arrays)</strong>: 스택에 할당되는 고정 크기 컬렉션</li>
+<li><strong>벡터(Vec)</strong>: 크기 조정이 가능한 유연한 배열 타입</li>
+<li><strong>반복자(Iterators)</strong> 및 <code>IntoIterator</code>: 컬렉션의 요소를 순회하는 방법</li>
+<li><strong>슬라이스(Slices, <code>&amp;[T]</code>)</strong>: 컬렉션의 일부분을 다루는 방법</li>
+<li><strong>라이프타임(Lifetimes)</strong>: 참조가 유효한 기간을 명시하는 방법</li>
+<li><strong>해시 맵(HashMap)</strong> 및 <strong>B-트리 맵(BTreeMap)</strong>: 대표적인 키-값(key-value) 데이터 구조</li>
+<li><code>Eq</code> 및 <code>Hash</code>: <code>HashMap</code>의 키를 비교하기 위한 트레이트</li>
+<li><code>Ord</code> 및 <code>PartialOrd</code>: <code>BTreeMap</code>을 다루기 위한 정렬 트레이트</li>
+<li><code>Index</code> 및 <code>IndexMut</code>: 컬렉션의 요소에 접근하는 연산자 오버로딩</li>
 </ul>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f4u"><code>06_ticket_management/00_intro</code></a></p>

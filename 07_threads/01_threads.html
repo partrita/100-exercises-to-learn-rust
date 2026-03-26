@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>스레드 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>스레드(Threads) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,18 +178,14 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="스레드"><a class="header" href="#스레드">스레드</a></h1>
-<p>다중 스레드 코드를 작성하기 전에, 스레드가 무엇이며 왜 스레드를 사용하고 싶은지 잠시 이야기해 봅시다.</p>
+                        <h1 id="스레드threads"><a class="header" href="#스레드threads">스레드(Threads)</a></h1>
+<p>다중 스레드 코드를 직접 작성해 보기 전에, **스레드(Threads)**란 무엇인지 그리고 왜 사용하는지 먼저 가볍게 알아보겠습니다.</p>
 <h2 id="스레드란-무엇인가요"><a class="header" href="#스레드란-무엇인가요">스레드란 무엇인가요?</a></h2>
-<p><strong>스레드</strong>는 기본 운영 체제에서 관리하는 실행 컨텍스트입니다.
-각 스레드는 자체 스택과 명령어 포인터를 가집니다.</p>
-<p>단일 <strong>프로세스</strong>는 여러 스레드를 관리할 수 있습니다.
-이러한 스레드는 동일한 메모리 공간을 공유하며, 이는 동일한 데이터에 접근할 수 있음을 의미합니다.</p>
-<p>스레드는 <strong>논리적인</strong> 구성 요소입니다. 결국, CPU 코어(즉, <strong>물리적인</strong> 실행 단위)에서 한 번에 하나의 명령어 집합만 실행할 수 있습니다.
-CPU 코어보다 훨씬 더 많은 스레드가 있을 수 있으므로, 운영 체제의 <strong>스케줄러</strong>는 처리량과 응답성을 최대화하기 위해 CPU 시간을 분할하여 주어진 시간에 어떤 스레드를 실행할지 결정하는 역할을 합니다.</p>
-<h2 id="main"><a class="header" href="#main"><code>main</code></a></h2>
-<p>Rust 프로그램이 시작되면 단일 스레드인 <strong>메인 스레드</strong>에서 실행됩니다.
-이 스레드는 운영 체제에 의해 생성되며 <code>main</code> 함수를 실행하는 역할을 합니다.</p>
+<p>스레드는 운영 체제(OS)에서 관리하는 가장 기본적인 실행 단위입니다. 각 스레드는 고유한 **스택(Stack)**과 **명령어 포인터(Instruction pointer)**를 가집니다.</p>
+<p>하나의 <strong>프로세스(Process)</strong> 안에서는 여러 개의 스레드가 존재할 수 있습니다. 이 스레드들은 프로세스가 할당받은 동일한 메모리 공간을 공유하므로 서로 같은 데이터에 접근할 수 있다는 장점이 있습니다.</p>
+<p>사실 스레드는 <strong>논리적인</strong> 개념입니다. 실제 물리적인 실행 단위인 **CPU 코어(CPU core)**는 한 번에 하나의 명령어 세트만 처리할 수 있죠. 하지만 시스템에는 CPU 코어 수보다 훨씬 많은 스레드가 돌아가는 경우가 많습니다. 이때 운영 체제의 **스케줄러(Scheduler)**가 CPU 시간을 아주 잘게 나누어 여러 스레드에 할당함으로써, 우리 눈에는 마치 여러 스레드가 동시에 실행되는 것처럼 보이게 만듭니다(이를 처리량과 응답성을 최대화하는 방식으로 관리합니다).</p>
+<h2 id="main-함수와-메인-스레드"><a class="header" href="#main-함수와-메인-스레드"><code>main</code> 함수와 메인 스레드</a></h2>
+<p>Rust 프로그램이 시작되면 가장 먼저 **메인 스레드(Main thread)**라는 단일 스레드 위에서 코드가 실행됩니다. 이 스레드는 운영 체제가 생성하며, 우리 프로그램의 시작점인 <code>main</code> 함수를 실행하는 중책을 맡습니다.</p>
 <pre><code class="language-rust">use std::thread;
 use std::time::Duration;
 
@@ -199,11 +195,11 @@ fn main() {
         println!("Hello from the main thread!");
     }
 }</code></pre>
-<h2 id="stdthread"><a class="header" href="#stdthread"><code>std::thread</code></a></h2>
-<p>Rust의 표준 라이브러리는 스레드를 생성하고 관리할 수 있는 <code>std::thread</code> 모듈을 제공합니다.</p>
-<h3 id="spawn"><a class="header" href="#spawn"><code>spawn</code></a></h3>
-<p><code>std::thread::spawn</code>을 사용하여 새 스레드를 생성하고 해당 스레드에서 코드를 실행할 수 있습니다.</p>
-<p>예를 들어:</p>
+<h2 id="stdthread-모듈"><a class="header" href="#stdthread-모듈"><code>std::thread</code> 모듈</a></h2>
+<p>Rust의 표준 라이브러리는 스레드를 손쉽게 생성하고 관리할 수 있는 <code>std::thread</code> 모듈을 제공합니다.</p>
+<h3 id="spawn-함수"><a class="header" href="#spawn-함수"><code>spawn</code> 함수</a></h3>
+<p>새로운 스레드를 만들고 그 안에서 특정 코드를 실행하고 싶다면 <code>std::thread::spawn</code> 함수를 사용합니다.</p>
+<p>아래 예시를 볼까요?</p>
 <pre><code class="language-rust">use std::thread;
 use std::time::Duration;
 
@@ -220,12 +216,9 @@ fn main() {
         println!("Hello from the main thread!");
     }
 }</code></pre>
-<p><a href="https://ruex.io/fx5">Rust 플레이그라운드</a>에서 이 프로그램을 실행하면
-메인 스레드와 생성된 스레드가 동시에 실행되는 것을 볼 수 있습니다.
-각 스레드는 서로 독립적으로 진행됩니다.</p>
-<h3 id="프로세스-종료"><a class="header" href="#프로세스-종료">프로세스 종료</a></h3>
-<p>메인 스레드가 완료되면 전체 프로세스가 종료됩니다.
-생성된 스레드는 완료되거나 메인 스레드가 완료될 때까지 계속 실행됩니다.</p>
+<p><a href="https://ruex.io/fx5">Rust 플레이그라운드</a>에서 이 코드를 실행해 보세요. 메인 스레드와 우리가 방금 만든 새 스레드가 각자 독립적으로 메시지를 출력하는 것을 볼 수 있습니다.</p>
+<h3 id="프로세스-종료process-termination"><a class="header" href="#프로세스-종료process-termination">프로세스 종료(Process termination)</a></h3>
+<p>중요한 점이 하나 있습니다. <strong>메인 스레드가 작업을 마치면 전체 프로세스가 즉시 종료된다</strong>는 사실입니다. 만약 메인 스레드가 끝나버리면, 생성된 다른 스레드들이 아직 작업을 수행 중이더라도 강제로 함께 종료됩니다.</p>
 <pre><code class="language-rust">use std::thread;
 use std::time::Duration;
 
@@ -239,20 +232,20 @@ fn main() {
 
     thread::sleep(Duration::from_secs(5));
 }</code></pre>
-<p>위 예제에서는 “Hello from a thread!” 메시지가 대략 5번 인쇄되는 것을 볼 수 있습니다.
-그런 다음 메인 스레드가 완료되고(<code>sleep</code> 호출이 반환될 때), 전체 프로세스가 종료되므로 생성된 스레드는 종료됩니다.</p>
-<h3 id="join"><a class="header" href="#join"><code>join</code></a></h3>
-<p><code>spawn</code>이 반환하는 <code>JoinHandle</code>에서 <code>join</code> 메소드를 호출하여 생성된 스레드가 완료될 때까지 기다릴 수도 있습니다.</p>
+<p>위의 예제에서는 약 5초 동안만 “Hello from a thread!” 메시지가 출력될 것입니다. 메인 스레드가 5초간의 <code>sleep</code>을 마치고 끝나면 프로그램 자체가 종료되기 때문이죠.</p>
+<h3 id="join-메서드"><a class="header" href="#join-메서드"><code>join</code> 메서드</a></h3>
+<p>생성한 스레드가 작업을 끝낼 때까지 메인 스레드가 기다려야 한다면 어떻게 할까요? <code>spawn</code> 함수가 반환하는 <code>JoinHandle</code>의 <code>join</code> 메서드를 사용하면 됩니다.</p>
 <pre><code class="language-rust">use std::thread;
+
 fn main() {
     let handle = thread::spawn(|| {
         println!("Hello from a thread!");
     });
 
+    // 스레드가 끝날 때까지 기다립니다.
     handle.join().unwrap();
 }</code></pre>
-<p>이 예제에서 메인 스레드는 종료되기 전에 생성된 스레드가 완료될 때까지 기다릴 것입니다.
-이것은 두 스레드 간의 <strong>동기화</strong> 형태를 도입합니다: 메인 스레드가 생성된 스레드가 완료될 때까지 종료되지 않으므로, 프로그램이 종료되기 전에 “Hello from a thread!” 메시지가 인쇄되는 것을 보장합니다.</p>
+<p>이렇게 <code>join</code>을 호출하면 메인 스레드는 생성된 스레드가 완료될 때까지 대기 상태에 들어갑니다. 이는 두 스레드 간의 기본적인 <strong>동기화(Synchronization)</strong> 방식 중 하나로, 프로그램이 성급하게 종료되어 중요한 작업을 놓치는 것을 방지해 줍니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fxw"><code>07_threads/01_threads</code></a></p>
 

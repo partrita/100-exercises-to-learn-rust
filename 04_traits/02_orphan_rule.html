@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>고아 규칙 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>고아 규칙(Orphan rule) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,14 +178,14 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="트레이트-구현하기"><a class="header" href="#트레이트-구현하기">트레이트 구현하기</a></h1>
-<p>타입이 다른 크레이트(예: Rust의 표준 라이브러리의 <code>u32</code>)에 정의된 경우, 직접 새로운 메소드를 정의할 수 없습니다. 시도하면:</p>
+                        <h1 id="트레이트-구현하기-implementing-traits"><a class="header" href="#트레이트-구현하기-implementing-traits">트레이트 구현하기 (Implementing Traits)</a></h1>
+<p>Rust의 표준 라이브러리에 정의된 타입(예: <code>u32</code>)에 직접 새로운 메서드를 정의하려고 하면 어떻게 될까요?</p>
 <pre><code class="language-rust">impl u32 {
     fn is_even(&amp;self) -&gt; bool {
         self % 2 == 0
     }
 }</code></pre>
-<p>컴파일러가 불평할 것입니다:</p>
+<p>안타깝게도 컴파일러는 이를 허용하지 않습니다.</p>
 <pre><code class="language-text">error[E0390]: cannot define inherent `impl` for primitive types
   |
 1 | impl u32 {
@@ -193,21 +193,19 @@
   |
   = help: consider using an extension trait instead
 </code></pre>
-<h2 id="확장-트레이트"><a class="header" href="#확장-트레이트">확장 트레이트</a></h2>
-<p><strong>확장 트레이트</strong>는 <code>u32</code>와 같은 외부 타입에 새로운 메소드를 첨부하는 것이 주된 목적인 트레이트입니다.
-이것이 바로 이전 연습 문제에서 <code>IsEven</code> 트레이트를 정의한 다음 <code>i32</code> 및 <code>u32</code>에 대해 구현하여 배포한 패턴입니다. 그런 다음 <code>IsEven</code>이 범위 내에 있는 한 해당 타입에서 <code>is_even</code>을 자유롭게 호출할 수 있습니다.</p>
-<pre><code class="language-rust">// 트레이트를 범위로 가져오기
+<h2 id="확장-트레이트-extension-traits"><a class="header" href="#확장-트레이트-extension-traits">확장 트레이트 (Extension Traits)</a></h2>
+<p>**확장 트레이트(Extension Traits)**는 외부 타입에 새로운 메서드를 추가할 때 사용하는 패턴입니다. 이전 연습 문제에서 보았던 것처럼, <code>IsEven</code> 트레이트를 정의하고 <code>i32</code>와 <code>u32</code>에 구현한 뒤, 해당 트레이트가 스코프 안에 있다면 해당 타입들에서 <code>is_even</code> 메서드를 자유롭게 호출할 수 있습니다.</p>
+<pre><code class="language-rust">// 트레이트를 스코프로 가져옵니다.
 use my_library::IsEven;
 
 fn main() {
-    // 구현하는 타입에서 메소드 호출하기
+    // 이제 해당 타입에서 메서드를 호출할 수 있습니다.
     if 4.is_even() {
         // [...] 
     }
 }</code></pre>
-<h2 id="하나의-구현"><a class="header" href="#하나의-구현">하나의 구현</a></h2>
-<p>작성할 수 있는 트레이트 구현에는 제한이 있습니다.<br>가장 간단하고 직접적인 것은 크레이트에서 동일한 타입에 대해 동일한 트레이트를 두 번 구현할 수 없다는 것입니다.</p>
-<p>예를 들어:</p>
+<h2 id="유일한-구현-one-implementation"><a class="header" href="#유일한-구현-one-implementation">유일한 구현 (One Implementation)</a></h2>
+<p>트레이트를 구현할 때는 한 가지 제약이 있습니다. 동일한 크레이트 내에서 특정 타입에 대해 같은 트레이트를 두 번 구현할 수 없다는 점입니다.</p>
 <pre><code class="language-rust">trait IsEven {
     fn is_even(&amp;self) -&gt; bool;
 }
@@ -223,7 +221,7 @@ impl IsEven for u32 {
         false
     }
 }</code></pre>
-<p>컴파일러는 이를 거부합니다:</p>
+<p>컴파일러는 이를 다음과 같이 거절합니다.</p>
 <pre><code class="language-text">error[E0119]: conflicting implementations of trait `IsEven` for type `u32`
    |
 5  | impl IsEven for u32 {
@@ -232,29 +230,24 @@ impl IsEven for u32 {
 11 | impl IsEven for u32 {
    | ^^^^^^^^^^^^^^^^^^^ conflicting implementation for `u32`
 </code></pre>
-<p><code>u32</code> 값에서 <code>IsEven::is_even</code>이 호출될 때 어떤 트레이트 구현을 사용해야 하는지에 대한 모호함이 없어야 하므로 하나만 있을 수 있습니다.</p>
-<h2 id="고아-규칙"><a class="header" href="#고아-규칙">고아 규칙</a></h2>
-<p>여러 크레이트가 관련된 경우 상황이 더 미묘해집니다.
-특히 다음 중 적어도 하나는 사실이어야 합니다:</p>
+<p>메서드 호출 시 어떤 구현체를 사용해야 할지 모호함이 없어야 하기 때문입니다.</p>
+<h2 id="고아-규칙-orphan-rule"><a class="header" href="#고아-규칙-orphan-rule">고아 규칙 (Orphan Rule)</a></h2>
+<p>여러 크레이트가 얽혀 있는 상황에서는 구현 규칙이 조금 더 복잡해집니다. 이를 **고아 규칙(Orphan Rule)**이라고 부르며, 다음 중 하나라도 충족되어야 트레이트 구현이 가능합니다.</p>
+<ol>
+<li>구현할 <strong>트레이트</strong>가 현재 크레이트에 정의되어 있음.</li>
+<li>구현할 <strong>타입</strong>이 현재 크레이트에 정의되어 있음.</li>
+</ol>
+<p>이 규칙의 목적은 메서드 탐색 과정을 명확하게 보장하는 것입니다. 만약 이런 규칙이 없다면 어떤 문제가 생길까요?</p>
 <ul>
-<li>트레이트가 현재 크레이트에 정의되어 있습니다.</li>
-<li>구현자 타입이 현재 크레이트에 정의되어 있습니다.</li>
+<li>크레이트 <code>A</code>가 <code>IsEven</code> 트레이트를 정의함.</li>
+<li>크레이트 <code>B</code>가 <code>u32</code>에 대해 <code>IsEven</code>을 구현함.</li>
+<li>크레이트 <code>C</code>가 <code>u32</code>에 대해 (서로 다른) <code>IsEven</code>을 구현함.</li>
+<li>크레이트 <code>D</code>가 <code>B</code>와 <code>C</code>를 모두 참조하고 <code>1.is_even()</code>을 호출함.</li>
 </ul>
-<p>이것은 Rust의 <strong>고아 규칙</strong>으로 알려져 있습니다. 그 목표는 메소드 확인 프로세스를 명확하게 만드는 것입니다.</p>
-<p>다음 상황을 상상해 보십시오:</p>
+<p>이때 어떤 구현을 사용해야 할까요? 정답이 없기 때문에 Rust는 이러한 시나리오 자체가 발생하지 않도록 고아 규칙을 적용합니다. 결과적으로 크레이트 <code>B</code>와 <code>C</code>는 컴파일되지 않습니다.</p>
+<h2 id="추가-자료-further-reading"><a class="header" href="#추가-자료-further-reading">추가 자료 (Further Reading)</a></h2>
 <ul>
-<li>크레이트 <code>A</code>는 <code>IsEven</code> 트레이트를 정의합니다.</li>
-<li>크레이트 <code>B</code>는 <code>u32</code>에 대해 <code>IsEven</code>을 구현합니다.</li>
-<li>크레이트 <code>C</code>는 <code>u32</code>에 대해 (다른) <code>IsEven</code> 트레이트 구현을 제공합니다.</li>
-<li>크레이트 <code>D</code>는 <code>B</code>와 <code>C</code> 모두에 의존하고 <code>1.is_even()</code>을 호출합니다.</li>
-</ul>
-<p>어떤 구현을 사용해야 할까요? <code>B</code>에 정의된 것? 아니면 <code>C</code>에 정의된 것?
-좋은 답이 없으므로 이 시나리오를 방지하기 위해 고아 규칙이 정의되었습니다.
-고아 규칙 덕분에 크레이트 <code>B</code>나 크레이트 <code>C</code> 모두 컴파일되지 않습니다.</p>
-<h2 id="추가-자료"><a class="header" href="#추가-자료">추가 자료</a></h2>
-<ul>
-<li>위에서 언급한 고아 규칙에는 몇 가지 주의 사항과 예외가 있습니다.
-미묘한 차이에 익숙해지고 싶다면 <a href="https://ruex.io/fzf">참조</a>를 확인하십시오.</li>
+<li>고아 규칙에는 몇 가지 예외 사항이 있습니다. 더 깊이 있는 내용이 궁금하시다면 <a href="https://ruex.io/fzf">Rust 레퍼런스</a>를 참고해 보세요.</li>
 </ul>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fz2"><code>04_traits/02_orphan_rule</code></a></p>

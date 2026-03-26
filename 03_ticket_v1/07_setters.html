@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>세터 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>세터(Setters) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,8 +178,8 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="가변-참조"><a class="header" href="#가변-참조">가변 참조</a></h1>
-<p>이제 접근자 메소드는 다음과 같을 것입니다:</p>
+                        <h1 id="설정자-메서드setter"><a class="header" href="#설정자-메서드setter">설정자 메서드(Setter)</a></h1>
+<p>이제 접근자 메서드는 아마 이런 모습이겠죠:</p>
 <pre><code class="language-rust">impl Ticket {
     pub fn title(&amp;self) -&gt; &amp;String {
         &amp;self.title
@@ -193,17 +193,17 @@
         &amp;self.status
     }
 }</code></pre>
-<p>여기저기 <code>&amp;</code>를 뿌려주니 문제가 해결되었습니다!\n이제 <code>Ticket</code> 인스턴스를 소비하지 않고도 필드에 접근할 수 있는 방법이 생겼습니다.
-다음으로 <code>Ticket</code> 구조체를 <strong>setter 메소드</strong>로 향상시키는 방법을 알아봅시다.</p>
-<h2 id="setters"><a class="header" href="#setters">Setters</a></h2>
-<p>Setter 메소드를 사용하면 사용자가 <code>Ticket</code>의 비공개 필드 값을 변경하면서도 불변성이 존중되도록 할 수 있습니다(즉, <code>Ticket</code>의 제목을 빈 문자열로 설정할 수 없습니다).</p>
-<p>Rust에서 setter를 구현하는 두 가지 일반적인 방법이 있습니다:</p>
+<p>코드 곳곳에 참조 기호(<code>&amp;</code>)를 더해주니 문제가 깔끔하게 해결되었습니다! 이제 <code>Ticket</code> 인스턴스를 통째로 써버리지 않고도 안전하게 필드 값에 접근할 수 있게 되었네요.</p>
+<p>그럼 이제 한 걸음 더 나아가, <code>Ticket</code> 구조체에 값을 수정하는 **설정자 메서드(Setter)**를 추가해 볼까요?</p>
+<h2 id="설정자-메서드setter-1"><a class="header" href="#설정자-메서드setter-1">설정자 메서드(Setter)</a></h2>
+<p>설정자 메서드(Setter)를 이용하면, 비공개 필드 값을 외부에서 수정할 수 있게 하면서도 우리가 정한 규칙(불변성)을 엄격히 지킬 수 있습니다. 예를 들어, 제목을 빈 문자열로 바꾸려는 시도를 막을 수 있죠.</p>
+<p>Rust에서 설정자(Setter)를 구현하는 데는 보통 두 가지 방법이 쓰입니다:</p>
 <ul>
-<li><code>self</code>를 입력으로 받기.</li>
-<li><code>&amp;mut self</code>를 입력으로 받기.</li>
+<li><code>self</code>를 직접 인자로 받기</li>
+<li><code>&amp;mut self</code>(가변 참조)를 인자로 받기</li>
 </ul>
-<h3 id="self를-입력으로-받기"><a class="header" href="#self를-입력으로-받기"><code>self</code>를 입력으로 받기</a></h3>
-<p>첫 번째 접근 방식은 다음과 같습니다:</p>
+<h3 id="1-self를-직접-인자로-받기"><a class="header" href="#1-self를-직접-인자로-받기">1. <code>self</code>를 직접 인자로 받기</a></h3>
+<p>첫 번째 방식은 다음과 같습니다:</p>
 <pre><code class="language-rust">impl Ticket {
     pub fn set_title(mut self, new_title: String) -&gt; Self {
         // 새 제목 유효성 검사 [...] 
@@ -211,22 +211,21 @@
         self
     }
 }</code></pre>
-<p><code>self</code>의 소유권을 가져와서 제목을 변경하고 수정된 <code>Ticket</code> 인스턴스를 반환합니다.\n사용 방법은 다음과 같습니다:</p>
+<p>이 방식은 <code>self</code>의 소유권을 완전히 가져와서 값을 수정한 뒤, 다시 수정된 <code>Ticket</code> 인스턴스를 반환합니다. 실제 사용법은 이렇습니다:</p>
 <pre><code class="language-rust">let ticket = Ticket::new(
     "Title".into(), 
     "Description".into(), 
     "To-Do".into()
 );
 let ticket = ticket.set_title("New title".into());</code></pre>
-<p><code>set_title</code>은 <code>self</code>의 소유권을 가져가므로(<strong>소비</strong>하므로) 결과를 변수에 다시 할당해야 합니다.
-위 예에서는 <strong>변수 섀도잉</strong>을 활용하여 동일한 변수 이름을 재사용합니다. 기존 변수와 동일한 이름으로 새 변수를 선언하면 새 변수가 이전 변수를 <strong>가립니다</strong>. 이것은 Rust 코드에서 일반적인 패턴입니다.</p>
-<p><code>self</code>-setter는 한 번에 여러 필드를 변경해야 할 때 매우 잘 작동합니다. 여러 호출을 함께 연결할 수 있습니다!</p>
+<p><code>set_title</code> 메서드가 호출될 때 <code>self</code>의 소유권을 가져가기(소비하기) 때문에, 결과물을 반드시 변수에 다시 대입해 줘야 합니다. 위 예시에서는 <strong>변수 섀도잉(Variable Shadowing)</strong> 기법을 썼네요. 기존 변수와 똑같은 이름으로 새 변수를 선언해서 이전 변수를 ‘가리는’ 방식인데, Rust에서는 아주 흔히 볼 수 있는 패턴입니다.</p>
+<p><code>self</code>를 사용하는 설정자는 여러 필드를 한꺼번에 바꿀 때 빛을 발합니다. 메서드 호출을 줄줄이 엮는 **메서드 체이닝(Method Chaining)**이 가능하거든요!</p>
 <pre><code class="language-rust">let ticket = ticket
     .set_title("New title".into())
     .set_description("New description".into())
     .set_status("In Progress".into());</code></pre>
-<h3 id="mut-self를-입력으로-받기"><a class="header" href="#mut-self를-입력으로-받기"><code>&amp;mut self</code>를 입력으로 받기</a></h3>
-<p><code>&amp;mut self</code>를 사용하는 두 번째 setter 접근 방식은 다음과 같습니다:</p>
+<h3 id="2-mut-self가변-참조를-인자로-받기"><a class="header" href="#2-mut-self가변-참조를-인자로-받기">2. <code>&amp;mut self</code>(가변 참조)를 인자로 받기</a></h3>
+<p>두 번째 방식인 <code>&amp;mut self</code>를 사용하는 경우를 볼까요?</p>
 <pre><code class="language-rust">impl Ticket {
     pub fn set_title(&amp;mut self, new_title: String) {
         // 새 제목 유효성 검사 [...] 
@@ -234,9 +233,8 @@ let ticket = ticket.set_title("New title".into());</code></pre>
         self.title = new_title;
     }
 }</code></pre>
-<p>이번에는 메소드가 <code>self</code>에 대한 가변 참조를 입력으로 받아 제목을 변경하고 그것으로 끝입니다.
-아무것도 반환되지 않습니다.</p>
-<p>사용 방법은 다음과 같습니다:</p>
+<p>이번에는 메서드가 <code>self</code>에 대한 가변 참조를 받아서 내부 값을 직접 수정합니다. 별도의 반환 값은 없죠.</p>
+<p>사용 방법은 이렇습니다:</p>
 <pre><code class="language-rust">let mut ticket = Ticket::new(
     "Title".into(),
     "Description".into(),
@@ -244,12 +242,9 @@ let ticket = ticket.set_title("New title".into());</code></pre>
 );
 ticket.set_title("New title".into());
 
-// 수정된 티켓 사용</code></pre>
-<p>소유권은 호출자에게 있으므로 원래 <code>ticket</code> 변수는 여전히 유효합니다. 결과를 다시 할당할 필요가 없습니다.
-하지만 <code>ticket</code>에 대한 가변 참조를 사용하고 있으므로 <code>ticket</code>을 가변으로 표시해야 합니다.</p>
-<p><code>&amp;mut</code>-setter에는 단점이 있습니다. 여러 호출을 함께 연결할 수 없습니다.
-수정된 <code>Ticket</code> 인스턴스를 반환하지 않으므로 첫 번째 setter의 결과에 다른 setter를 호출할 수 없습니다.
-각 setter를 개별적으로 호출해야 합니다:</p>
+// 수정된 티켓을 그대로 사용합니다.</code></pre>
+<p>소유권이 여전히 호출한 쪽에 남아있기 때문에 원래 <code>ticket</code> 변수를 그대로 쓸 수 있습니다. 결과를 다시 대입할 필요도 없고요. 다만, <code>ticket</code> 내부를 수정해야 하므로 변수를 선언할 때 <code>let mut</code>으로 가변임을 명시해야 합니다.</p>
+<p><code>&amp;mut self</code>를 쓰는 방식에도 아쉬운 점은 있습니다. 바로 메서드 체이닝이 안 된다는 거죠. 수정된 인스턴스를 반환하지 않기 때문에, 아래처럼 각 메서드를 하나씩 따로 불러줘야 합니다:</p>
 <pre><code class="language-rust">ticket.set_title("New title".into());
 ticket.set_description("New description".into());
 ticket.set_status("In Progress".into());</code></pre>

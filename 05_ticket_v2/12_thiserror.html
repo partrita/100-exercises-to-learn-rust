@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -179,12 +179,10 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="thiserror"><a class="header" href="#thiserror"><code>thiserror</code></a></h1>
-<p>조금 돌아가는 길이었죠? 하지만 필요한 길이었습니다!
-이제 다시 본론으로 돌아가 봅시다: 사용자 정의 오류 타입과 <code>thiserror</code>입니다.</p>
+<p>조금 돌아가는 길이었나요? 하지만 꼭 거쳐야 하는 과정이었습니다! 이제 다시 본론으로 돌아가서 **사용자 정의 오류 타입(Custom Error Type)**과 <code>thiserror</code> 라이브러리에 대해 이야기해 봅시다.</p>
 <h2 id="사용자-정의-오류-타입"><a class="header" href="#사용자-정의-오류-타입">사용자 정의 오류 타입</a></h2>
-<p>사용자 정의 오류 타입에 대해 “수동으로” <code>Error</code> 트레이트를 구현하는 방법을 보았습니다.
-코드베이스의 대부분의 오류 타입에 대해 이 작업을 수행해야 한다고 상상해 보십시오. 상용구가 많지 않나요?</p>
-<p>사용자 정의 오류 타입 생성을 단순화하는 <strong>절차적 매크로</strong>를 제공하는 Rust 크레이트인 <a href="https://ruex.io/f4n"><code>thiserror</code></a>를 사용하여 일부 상용구를 제거할 수 있습니다.</p>
+<p>우리는 사용자 정의 오류 타입에 대해 <code>Error</code> 트레이트를 “수동으로” 구현하는 방법을 배웠습니다. 하지만 프로젝트가 커지고 관리해야 할 오류 타입이 수십 개로 늘어난다면 어떨까요? 매번 똑같은 코드를 반복해서 작성하는 일은 무척 번거로울 것입니다.</p>
+<p>이런 반복적인 코드, 즉 **상용구(Boilerplate)**를 줄여주는 도구가 바로 <a href="https://ruex.io/f4n"><code>thiserror</code></a>입니다. <code>thiserror</code>는 **절차적 매크로(Procedural macro)**를 통해 아주 간단하게 사용자 정의 오류 타입을 만들 수 있게 도와줍니다.</p>
 <pre><code class="language-rust">#[derive(thiserror::Error, Debug)]
 enum TicketNewError {
     #[error("{0}")]
@@ -192,19 +190,17 @@ enum TicketNewError {
     #[error("{0}")]
     DescriptionError(String),
 }</code></pre>
-<h2 id="자신만의-매크로를-작성할-수-있습니다"><a class="header" href="#자신만의-매크로를-작성할-수-있습니다">자신만의 매크로를 작성할 수 있습니다</a></h2>
-<p>지금까지 본 모든 <code>derive</code> 매크로는 Rust 표준 라이브러리에서 제공되었습니다.
-<code>thiserror::Error</code>는 <strong>타사</strong> <code>derive</code> 매크로의 첫 번째 예입니다.</p>
-<p><code>derive</code> 매크로는 컴파일 타임에 Rust 코드를 생성하는 방법인 <strong>절차적 매크로</strong>의 하위 집합입니다.
-이 과정에서는 절차적 매크로를 작성하는 방법에 대한 자세한 내용은 다루지 않지만, 자신만의 매크로를 작성할 수 있다는 것을 아는 것이 중요합니다!
-더 고급 Rust 과정에서 다룰 주제입니다.</p>
-<h2 id="사용자-정의-구문"><a class="header" href="#사용자-정의-구문">사용자 정의 구문</a></h2>
-<p>각 절차적 매크로는 자체 구문을 정의할 수 있으며, 이는 일반적으로 크레이트의 설명서에 설명되어 있습니다.
-<code>thiserror</code>의 경우 다음과 같습니다:</p>
+<h2 id="여러분도-직접-매크로를-만들-수-있습니다"><a class="header" href="#여러분도-직접-매크로를-만들-수-있습니다">여러분도 직접 매크로를 만들 수 있습니다</a></h2>
+<p>지금까지 우리가 사용한 <code>derive</code> 매크로들은 대부분 Rust 표준 라이브러리에서 제공한 것들이었습니다.
+<code>thiserror::Error</code>는 <strong>타사(Third-party)</strong> 라이브러리에서 가져온 <code>derive</code> 매크로를 경험하는 첫 사례가 되겠네요.</p>
+<p><code>derive</code> 매크로는 컴파일 단계에서 Rust 코드를 생성해주는 **절차적 매크로(Procedural macro)**의 한 종류입니다. 이 책에서는 매크로를 직접 작성하는 복잡한 방법까지 다루지는 않지만, 원한다면 여러분도 자신만의 매크로를 만들 수 있다는 점을 기억해 두세요! 이건 나중에 중급 이상의 과정에서 만나게 될 흥미로운 주제입니다.</p>
+<h2 id="사용자-정의-구문-custom-syntax"><a class="header" href="#사용자-정의-구문-custom-syntax">사용자 정의 구문 (Custom Syntax)</a></h2>
+<p>절차적 매크로는 저마다 독특한 구문을 사용할 수 있으며, 보통 라이브러리 문서에 자세히 설명되어 있습니다.
+<code>thiserror</code>에서 자주 사용하는 구문은 다음과 같습니다.</p>
 <ul>
-<li><code>#[derive(thiserror::Error)]</code>: <code>thiserror</code>의 도움을 받아 사용자 정의 오류 타입에 대해 <code>Error</code> 트레이트를 파생시키는 구문입니다.</li>
-<li><code>#[error("{0}")]</code>: 사용자 정의 오류 타입의 각 베리언트에 대한 <code>Display</code> 구현을 정의하는 구문입니다.
-<code>{0}</code>은 오류가 표시될 때 베리언트의 0번째 필드(이 경우 <code>String</code>)로 대체됩니다.</li>
+<li><strong><code>#[derive(thiserror::Error)]</code></strong>: <code>thiserror</code>의 기능을 빌려 내가 만든 타입에 <code>Error</code> 트레이트를 자동으로 부여하겠다는 선언입니다.</li>
+<li><strong><code>#[error("{0}")]</code></strong>: 각 오류 케이스(베리언트)에 대한 <code>Display</code> 구현 내용을 적는 곳입니다.
+<code>{0}</code>은 오류가 출력될 때 해당 베리언트의 첫 번째 필드(여기서는 <code>String</code>)의 값으로 바뀌게 됩니다.</li>
 </ul>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f47"><code>05_ticket_v2/12_thiserror</code></a></p>

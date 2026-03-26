@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>두 가지 상태 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>두 가지 상태(Two states) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,36 +178,32 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="티켓-id"><a class="header" href="#티켓-id">티켓 ID</a></h1>
-<p>티켓 관리 시스템에 대해 다시 생각해 봅시다.
-현재 티켓 모델은 다음과 같습니다:</p>
+                        <h1 id="티켓-idticket-id"><a class="header" href="#티켓-idticket-id">티켓 ID(Ticket ID)</a></h1>
+<p>티켓 관리 시스템을 다시 한 번 설계해 봅시다. 현재 티켓 모델은 다음과 같은 구조로 되어 있습니다.</p>
 <pre><code class="language-rust">pub struct Ticket {
     pub title: TicketTitle,
     pub description: TicketDescription,
     pub status: Status
 }</code></pre>
-<p>여기서 한 가지 빠진 것이 있습니다: 티켓을 고유하게 식별하는 <strong>식별자</strong>입니다.
-이 식별자는 각 티켓에 대해 고유해야 합니다. 이는 새 티켓이 생성될 때 자동으로 생성하여 보장할 수 있습니다.</p>
+<p>여기에 한 가지 빠진 중요한 정보가 있죠. 바로 티켓을 고유하게 식별할 수 있는 **식별자(ID)**입니다. 각 티켓은 고유한 ID를 가져야 하며, 이는 보통 새로운 티켓이 생성될 때 자동으로 할당되어 중복을 방지합니다.</p>
 <h2 id="모델-개선"><a class="header" href="#모델-개선">모델 개선</a></h2>
-<p>ID는 어디에 저장해야 할까요?
-<code>Ticket</code> 구조체에 새 필드를 추가할 수 있습니다:</p>
+<p>그렇다면 이 ID는 어디에 저장하는 것이 좋을까요?
+<code>Ticket</code> 구조체에 새로운 필드를 추가해 봅시다.</p>
 <pre><code class="language-rust">pub struct Ticket {
     pub id: TicketId,
     pub title: TicketTitle,
     pub description: TicketDescription,
     pub status: Status
 }</code></pre>
-<p>하지만 티켓을 생성하기 전에는 ID를 알 수 없습니다. 따라서 처음부터 거기에 있을 수는 없습니다.
-선택 사항이어야 합니다:</p>
+<p>그런데 문제가 하나 있습니다. 티켓이 생성되기 전에는 아직 ID를 알 수 없다는 것이죠. 따라서 처음부터 이 필드를 채울 수는 없습니다. 그렇다고 필드를 옵셔널(Optional)로 만드는 건 어떨까요?</p>
 <pre><code class="language-rust">pub struct Ticket {
     pub id: Option&lt;TicketId&gt;,
     pub title: TicketTitle,
     pub description: TicketDescription,
     pub status: Status
 }</code></pre>
-<p>이것도 이상적이지 않습니다. 티켓이 생성된 후에는 ID가 항상 있어야 한다는 것을 알면서도, 저장소에서 티켓을 검색할 때마다 <code>None</code> 케이스를 처리해야 합니다.</p>
-<p>가장 좋은 해결책은 두 가지 다른 티켓 <strong>상태</strong>를 두 개의 별도 타입으로 나타내는 것입니다:
-<code>TicketDraft</code>와 <code>Ticket</code>입니다.</p>
+<p>이 방법도 완벽하진 않습니다. 티켓이 일단 생성되고 나면 반드시 ID가 존재한다는 것을 알고 있음에도 불구하고, 저장소에서 티켓을 꺼내 올 때마다 매번 <code>None</code> 케이스를 처리해야 하는 번거로움이 생기기 때문입니다.</p>
+<p>가장 깔끔한 해결책은 티켓의 두 가지 **상태(States)**를 서로 다른 타입으로 정의하는 것입니다. 바로 <code>TicketDraft</code>와 <code>Ticket</code>으로 나누는 것이죠.</p>
 <pre><code class="language-rust">pub struct TicketDraft {
     pub title: TicketTitle,
     pub description: TicketDescription
@@ -219,9 +215,11 @@ pub struct Ticket {
     pub description: TicketDescription,
     pub status: Status
 }</code></pre>
-<p><code>TicketDraft</code>는 아직 생성되지 않은 티켓입니다. ID가 없고 상태도 없습니다.
-<code>Ticket</code>은 생성된 티켓입니다. ID와 상태를 가집니다.
-<code>TicketDraft</code>와 <code>Ticket</code>의 각 필드가 자체 제약 조건을 포함하므로, 두 타입 간에 로직을 중복할 필요가 없습니다.</p>
+<ul>
+<li><strong><code>TicketDraft</code></strong>: 아직 데이터베이스 등에 저장되지 않은 임시 상태의 티켓입니다. ID와 상태(Status) 값이 아직 할당되지 않았습니다.</li>
+<li><strong><code>Ticket</code></strong>: 성공적으로 생성되어 식별 가능한 상태의 티켓입니다. 고유한 ID와 현재 상태 값을 가집니다.</li>
+</ul>
+<p>이렇게 타입을 분리하면 각 필드가 자체적인 검증 로직을 포함하고 있으므로, 두 타입 사이에 중복된 검증 로직을 작성할 필요가 없습니다. 아주 효율적이죠!</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fx8"><code>06_ticket_management/12_two_states</code></a></p>
 

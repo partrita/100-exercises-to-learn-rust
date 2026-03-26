@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>컴비네이터 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>컴비네이터(Combinators) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,76 +178,63 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="조합자"><a class="header" href="#조합자">조합자</a></h1>
-<p>반복자는 <code>for</code> 루프보다 훨씬 더 많은 것을 할 수 있습니다!
-<code>Iterator</code> 트레이트 문서를 살펴보면, 다양한 방식으로 반복자를 변환, 필터링 및 결합하는 데 활용할 수 있는 <strong>방대한</strong> 메소드 컬렉션을 찾을 수 있습니다.</p>
-<p>가장 일반적인 것들을 언급해 봅시다:</p>
+                        <h1 id="조합자combinators"><a class="header" href="#조합자combinators">조합자(Combinators)</a></h1>
+<p>반복자(Iterator)는 단순한 <code>for</code> 루프 그 이상의 능력을 갖추고 있습니다! <code>Iterator</code> 트레이트 문서를 살펴보면 반복자를 변환하고, 필터링하고, 결합하는 데 사용할 수 있는 <strong>엄청나게 많은</strong> 메서드들을 발견할 수 있습니다.</p>
+<p>자주 사용되는 몇 가지를 살펴볼까요?</p>
 <ul>
-<li><code>map</code>은 반복자의 각 요소에 함수를 적용합니다.</li>
-<li><code>filter</code>는 술어를 만족하는 요소만 유지합니다.</li>
-<li><code>filter_map</code>은 <code>filter</code>와 <code>map</code>을 한 단계로 결합합니다.</li>
-<li><code>cloned</code>는 참조 반복자를 값 반복자로 변환하고 각 요소를 복제합니다.</li>
-<li><code>enumerate</code>는 <code>(인덱스, 값)</code> 쌍을 생성하는 새로운 반복자를 반환합니다.</li>
-<li><code>skip</code>은 반복자의 처음 <code>n</code>개 요소를 건너뜁니다.</li>
-<li><code>take</code>는 <code>n</code>개 요소 후에 반복자를 중지합니다.</li>
-<li><code>chain</code>은 두 반복자를 하나로 결합합니다.</li>
+<li><strong><code>map</code></strong>: 반복자의 각 요소에 함수를 적용하여 변환합니다.</li>
+<li><strong><code>filter</code></strong>: 특정 조건을 만족하는 요소만 남깁니다.</li>
+<li><strong><code>filter_map</code></strong>: <code>filter</code>와 <code>map</code>을 한 번에 수행합니다.</li>
+<li><strong><code>cloned</code></strong>: 참조를 반복하는 반복자를 값을 직접 다루는 반복자로 바꾸며 각 요소를 복제합니다.</li>
+<li><strong><code>enumerate</code></strong>: <code>(인덱스, 값)</code> 쌍을 만들어 주는 새로운 반복자를 반환합니다.</li>
+<li><strong><code>skip</code></strong>: 처음 <code>n</code>개의 요소를 건너뜁니다.</li>
+<li><strong><code>take</code></strong>: <code>n</code>개의 요소만 가져오고 반복을 멈춥니다.</li>
+<li><strong><code>chain</code></strong>: 두 개의 반복자를 하나로 이어 붙입니다.</li>
 </ul>
-<p>이러한 메소드를 <strong>조합자</strong>라고 합니다.
-이들은 일반적으로 간결하고 읽기 쉬운 방식으로 복잡한 변환을 생성하기 위해 함께 <strong>연결</strong>됩니다:</p>
+<p>이런 메서드들을 **조합자(Combinators)**라고 부릅니다. 이들은 보통 여러 개를 **연결(Chaining)**하여 복잡한 데이터 변환 과정을 아주 간결하고 읽기 좋게 만들어 줍니다.</p>
 <pre><code class="language-rust">let numbers = vec![1, 2, 3, 4, 5];
-// 짝수의 제곱의 합
+// 짝수만 골라내어 그 제곱의 합을 구합니다.
 let outcome: u32 = numbers.iter()
     .filter(|&amp;n| n % 2 == 0)
     .map(|&amp;n| n * n)
     .sum();</code></pre>
-<h2 id="클로저"><a class="header" href="#클로저">클로저</a></h2>
-<p>위의 <code>filter</code> 및 <code>map</code> 메소드에서 무슨 일이 일어나고 있을까요?
-이들은 인수로 <strong>클로저</strong>를 받습니다.</p>
-<p>클로저는 <strong>익명 함수</strong>입니다. 즉, 우리가 익숙한 <code>fn</code> 구문을 사용하여 정의되지 않은 함수입니다.
-이들은 <code>|args| body</code> 구문을 사용하여 정의되며, 여기서 <code>args</code>는 인수이고 <code>body</code>는 함수 본문입니다.
-<code>body</code>는 코드 블록이거나 단일 표현식일 수 있습니다.
-예를 들어:</p>
-<pre><code class="language-rust">// 인수에 1을 더하는 익명 함수
-let add_one = |x| x + 1;
-// 블록으로도 작성할 수 있습니다:
+<h2 id="클로저closures"><a class="header" href="#클로저closures">클로저(Closures)</a></h2>
+<p>위 예제의 <code>filter</code>나 <code>map</code>에서 사용한 <code>|...|</code> 구문은 무엇일까요? 이들은 인수로 **클로저(Closures)**를 전달받습니다.</p>
+<p>클로저는 <strong>익명 함수(Anonymous functions)</strong>, 즉 이름이 없는 함수입니다. 우리가 흔히 쓰는 <code>fn</code> 구문 대신 <code>|매개변수| 본문</code> 형식을 사용해 정의합니다. 본문은 코드 블록(<code>{}</code>)일 수도 있고 단일 표현식일 수도 있습니다.</p>
+<pre><code class="language-rust">// 매개변수에 1을 더하는 익명 함수 let add_one = |x| x + 1;
+
+// 중괄호를 써서 블록으로 작성할 수도 있습니다.
 let add_one = |x| { x + 1 };</code></pre>
-<p>클로저는 하나 이상의 인수를 받을 수 있습니다:</p>
+<p>클로저는 여러 개의 매개변수를 받을 수 있습니다:</p>
 <pre><code class="language-rust">let add = |x, y| x + y;
 let sum = add(1, 2);</code></pre>
-<p>이들은 환경에서 변수를 캡처할 수도 있습니다:</p>
+<p>또한 클로저만의 특별한 능력은 <strong>주변 환경의 변수를 가둘(Capture variables from the environment)</strong> 수 있다는 점입니다.</p>
 <pre><code class="language-rust">let x = 42;
-let add_x = |y| x + y;
+let add_x = |y| x + y; // 주변 변수인 x를 사용합니다.
 let sum = add_x(1);</code></pre>
-<p>필요한 경우 인수의 타입 및/또는 반환 타입을 지정할 수 있습니다:</p>
-<pre><code class="language-rust">// 입력 타입만
-let add_one = |x: i32| x + 1;
-// `fn` 구문을 사용하여 입력 및 출력 타입 모두
+<p>필요하다면 매개변수나 반환 타입을 직접 명시해 줄 수도 있습니다:</p>
+<pre><code class="language-rust">// 입력 타입만 지정 let add_one = |x: i32| x + 1;
+// 입력과 출력 타입을 모두 지정 (fn 타입 문법 사용)
 let add_one: fn(i32) -&gt; i32 = |x| x + 1;</code></pre>
 <h2 id="collect"><a class="header" href="#collect"><code>collect</code></a></h2>
-<p>조합자를 사용하여 반복자를 변환한 후에는 어떻게 될까요?
-변환된 값을 <code>for</code> 루프를 사용하여 반복하거나 컬렉션으로 수집합니다.</p>
-<p>후자는 <code>collect</code> 메소드를 사용하여 수행됩니다.
-<code>collect</code>는 반복자를 소비하고 해당 요소를 선택한 컬렉션으로 수집합니다.</p>
-<p>예를 들어, 짝수의 제곱을 <code>Vec</code>으로 수집할 수 있습니다:</p>
+<p>조합자를 써서 반복자를 변환했다면, 그다음엔 어떻게 해야 할까요? 변환된 값을 <code>for</code> 루프로 다시 돌릴 수도 있지만, 새로운 컬렉션으로 모으고 싶을 때가 많습니다.</p>
+<p>이때 사용하는 메서드가 바로 <code>collect</code>입니다. <code>collect</code>는 반복자를 끝까지 실행하고 그 결과물들을 우리가 원하는 컬렉션(예: <code>Vec</code>)에 차곡차곡 담아줍니다.</p>
 <pre><code class="language-rust">let numbers = vec![1, 2, 3, 4, 5];
 let squares_of_evens: Vec&lt;u32&gt; = numbers.iter()
     .filter(|&amp;n| n % 2 == 0)
     .map(|&amp;n| n * n)
     .collect();</code></pre>
-<p><code>collect</code>는 <strong>반환 타입</strong>에 대해 제네릭입니다.
-따라서 컴파일러가 올바른 타입을 추론하는 데 도움이 되도록 일반적으로 타입 힌트를 제공해야 합니다.
-위의 예에서 <code>squares_of_evens</code>의 타입을 <code>Vec&lt;u32&gt;</code>로 주석 처리했습니다.
-대신 <strong>터보피시 구문</strong>을 사용하여 타입을 지정할 수 있습니다:</p>
+<p><code>collect</code> 메서드는 매우 강력하지만, 어떤 타입의 컬렉션으로 만들지 정해줘야 하는 <strong>제네릭(Generic)</strong> 메서드입니다. 그래서 보통 위 예시처럼 변수 타입(<code>Vec&lt;u32&gt;</code>)을 명시해 주거나, 아래처럼 **터보피시 구문(Turbofish syntax)**을 사용하여 타입을 지정해 줍니다.</p>
 <pre><code class="language-rust">let squares_of_evens = numbers.iter()
     .filter(|&amp;n| n % 2 == 0)
     .map(|&amp;n| n * n)
-    // 터보피시 구문: `&lt;메소드_이름&gt;::&lt;타입&gt;()`
-    // `::&lt;&gt;`가 물고기처럼 생겼기 때문에 터보피시라고 불립니다
+    // 터보피시 구문: `::&lt;타입&gt;()` 
+    // `::&lt;&gt;` 모양이 물고기처럼 생겨서 붙여진 이름입니다!
     .collect::&lt;Vec&lt;u32&gt;&gt;();</code></pre>
-<h2 id="추가-자료"><a class="header" href="#추가-자료">추가 자료</a></h2>
+<h2 id="더-읽어보기"><a class="header" href="#더-읽어보기">더 읽어보기</a></h2>
 <ul>
-<li><a href="https://ruex.io/fxf"><code>Iterator</code> 문서</a>는 <code>std</code>에서 반복자에 사용할 수 있는 메소드에 대한 개요를 제공합니다.</li>
-<li><a href="https://ruex.io/fx2"><code>itertools</code> 크레이트</a>는 반복자를 위한 <strong>더 많은</strong> 조합자를 정의합니다.</li>
+<li><a href="https://ruex.io/fxf"><code>Iterator</code> 문서</a>: 표준 라이브러리에서 반복자에 사용할 수 있는 다양한 메서드들을 확인할 수 있습니다.</li>
+<li><a href="https://ruex.io/fx2"><code>itertools</code> 크레이트</a>: 기본 제공 기능보다 <strong>더 많은</strong> 강력한 조합자들을 제공하는 유명한 라이브러리입니다.</li>
 </ul>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fxz"><code>06_ticket_management/07_combinators</code></a></p>

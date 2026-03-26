@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>반복자 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>반복자(Iterators) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,23 +178,20 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="반복"><a class="header" href="#반복">반복</a></h1>
-<p>가장 첫 번째 연습 문제에서 Rust는 <code>for</code> 루프를 사용하여 컬렉션을 반복할 수 있다는 것을 배웠습니다.
-그때는 범위(예: <code>0..5</code>)를 보고 있었지만, 배열 및 벡터와 같은 컬렉션에도 동일하게 적용됩니다.</p>
-<pre><code class="language-rust">// `Vec`에도 작동합니다
-let v = vec![1, 2, 3];
+                        <h1 id="반복iteration"><a class="header" href="#반복iteration">반복(Iteration)</a></h1>
+<p>가장 첫 번째 연습 문제에서 우리는 <code>for</code> 루프를 사용하여 컬렉션을 반복하는 방법을 배웠습니다. 그때는 <code>0..5</code>와 같은 범위를 다뤘지만, 배열이나 벡터와 같은 컬렉션도 똑같은 방식으로 다룰 수 있습니다.</p>
+<pre><code class="language-rust">// `Vec`에서도 잘 작동합니다 let v = vec![1, 2, 3];
 for n in v {
     println!("{}", n);
 }
 
-// 배열에도 작동합니다
-let a: [u32; 3] = [1, 2, 3];
+// 배열에서도 마찬가지입니다 let a: [u32; 3] = [1, 2, 3];
 for n in a {
     println!("{}", n);
 }</code></pre>
-<p>이제 이것이 내부적으로 어떻게 작동하는지 이해할 시간입니다.</p>
-<h2 id="for-desugaring"><a class="header" href="#for-desugaring"><code>for</code> desugaring</a></h2>
-<p>Rust에서 <code>for</code> 루프를 작성할 때마다 컴파일러는 이를 다음 코드로 _desugar_합니다:</p>
+<p>이제 이 코드가 내부적으로 어떻게 돌아가는지 살펴볼까요?</p>
+<h2 id="for-루프의-구문-설탕-제거desugaring"><a class="header" href="#for-루프의-구문-설탕-제거desugaring"><code>for</code> 루프의 구문 설탕 제거(Desugaring)</a></h2>
+<p>Rust에서 <code>for</code> 루프를 작성하면 컴파일러는 이를 내부적으로 다음과 같은 코드로 변환(Desugaring)합니다:</p>
 <pre><code class="language-rust">let mut iter = IntoIterator::into_iter(v);
 loop {
     match iter.next() {
@@ -204,45 +201,40 @@ loop {
         None =&gt; break,
     }
 }</code></pre>
-<p><code>loop</code>는 <code>for</code> 및 <code>while</code> 외에 또 다른 루핑 구문입니다.
-<code>loop</code> 블록은 명시적으로 <code>break</code>하지 않는 한 영원히 실행됩니다.</p>
+<p><code>loop</code>는 <code>for</code>나 <code>while</code>과 달리, 명시적으로 <code>break</code>를 호출하지 않는 한 영원히 반복되는 구문입니다.</p>
 <h2 id="iterator-트레이트"><a class="header" href="#iterator-트레이트"><code>Iterator</code> 트레이트</a></h2>
-<p>이전 코드 스니펫의 <code>next</code> 메소드는 <code>Iterator</code> 트레이트에서 가져온 것입니다.
-<code>Iterator</code> 트레이트는 Rust의 표준 라이브러리에 정의되어 있으며, 값 시퀀스를 생성할 수 있는 타입에 대한 공유 인터페이스를 제공합니다:</p>
+<p>위 코드에서 사용한 <code>next</code> 메서드는 바로 <code>Iterator</code> 트레이트에서 정의된 것입니다. Rust 표준 라이브러리에 들어 있는 이 트레이트는 일련의 값을 차례대로 생성할 수 있는 모든 타입의 공통 인터페이스 역할을 합니다.</p>
 <pre><code class="language-rust">trait Iterator {
     type Item;
     fn next(&amp;mut self) -&gt; Option&lt;Self::Item&gt;;
 }</code></pre>
-<p><code>Item</code> 연관 타입은 반복자가 생성하는 값의 타입을 지정합니다.</p>
-<p><code>next</code>는 시퀀스의 다음 값을 반환합니다.
-반환할 값이 있으면 <code>Some(value)</code>를 반환하고, 없으면 <code>None</code>을 반환합니다.</p>
-<p>주의하십시오: 반복자가 <code>None</code>을 반환할 때 반복이 소진되었다는 보장은 없습니다. 이는 반복자가 (더 제한적인) <a href="https://ruex.io/f4s"><code>FusedIterator</code></a> 트레이트를 구현하는 경우에만 보장됩니다.</p>
+<ul>
+<li><strong><code>Item</code></strong>: 반복자가 생성하는 값의 타입을 나타내는 **연관 타입(Associated type)**입니다.</li>
+<li><strong><code>next</code></strong>: 시퀀스의 다음 값을 반환합니다. 더 줄 값이 있으면 <code>Some(value)</code>를, 끝에 도달하면 <code>None</code>을 반환합니다.</li>
+</ul>
+<p>참고로, <code>next</code>가 <code>None</code>을 반환했다고 해서 반드시 모든 반복이 끝났다고 보장할 수 없는 경우도 있습니다. 다만 <a href="https://ruex.io/f4s"><code>FusedIterator</code></a>라는 특별한 트레이트를 구현한 경우에는 <code>None</code> 이후에도 계속 <code>None</code>이 나옴을 보장합니다.</p>
 <h2 id="intoiterator-트레이트"><a class="header" href="#intoiterator-트레이트"><code>IntoIterator</code> 트레이트</a></h2>
-<p>모든 타입이 <code>Iterator</code>를 구현하는 것은 아니지만, 많은 타입이 <code>Iterator</code>를 구현하는 타입으로 변환될 수 있습니다.
-이때 <code>IntoIterator</code> 트레이트가 등장합니다:</p>
+<p>모든 타입이 그 자체로 <code>Iterator</code>인 것은 아니지만, 많은 타입이 <code>Iterator</code>로 변환될 수 있습니다. 이때 사용되는 것이 <code>IntoIterator</code> 트레이트입니다.</p>
 <pre><code class="language-rust">trait IntoIterator {
     type Item;
     type IntoIter: Iterator&lt;Item = Self::Item&gt;;
     fn into_iter(self) -&gt; Self::IntoIter;
 }</code></pre>
-<p><code>into_iter</code> 메소드는 원본 값을 소비하고 해당 요소에 대한 반복자를 반환합니다.
-타입은 <code>IntoIterator</code>의 구현을 하나만 가질 수 있습니다: <code>for</code>가 무엇으로 desugar되어야 하는지에 대한 모호함이 있을 수 없습니다.</p>
-<p>한 가지 세부 사항: <code>Iterator</code>를 구현하는 모든 타입은 <code>IntoIterator</code>도 자동으로 구현합니다.
-<code>into_iter</code>에서 자신을 반환할 뿐입니다!</p>
-<h2 id="경계-검사"><a class="header" href="#경계-검사">경계 검사</a></h2>
-<p>반복자를 통해 반복하는 것은 좋은 부작용이 있습니다: 설계상 범위를 벗어날 수 없습니다.
-이를 통해 Rust는 생성된 기계 코드에서 경계 검사를 제거하여 반복을 더 빠르게 만듭니다.</p>
-<p>즉,</p>
+<p><code>into_iter</code> 메서드는 원본 값을 소비하여 해당 요소들을 훑을 수 있는 반복자를 반환합니다. 각 타입은 <code>IntoIterator</code>를 오직 한 가지 방식으로만 구현할 수 있으므로, <code>for</code> 루프가 어떻게 동작해야 하는지 헷갈릴 일이 없습니다.</p>
+<p>흥미로운 점은, <code>Iterator</code>를 구현하는 모든 타입은 자동으로 <code>IntoIterator</code>도 구현된다는 것입니다. 그냥 <code>into_iter</code>를 호출했을 때 자기 자신을 반환할 뿐이죠!</p>
+<h2 id="성능과-경계-검사"><a class="header" href="#성능과-경계-검사">성능과 경계 검사</a></h2>
+<p>반복자를 사용하면 아주 좋은 장점이 하나 더 있습니다. 바로 <strong>설계상 범위를 벗어날 수 없다</strong>는 점입니다. 덕분에 Rust 컴파일러는 런타임에 수행하는 경계 검사(Bounds checking)를 과감히 생략하여 코드를 더 빠르게 만듭니다.</p>
+<p>즉, 아래 코드는:</p>
 <pre><code class="language-rust">let v = vec![1, 2, 3];
 for n in v {
     println!("{}", n);
 }</code></pre>
-<p>은 일반적으로 다음보다 빠릅니다:</p>
+<p>보통 다음과 같은 인덱스 기반 코드보다 더 빠릅니다:</p>
 <pre><code class="language-rust">let v = vec![1, 2, 3];
 for i in 0..v.len() {
     println!("{}", v[i]);
 }</code></pre>
-<p>이 규칙에는 예외가 있습니다: 컴파일러는 수동 인덱싱을 사용하더라도 범위를 벗어나지 않는다는 것을 때때로 증명할 수 있으므로 경계 검사를 제거합니다. 하지만 일반적으로 가능한 경우 인덱싱보다 반복을 선호하십시오.</p>
+<p>물론 컴파일러가 아주 똑똑해서 수동 인덱싱 코드가 안전함을 증명하고 경계 검사를 직접 제거해 줄 때도 있지만, 되도록 인덱싱보다는 반복자를 사용하는 것이 Rust다운 방식입니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f4h"><code>06_ticket_management/04_iterators</code></a></p>
 

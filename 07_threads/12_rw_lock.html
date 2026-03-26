@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,37 +178,27 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="읽기-및-쓰기"><a class="header" href="#읽기-및-쓰기">읽기 및 쓰기</a></h1>
-<p>새로운 <code>TicketStore</code>는 작동하지만, 읽기 성능은 좋지 않습니다: <code>Mutex&lt;T&gt;</code>는 읽기자와 쓰기자를 구분하지 않으므로 특정 티켓을 한 번에 한 클라이언트만 읽을 수 있습니다.</p>
-<p>다른 잠금 프리미티브인 <code>RwLock&lt;T&gt;</code>를 사용하여 이 문제를 해결할 수 있습니다.
-<code>RwLock&lt;T&gt;</code>는 <strong>읽기-쓰기 잠금</strong>을 의미합니다. <strong>여러 읽기자</strong>가 동시에 데이터에 접근할 수 있도록 허용하지만, 한 번에 한 쓰기자만 허용합니다.</p>
-<p><code>RwLock&lt;T&gt;</code>에는 잠금을 획득하는 두 가지 메소드가 있습니다: <code>read</code>와 <code>write</code>입니다.
-<code>read</code>는 데이터를 읽을 수 있는 가드를 반환하고, <code>write</code>는 데이터를 수정할 수 있는 가드를 반환합니다.</p>
+                        <h1 id="읽기-및-쓰기rwlock"><a class="header" href="#읽기-및-쓰기rwlock">읽기 및 쓰기(RwLock)</a></h1>
+<p>개선된 <code>TicketStore</code>는 잘 작동하지만, 읽기 성능 면에서 아쉬움이 있습니다. <code>Mutex&lt;T&gt;</code>는 읽기 작업(Reader)과 쓰기 작업(Writer)을 구분하지 않기 때문에, 누군가 티켓을 읽고만 있어도 다른 클라이언트들은 그 티켓을 읽기 위해 줄을 서야 하죠.</p>
+<p>이런 상황에서는 **읽기-쓰기 잠금(RwLock, Read-Write Lock)**인 <code>RwLock&lt;T&gt;</code>가 훌륭한 대안이 됩니다. <code>RwLock&lt;T&gt;</code>는 <strong>여러 명의 읽기 작업</strong>이 동시에 데이터에 접근하는 것을 허용하되, <strong>쓰기 작업</strong>은 오직 한 명만 가능하도록 제어합니다.</p>
+<p><code>RwLock&lt;T&gt;</code>에는 잠금을 얻는 두 가지 메서드 <code>read</code>와 <code>write</code>가 있습니다. <code>read</code>는 데이터를 읽을 수 있는 가드를, <code>write</code>는 데이터를 수정할 수 있는 가드를 반환합니다.</p>
 <pre><code class="language-rust">use std::sync::RwLock;
 
-// 읽기-쓰기 잠금으로 보호되는 정수
-let lock = RwLock::new(0);
+// 읽기-쓰기 잠금으로 보호되는 정수형 변수 let lock = RwLock::new(0);
 
-// RwLock에 대한 읽기 잠금 획득
-let guard1 = lock.read().unwrap();
+// 첫 번째 읽기 잠금 획득 let guard1 = lock.read().unwrap();
 
-// 첫 번째 잠금이 여전히 활성화되어 있는 동안
-// **두 번째** 읽기 잠금 획득
+// 첫 번째 잠금이 유지되는 동안에도
+// **두 번째** 읽기 잠금을 동시에 얻을 수 있습니다!
 let guard2 = lock.read().unwrap();</code></pre>
 <h2 id="장단점"><a class="header" href="#장단점">장단점</a></h2>
-<p>표면적으로 <code>RwLock&lt;T&gt;</code>는 당연한 선택처럼 보입니다: <code>Mutex&lt;T&gt;</code>의 기능의 상위 집합을 제공합니다.
-<code>RwLock&lt;T&gt;</code>를 사용할 수 있다면 왜 <code>Mutex&lt;T&gt;</code>를 사용해야 할까요?</p>
-<p>두 가지 주요 이유가 있습니다:</p>
+<p>얼핏 보면 <code>RwLock&lt;T&gt;</code>가 <code>Mutex&lt;T&gt;</code>의 모든 기능을 포함하면서 더 좋아 보입니다. 그렇다면 왜 항상 <code>RwLock&lt;T&gt;</code>만 쓰지 않고 <code>Mutex&lt;T&gt;</code>를 함께 사용할까요?</p>
+<p>여기에는 두 가지 주요 이유가 있습니다.</p>
 <ul>
-<li><code>RwLock&lt;T&gt;</code>를 잠그는 것은 <code>Mutex&lt;T&gt;</code>를 잠그는 것보다 비용이 더 많이 듭니다.
-이는 <code>RwLock&lt;T&gt;</code>가 활성 읽기자 및 쓰기자의 수를 추적해야 하는 반면, <code>Mutex&lt;T&gt;</code>는 잠금이 유지되는지 여부만 추적하면 되기 때문입니다.
-읽기자가 쓰기자보다 많은 경우 이 성능 오버헤드는 문제가 되지 않지만, 워크로드가 쓰기 위주인 경우 <code>Mutex&lt;T&gt;</code>가 더 나은 선택일 수 있습니다.</li>
-<li><code>RwLock&lt;T&gt;</code>는 <strong>쓰기자 기아</strong>를 유발할 수 있습니다.
-항상 잠금을 획득하기 위해 기다리는 읽기자가 있다면, 쓰기자는 실행될 기회를 얻지 못할 수 있습니다.
-<code>RwLock&lt;T&gt;</code>는 읽기자와 쓰기자에게 잠금에 대한 접근 권한이 부여되는 순서에 대한 어떠한 보장도 제공하지 않습니다.
-이는 기본 OS에서 구현된 정책에 따라 달라지며, 쓰기자에게 공정하지 않을 수 있습니다.</li>
+<li><strong>성능 비용</strong>: <code>RwLock&lt;T&gt;</code>는 <code>Mutex&lt;T&gt;</code>보다 잠금을 거는 비용이 더 큽니다. 현재 읽기 작업과 쓰기 작업이 각각 몇 개인지 계속 추적해야 하기 때문이죠. 만약 쓰기 작업이 읽기 작업만큼 많다면 오히려 <code>Mutex&lt;T&gt;</code>가 더 효율적일 수 있습니다.</li>
+<li><strong>쓰기 작업 기아 현상(Writer Starvation)</strong>: 끊임없이 읽기 요청이 들어온다면 쓰기 작업은 잠금을 얻을 기회를 영영 잡지 못할 수도 있습니다. 이를 ’기아 현상’이라고 부릅니다. <code>RwLock&lt;T&gt;</code>은 잠금 획득 순서를 보장하지 않으며, 이는 운영체제의 정책에 따라 달라질 수 있습니다.</li>
 </ul>
-<p>우리의 경우, 워크로드가 읽기 위주(대부분의 클라이언트가 티켓을 읽고 수정하지 않기 때문)일 것으로 예상되므로 <code>RwLock&lt;T&gt;</code>가 좋은 선택입니다.</p>
+<p>우리의 티켓 시스템처럼 대다수의 클라이언트가 조회를 주로 하고 수정은 가끔 하는 <strong>읽기 위주의 환경</strong>에서는 <code>RwLock&lt;T&gt;</code>가 아주 탁월한 선택이 될 것입니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fxd"><code>07_threads/12_rw_lock</code></a></p>
 

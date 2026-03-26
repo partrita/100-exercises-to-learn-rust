@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>유효성 검사 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>유효성 검사(Validation) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,18 +178,18 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="유효성-검사"><a class="header" href="#유효성-검사">유효성 검사</a></h1>
-<p>티켓 정의로 돌아가 봅시다:</p>
+                        <h1 id="유효성-검사validation"><a class="header" href="#유효성-검사validation">유효성 검사(Validation)</a></h1>
+<p>앞서 정의했던 티켓 구조체를 다시 살펴봅시다:</p>
 <pre><code class="language-rust">struct Ticket {
     title: String,
     description: String,
     status: String,
 }</code></pre>
-<p><code>Ticket</code> 구조체의 필드에 “원시” 타입을 사용하고 있습니다.
-이는 사용자가 빈 제목, 엄청나게 긴 설명 또는 의미 없는 상태(예: “Funny”)로 티켓을 만들 수 있음을 의미합니다.<br>우리는 그보다 더 잘할 수 있습니다!</p>
-<h2 id="추가-자료"><a class="header" href="#추가-자료">추가 자료</a></h2>
+<p>현재 <code>Ticket</code> 구조체의 필드들은 모두 ‘기본(Raw)’ 타입을 사용하고 있습니다. 이대로라면 누군가 제목을 비워두거나, 설명이 감당할 수 없을 정도로 길어지거나, 혹은 “Funny“처럼 티켓 시스템에 어울리지 않는 상태값을 넣는 것을 막을 수 없습니다.</p>
+<p>우리는 이보다 훨씬 더 꼼꼼하게 데이터를 관리할 수 있습니다!</p>
+<h2 id="참고-자료"><a class="header" href="#참고-자료">참고 자료</a></h2>
 <ul>
-<li><a href="https://ruex.io/f26"><code>String</code>의 문서</a>에서 제공하는 메소드에 대한 철저한 개요를 확인하세요. 연습 문제에 필요할 것입니다!</li>
+<li><a href="https://ruex.io/f26"><code>String</code> 공식 문서</a>에서 제공하는 다양한 메서드들을 꼼꼼히 살펴보세요. 이어지는 연습 문제를 풀 때 큰 도움이 될 겁니다!</li>
 </ul>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f2b"><code>03_ticket_v1/02_validation</code></a></p>

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>연관 타입 vs 제네릭 타입 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>연관 타입 vs 제네릭 타입(Associated vs Generic types) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,8 +178,8 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="제네릭과-연관-타입"><a class="header" href="#제네릭과-연관-타입">제네릭과 연관 타입</a></h1>
-<p>지금까지 공부한 두 가지 트레이트인 <code>From</code>과 <code>Deref</code>의 정의를 다시 살펴봅시다:</p>
+                        <h1 id="제네릭generics과-연관-타입associated-types"><a class="header" href="#제네릭generics과-연관-타입associated-types">제네릭(Generics)과 연관 타입(Associated Types)</a></h1>
+<p>지금까지 살펴본 두 트레이트, <code>From</code>과 <code>Deref</code>의 정의를 다시 한번 비교해 봅시다.</p>
 <pre><code class="language-rust">pub trait From&lt;T&gt; {
     fn from(value: T) -&gt; Self;
 }
@@ -189,19 +189,14 @@ pub trait Deref {
     
     fn deref(&amp;self) -&gt; &amp;Self::Target;
 }</code></pre>
-<p>둘 다 타입 매개변수를 특징으로 합니다.
-<code>From</code>의 경우, 제네릭 매개변수인 <code>T</code>입니다.
-<code>Deref</code>의 경우, 연관 타입인 <code>Target</code>입니다.</p>
-<p>차이점은 무엇일까요? 왜 하나를 다른 것보다 사용할까요?</p>
-<h2 id="최대-하나의-구현"><a class="header" href="#최대-하나의-구현">최대 하나의 구현</a></h2>
-<p>역참조 강제 변환이 작동하는 방식 때문에 주어진 타입에 대해 단 하나의 “대상” 타입만 있을 수 있습니다. 예를 들어, <code>String</code>은 <code>str</code>로만 역참조할 수 있습니다.
-이것은 모호함을 피하기 위함입니다: 타입에 대해 <code>Deref</code>를 여러 번 구현할 수 있다면, <code>&amp;self</code> 메소드를 호출할 때 컴파일러는 어떤 <code>Target</code> 타입을 선택해야 할까요?</p>
-<p>이것이 <code>Deref</code>가 연관 타입인 <code>Target</code>을 사용하는 이유입니다.
-연관 타입은 <strong>트레이트 구현에 의해</strong> 고유하게 결정됩니다.
-<code>Deref</code>를 두 번 이상 구현할 수 없으므로 주어진 타입에 대해 하나의 <code>Target</code>만 지정할 수 있으며 모호함이 없습니다.</p>
-<h2 id="제네릭-트레이트"><a class="header" href="#제네릭-트레이트">제네릭 트레이트</a></h2>
-<p>반면에, <strong>입력 타입 <code>T</code>가 다른 한</strong> 타입에 대해 <code>From</code>을 여러 번 구현할 수 있습니다.
-예를 들어, <code>u32</code>와 <code>u16</code>을 모두 입력 타입으로 사용하여 <code>WrappingU32</code>에 대해 <code>From</code>을 구현할 수 있습니다:</p>
+<p>두 트레이트 모두 타입을 매개변수화하여 사용하고 있습니다.
+<code>From</code>의 경우 제네릭 매개변수인 <code>T</code>를 사용하고, <code>Deref</code>는 연관 타입인 <code>Target</code>을 사용합니다.</p>
+<p>이 둘의 차이점은 무엇일까요? 그리고 왜 상황에 따라 다른 방식을 선택하는 걸까요?</p>
+<h2 id="오직-하나의-구현만-허용할-때"><a class="header" href="#오직-하나의-구현만-허용할-때">오직 하나의 구현만 허용할 때</a></h2>
+<p>역참조 강제 변환(Deref coercion)이 작동하는 방식 때문에, 특정 타입에 대한 “대상(target)” 타입은 오직 하나만 존재해야 합니다. 예를 들어, <code>String</code>은 오직 <code>str</code>로만 역참조될 수 있습니다. 이는 모호함을 방지하기 위해서입니다. 만약 하나의 타입에 대해 <code>Deref</code>를 여러 번 구현할 수 있다면, 컴파일러는 <code>&amp;self</code> 메서드를 호출할 때 어떤 <code>Target</code> 타입을 선택해야 할지 알 수 없게 됩니다.</p>
+<p>이것이 바로 <code>Deref</code>가 연관 타입인 <code>Target</code>을 사용하는 이유입니다. 연관 타입은 <strong>트레이트 구현 시점에</strong> 고유하게 결정됩니다. 하나의 타입에 대해 트레이트를 두 번 이상 구현할 수 없으므로(연관 타입만 다르게 해서 구현하는 것은 불가능합니다), 주어진 타입에 대해 <code>Target</code>은 단 하나만 지정될 수 있고 모호함이 사라집니다.</p>
+<h2 id="제네릭-트레이트-여러-구현을-허용할-때"><a class="header" href="#제네릭-트레이트-여러-구현을-허용할-때">제네릭 트레이트: 여러 구현을 허용할 때</a></h2>
+<p>반면, <strong>입력 타입 <code>T</code>가 서로 다르다면</strong> 하나의 타입에 대해 <code>From</code>을 여러 번 구현할 수 있습니다. 예를 들어 <code>WrappingU32</code>라는 타입에 대해 <code>u32</code>와 <code>u16</code>을 각각 입력으로 받는 <code>From</code>을 모두 구현할 수 있습니다.</p>
 <pre><code class="language-rust">impl From&lt;u32&gt; for WrappingU32 {
     fn from(value: u32) -&gt; Self {
         WrappingU32 { inner: value }
@@ -213,32 +208,29 @@ impl From&lt;u16&gt; for WrappingU32 {
         WrappingU32 { inner: value.into() }
     }
 }</code></pre>
-<p><code>From&lt;u16&gt;</code>과 <code>From&lt;u32&gt;</code>가 <strong>다른 트레이트</strong>로 간주되기 때문에 이것은 작동합니다.
-모호함이 없습니다: 컴파일러는 변환되는 값의 타입에 따라 어떤 구현을 사용할지 결정할 수 있습니다.</p>
-<h2 id="사례-연구-add"><a class="header" href="#사례-연구-add">사례 연구: <code>Add</code></a></h2>
-<p>마지막 예로, 표준 라이브러리의 <code>Add</code> 트레이트를 고려해 봅시다:</p>
+<p>이것이 가능한 이유는 <code>From&lt;u16&gt;</code>과 <code>From&lt;u32&gt;</code>가 서로 <strong>다른 트레이트</strong>로 간주되기 때문입니다. 컴파일러는 변환하려는 값의 타입이 무엇인지 보고 어떤 구현체를 사용할지 명확히 판단할 수 있으므로 모호함이 없습니다.</p>
+<h2 id="사례-연구-add-트레이트"><a class="header" href="#사례-연구-add-트레이트">사례 연구: <code>Add</code> 트레이트</a></h2>
+<p>마지막으로 표준 라이브러리의 <code>Add</code> 트레이트를 살펴봅시다.</p>
 <pre><code class="language-rust">pub trait Add&lt;RHS = Self&gt; {
     type Output;
     
     fn add(self, rhs: RHS) -&gt; Self::Output;
 }</code></pre>
-<p>두 가지 메커니즘을 모두 사용합니다:</p>
+<p><code>Add</code> 트레이트는 두 가지 메커니즘을 모두 활용합니다.</p>
 <ul>
-<li>제네릭 매개변수인 <code>RHS</code>(오른쪽 피연산자)가 있으며, 기본값은 <code>Self</code>입니다.</li>
-<li>연관 타입인 <code>Output</code>이 있으며, 덧셈 결과의 타입입니다.</li>
+<li><strong>제네릭 매개변수 <code>RHS</code></strong>: 더할 오른쪽 피연산자의 타입을 나타내며, 기본값은 <code>Self</code>입니다.</li>
+<li><strong>연관 타입 <code>Output</code></strong>: 덧셈 결과의 타입을 나타냅니다.</li>
 </ul>
-<h3 id="rhs"><a class="header" href="#rhs"><code>RHS</code></a></h3>
-<p><code>RHS</code>는 다른 타입들이 함께 더해질 수 있도록 하는 제네릭 매개변수입니다.
-예를 들어, 표준 라이브러리에서 다음 두 가지 구현을 찾을 수 있습니다:</p>
+<h3 id="왜-rhs는-제네릭일까요"><a class="header" href="#왜-rhs는-제네릭일까요">왜 <code>RHS</code>는 제네릭일까요?</a></h3>
+<p><code>RHS</code>가 제네릭인 덕분에 서로 다른 타입끼리 더하는 것이 가능해집니다. 예를 들어 <code>u32</code> 타입에 대해서 다음과 같은 두 가지 구현이 있을 수 있습니다.</p>
 <pre><code class="language-rust">impl Add&lt;u32&gt; for u32 {
     type Output = u32;
     
     fn add(self, rhs: u32) -&gt; u32 {
       //                      ^^^
-      // 이것은 대신 `Self::Output`으로 작성될 수 있습니다.
-      // 컴파일러는 여기서 지정한 타입이 바로 위에서 `Output`에
-      // 할당한 타입과 일치하는 한 신경 쓰지 않습니다.
-      // [...]
+      // 이 부분은 `Self::Output`으로 써도 무방합니다.
+      // 컴파일러는 위에서 정의한 `Output` 타입과 실제 반환 타입이
+      // 일치하는지만 확인합니다.
     }
 }
 
@@ -249,13 +241,11 @@ impl Add&lt;&amp;u32&gt; for u32 {
         // [...]
     }
 }</code></pre>
-<p>이를 통해 다음 코드가 컴파일될 수 있습니다:</p>
+<p>덕분에 <code>u32</code>가 <code>Add&lt;u32&gt;</code>와 <code>Add&lt;&amp;u32&gt;</code>를 모두 구현하고 있으므로 다음과 같은 코드가 가능해집니다.</p>
 <pre><code class="language-rust">let x = 5u32 + &amp;5u32 + 6u32;</code></pre>
-<p>because <code>u32</code>가 <code>Add&lt;&amp;u32&gt;</code>와 <code>Add&lt;u32&gt;</code>를 모두 구현하기 때문입니다.</p>
-<h3 id="output"><a class="header" href="#output"><code>Output</code></a></h3>
-<p><code>Output</code>은 덧셈 결과의 타입을 나타냅니다.</p>
-<p>애초에 <code>Output</code>이 왜 필요할까요? <code>Add</code>를 구현하는 타입인 <code>Self</code>를 출력으로 사용할 수는 없을까요?
-할 수는 있지만, 트레이트의 유연성을 제한할 것입니다. 예를 들어, 표준 라이브러리에서는 다음 구현을 찾을 수 있습니다:</p>
+<h3 id="왜-output은-연관-타입일까요"><a class="header" href="#왜-output은-연관-타입일까요">왜 <code>Output</code>은 연관 타입일까요?</a></h3>
+<p><code>Output</code>은 덧셈 연산의 결과 타입을 정의합니다.</p>
+<p>그냥 항상 <code>Self</code>를 반환하면 안 될까요? 그럴 수도 있겠지만, 그러면 트레이트의 유연성이 크게 떨어집니다. 예를 들어 다음과 같은 경우를 보시죠.</p>
 <pre><code class="language-rust">impl Add&lt;&amp;u32&gt; for &amp;u32 {
     type Output = u32;
 
@@ -263,23 +253,20 @@ impl Add&lt;&amp;u32&gt; for u32 {
         // [...]
     }
 }</code></pre>
-<p>트레이트를 구현하는 타입은 <code>&amp;u32</code>이지만, 덧셈의 결과는 <code>u32</code>입니다.
-<code>add</code>가 <code>Self</code>, 즉 이 경우 <code>&amp;u32</code>를 반환해야 한다면 이 구현을 제공하는 것은 불가능할 것입니다<sup class="footnote-reference" id="fr-flexible-1"><a href="#footnote-flexible">1</a></sup>.
-<code>Output</code>을 사용하면 <code>std</code>가 구현자를 반환 타입과 분리하여 이 경우를 지원할 수 있습니다.</p>
-<p>반면에, <code>Output</code>은 제네릭 매개변수가 될 수 없습니다. 연산의 출력 타입은 피연산자의 타입이 알려지면 <strong>반드시</strong> 고유하게 결정되어야 합니다. 이것이 연관 타입인 이유입니다: 구현자와 제네릭 매개변수의 주어진 조합에 대해 단 하나의 <code>Output</code> 타입만 있습니다.</p>
-<h2 id="결론"><a class="header" href="#결론">결론</a></h2>
-<p>요약하자면:</p>
+<p>여기서 트레이트를 구현하는 타입(<code>Self</code>)은 <code>&amp;u32</code>이지만, 덧셈의 결과는 <code>u32</code>여야 합니다. 만약 <code>add</code> 메서드가 반드시 <code>Self</code> 타입(여기서는 <code>&amp;u32</code>)을 반환해야 했다면, 이런 구현은 불가능했을 것입니다<sup class="footnote-reference" id="fr-flexible-1"><a href="#footnote-flexible">1</a></sup>. <code>Output</code>을 연관 타입으로 분리함으로써 결과 타입을 자유롭게 지정할 수 있게 된 것이죠.</p>
+<p>하지만 <code>Output</code>을 제네릭 매개변수로 만들 수는 없습니다. 피연산자들의 타입이 결정되었다면, 그 연산의 결과 타입은 <strong>반드시</strong> 하나로 고정되어야 하기 때문입니다. 이것이 바로 <code>Output</code>이 연관 타입인 이유입니다.</p>
+<h2 id="요약"><a class="header" href="#요약">요약</a></h2>
 <ul>
-<li>주어진 트레이트 구현에 대해 타입이 고유하게 결정되어야 할 때 <strong>연관 타입</strong>을 사용하십시오.</li>
-<li>다른 입력 타입으로 동일한 타입에 대해 트레이트의 여러 구현을 허용하고 싶을 때 <strong>제네릭 매개변수</strong>를 사용하십시오.</li>
+<li>특정 트레이트 구현에 대해 결과 타입이 고유하게 결정되어야 한다면 <strong>연관 타입</strong>을 사용하세요.</li>
+<li>하나의 타입에 대해 여러 가지 서로 다른 입력 타입을 허용하고 싶다면 <strong>제네릭 매개변수</strong>를 사용하세요.</li>
 </ul>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fzs"><code>04_traits/10_assoc_vs_generic</code></a></p>
 <hr>
 <ol class="footnote-definition">
 <li id="footnote-flexible">
-<p>유연성은 거의 공짜가 아닙니다: <code>Output</code> 때문에 트레이트 정의가 더 복잡해지고, 구현자는 무엇을 반환할지 고민해야 합니다. 그 유연성이 실제로 필요한 경우에만 절충안이 정당화됩니다. 자신만의 트레이트를 설계할 때 이 점을 명심하십시오.</p>
-<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
- <a href="#fr-flexible-1">↩</a></li>
+<p>유연함에는 대가가 따릅니다. <code>Output</code>을 사용하면 트레이트 정의가 복잡해지고 구현 시 고려할 사항도 늘어납니다. 이 유연함이 정말로 필요한 경우에만 이런 구조를 설계하는 것이 좋습니다. 여러분만의 트레이트를 만들 때 이 점을 꼭 기억하세요. <a href="#fr-flexible-1">↩</a></p>
+</li>
 </ol>
 
                     </main>

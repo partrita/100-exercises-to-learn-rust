@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>런타임 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>런타임(Runtime) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,57 +178,43 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="런타임-아키텍처"><a class="header" href="#런타임-아키텍처">런타임 아키텍처</a></h1>
-<p>지금까지 우리는 비동기 런타임을 추상적인 개념으로 이야기해 왔습니다.
-이제 구현 방식에 대해 좀 더 깊이 파고들어 봅시다. 곧 알게 되겠지만,
-이는 우리 코드에 영향을 미칩니다.</p>
+                        <h1 id="런타임-아키텍처-runtime-architecture"><a class="header" href="#런타임-아키텍처-runtime-architecture">런타임 아키텍처 (Runtime Architecture)</a></h1>
+<p>지금까지 비동기 런타임을 추상적인 개념으로만 이야기해 왔습니다. 이제 런타임이 실제로 어떻게 구현되어 있는지 좀 더 깊이 파고들어 봅시다. 곧 보게 되겠지만, 런타임의 구조는 우리가 작성하는 코드에도 직접적인 영향을 미칩니다.</p>
 <h2 id="종류"><a class="header" href="#종류">종류</a></h2>
-<p><code>tokio</code>는 두 가지 다른 런타임 _종류_를 제공합니다.</p>
+<p><code>tokio</code>는 크게 두 가지 종류의 런타임을 제공합니다.</p>
 <p><code>tokio::runtime::Builder</code>를 통해 런타임을 구성할 수 있습니다:</p>
 <ul>
-<li><code>Builder::new_multi_thread</code>는 <strong>다중 스레드 <code>tokio</code> 런타임</strong>을 제공합니다.</li>
-<li><code>Builder::new_current_thread</code>는 대신 실행을 위해 <strong>현재 스레드</strong>에 의존합니다.</li>
+<li><code>Builder::new_multi_thread</code>: <strong>다중 스레드(Multi-thread) <code>tokio</code> 런타임</strong>을 생성합니다.</li>
+<li><code>Builder::new_current_thread</code>: 실행을 위해 <strong>현재 스레드(Current thread)</strong> 하나에만 의존하는 런타임을 생성합니다.</li>
 </ul>
-<p><code>#[tokio::main]</code>은 기본적으로 다중 스레드 런타임을 반환하는 반면,
-<code>#[tokio::test]</code>는 기본적으로 현재 스레드 런타임을 사용합니다.</p>
-<h3 id="현재-스레드-런타임"><a class="header" href="#현재-스레드-런타임">현재 스레드 런타임</a></h3>
-<p>현재 스레드 런타임은 이름에서 알 수 있듯이, 태스크를 스케줄링하고 실행하기 위해
-시작된 OS 스레드에만 의존합니다.
-현재 스레드 런타임을 사용할 때 <strong>동시성</strong>은 있지만 <strong>병렬성</strong>은 없습니다:
-비동기 태스크는 인터리빙되지만, 주어진 시간에 실행되는 태스크는 항상 최대 하나입니다.</p>
-<h3 id="다중-스레드-런타임"><a class="header" href="#다중-스레드-런타임">다중 스레드 런타임</a></h3>
-<p>반면에 다중 스레드 런타임을 사용할 때는 주어진 시간에 최대 <code>N</code>개의 태스크가
-<em>병렬로</em> 실행될 수 있으며, 여기서 <code>N</code>은 런타임이 사용하는 스레드 수입니다. 기본적으로 <code>N</code>은 사용 가능한 CPU 코어 수와 일치합니다.</p>
-<p>더 있습니다: <code>tokio</code>는 <strong>작업 훔치기</strong>를 수행합니다.
-스레드가 유휴 상태이면 기다리지 않습니다: 전역 큐에서 또는 다른 스레드의 로컬 큐에서 훔쳐서
-실행 준비가 된 새 태스크를 찾으려고 시도합니다.
-작업 훔치기는 특히 테일 지연 시간에서 상당한 성능 이점을 가질 수 있습니다.
-애플리케이션이 스레드 간에 완벽하게 균형 잡히지 않은 워크로드를 처리할 때 말입니다.</p>
+<p>참고로 <code>#[tokio::main]</code>은 기본적으로 다중 스레드 런타임을 사용하고, <code>#[tokio::test]</code>는 기본적으로 현재 스레드 런타임을 사용합니다.</p>
+<h3 id="현재-스레드-런타임-current-thread-runtime"><a class="header" href="#현재-스레드-런타임-current-thread-runtime">현재 스레드 런타임 (Current-thread Runtime)</a></h3>
+<p>이름에서 알 수 있듯이, 태스크를 스케줄링하고 실행하기 위해 런타임이 시작된 하나의 OS 스레드만 사용합니다. 이 런타임을 사용하면 **동시성(Concurrency)**은 있지만 **병렬성(Parallelism)**은 없습니다. 여러 비동기 태스크가 번갈아 가며 실행(Interleaving)되지만, 특정 시점에 실행 중인 태스크는 언제나 최대 하나입니다.</p>
+<h3 id="다중-스레드-런타임-multi-thread-runtime"><a class="header" href="#다중-스레드-런타임-multi-thread-runtime">다중 스레드 런타임 (Multi-thread Runtime)</a></h3>
+<p>반면 다중 스레드 런타임을 사용하면 특정 시점에 최대 <code>N</code>개의 태스크가 <strong>병렬로</strong> 실행될 수 있습니다. 여기서 <code>N</code>은 런타임이 사용하는 스레드 수이며, 기본적으로 시스템의 CPU 코어 수와 일치합니다.</p>
+<p>또한 <code>tokio</code>는 **작업 훔치기(Work-stealing)**라는 기법을 사용합니다. 어떤 스레드가 할 일이 없어 유휴 상태가 되면 그냥 놀지 않고, 전역 큐나 다른 스레드의 로컬 큐에서 실행 대기 중인 태스크를 ‘훔쳐와서’ 대신 실행합니다. 이 방식은 특히 스레드 간에 작업량이 불균형할 때 성능을 크게 향상시키며, 응답 지연 시간(Latency)을 줄이는 데 큰 도움이 됩니다.</p>
 <h2 id="영향"><a class="header" href="#영향">영향</a></h2>
-<p><code>tokio::spawn</code>은 종류에 구애받지 않습니다: 다중 스레드 또는 현재 스레드 런타임에서 실행하든 상관없이 작동합니다. 단점은 시그니처가 최악의 경우(즉, 다중 스레드)를 가정하고 그에 따라 제약된다는 것입니다:</p>
+<p><code>tokio::spawn</code>은 어떤 종류의 런타임에서 실행하든 상관없이 잘 작동합니다. 하지만 그 대가로 함수 시그니처가 ‘최악의 경우’(즉, 다중 스레드 환경)를 가정하고 제약이 걸려 있습니다:</p>
 <pre><code class="language-rust">pub fn spawn&lt;F&gt;(future: F) -&gt; JoinHandle&lt;F::Output&gt;
 where
     F: Future + Send + 'static,
     F::Output: Send + 'static,
 { /* */ }</code></pre>
-<p>나머지에 집중하기 위해 <code>Future</code> 트레이트는 잠시 무시합시다.
-<code>spawn</code>은 모든 입력이 <code>Send</code>이고 <code>'static</code> 라이프타임을 가지도록 요구합니다.</p>
-<p><code>'static</code> 제약 조건은 <code>std::thread::spawn</code>의 <code>'static</code> 제약 조건과 동일한 근거를 따릅니다: 생성된 태스크는 생성된 컨텍스트보다 오래 살 수 있으므로,
-생성 컨텍스트가 파괴된 후 할당 해제될 수 있는 로컬 데이터에 의존해서는 안 됩니다.</p>
+<p>여기서 <code>Future</code> 트레이트는 잠시 제쳐두고 나머지 제약 조건들을 살펴봅시다.
+<code>spawn</code>은 모든 입력값이 <code>Send</code>여야 하며 <code>'static</code> 라이프타임을 가져야 한다고 요구합니다.</p>
+<p><code>'static</code> 제약 조건은 <code>std::thread::spawn</code>과 같은 이유로 존재합니다. 생성된 태스크가 자신을 만든 컨텍스트보다 오래 살아남을 수 있기 때문에, 컨텍스트가 사라지면 같이 해제될 수 있는 로컬 데이터에 의존해서는 안 되기 때문입니다.</p>
 <pre><code class="language-rust">fn spawner() {
     let v = vec![1, 2, 3];
-    // `&amp;v`가 충분히 오래 살지 않으므로 이것은 작동하지 않습니다.
+    // `&amp;v`가 태스크보다 오래 산다는 보장이 없으므로 컴파일되지 않습니다.
     tokio::spawn(async { 
         for x in &amp;v {
             println!("{x}")
         }
     })
 }</code></pre>
-<p>반면에 <code>Send</code>는 <code>tokio</code>의 작업 훔치기 전략의 직접적인 결과입니다:
-스레드 <code>A</code>에서 생성된 태스크는 유휴 상태인 경우 스레드 <code>B</code>로 이동될 수 있으므로,
-스레드 경계를 넘나들기 때문에 <code>Send</code> 바운드가 필요합니다.</p>
+<p>반면 <code>Send</code> 제약 조건은 <code>tokio</code>의 작업 훔치기 전략 때문에 필요합니다. 스레드 A에서 생성된 태스크가 나중에 스레드 B로 이동되어 실행될 수 있기 때문에, 태스크 자체가 스레드 경계를 넘나들 수 있어야(Send) 하는 것이죠.</p>
 <pre><code class="language-rust">fn spawner(input: Rc&lt;u64&gt;) {
-    // `Rc`가 `Send`가 아니므로 이것도 작동하지 않습니다.
+    // `Rc`는 `Send`가 아니므로 이 코드는 작동하지 않습니다.
     tokio::spawn(async move {
         println!("{}", input);
     })

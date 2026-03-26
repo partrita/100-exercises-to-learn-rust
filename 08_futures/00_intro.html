@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>퓨처 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>비동기 프로그래밍(Futures) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,15 +178,14 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="비동기-rust"><a class="header" href="#비동기-rust">비동기 Rust</a></h1>
-<p>스레드만이 Rust에서 동시 프로그램을 작성하는 유일한 방법은 아닙니다.
-이 챕터에서는 또 다른 접근 방식인 <strong>비동기 프로그래밍</strong>을 탐색할 것입니다.</p>
-<p>특히, 다음을 소개할 것입니다:</p>
+                        <h1 id="비동기-rust-asynchronous-rust"><a class="header" href="#비동기-rust-asynchronous-rust">비동기 Rust (Asynchronous Rust)</a></h1>
+<p>Rust에서 동시성(Concurrency) 프로그램을 작성하는 방법이 스레드(Threads)만 있는 것은 아닙니다. 이번 챕터에서는 또 다른 접근 방식인 **비동기 프로그래밍(Asynchronous Programming)**을 탐색해 보겠습니다.</p>
+<p>특히 다음과 같은 핵심 개념들을 소개합니다:</p>
 <ul>
-<li><code>async</code>/<code>.await</code> 키워드, 비동기 코드를 손쉽게 작성하기 위해</li>
-<li><code>Future</code> 트레이트, 아직 완료되지 않았을 수 있는 계산을 나타내기 위해</li>
-<li><code>tokio</code>, 비동기 코드를 실행하기 위한 가장 인기 있는 런타임</li>
-<li>Rust 비동기 모델의 협력적 특성, 그리고 이것이 코드에 미치는 영향</li>
+<li>비동기 코드를 손쉽게 작성할 수 있게 해주는 <code>async</code>/<code>.await</code> 키워드</li>
+<li>아직 완료되지 않았을 수 있는 작업을 나타내는 <strong><code>Future</code> 트레이트</strong></li>
+<li>비동기 코드를 실행하기 위한 가장 인기 있는 **런타임(Runtime)**인 <code>tokio</code></li>
+<li>Rust 비동기 모델의 <strong>협력적(Cooperative)</strong> 특성과 이것이 여러분의 코드에 미치는 영향</li>
 </ul>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f6f"><code>08_futures/00_intro</code></a></p>

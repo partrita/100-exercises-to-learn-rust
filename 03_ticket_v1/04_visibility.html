@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>가시성 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>가시성(Visibility) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,34 +178,33 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="가시성"><a class="header" href="#가시성">가시성</a></h1>
-<p>코드를 여러 모듈로 나누기 시작하면 <strong>가시성</strong>에 대해 생각해야 합니다.
-가시성은 구조체, 함수, 필드 등 주어진 엔티티에 접근할 수 있는 코드 영역(또는 다른 사람의 코드)을 결정합니다.</p>
-<h2 id="기본적으로-비공개"><a class="header" href="#기본적으로-비공개">기본적으로 비공개</a></h2>
-<p>기본적으로 Rust의 모든 것은 <strong>비공개</strong>입니다.\ 비공개 엔티티는 다음에만 접근할 수 있습니다:</p>
+                        <h1 id="가시성visibility"><a class="header" href="#가시성visibility">가시성(Visibility)</a></h1>
+<p>코드를 여러 모듈로 나누어 관리하기 시작하면, 자연스럽게 **가시성(Visibility)**이라는 개념을 고민하게 됩니다. 가시성이란 구조체, 함수, 필드 같은 요소들에 누가, 어디까지 접근할 수 있는지를 결정하는 규칙입니다.</p>
+<h2 id="기본-설정은-비공개private"><a class="header" href="#기본-설정은-비공개private">기본 설정은 ‘비공개(Private)’</a></h2>
+<p>Rust에서는 기본적으로 모든 것이 <strong>비공개(Private)</strong> 상태입니다. 비공개 상태인 요소들은 오직 다음 범위에서만 접근할 수 있습니다:</p>
 <ol>
-<li>정의된 동일한 모듈 내에서, 또는</li>
-<li>하위 모듈 중 하나에 의해</li>
+<li>해당 요소가 정의된 모듈 내부</li>
+<li>해당 모듈의 하위 모듈들</li>
 </ol>
-<p>이전 연습 문제에서 이것을 광범위하게 사용했습니다:</p>
+<p>우리는 이미 이전 연습 문제들을 통해 이 규칙을 경험해 보았습니다.</p>
 <ul>
-<li><code>create_todo_ticket</code>은 <code>helpers</code>가 <code>Ticket</code>이 정의된 크레이트 루트의 하위 모듈이기 때문에 (일단 <code>use</code> 문을 추가하면) 작동했습니다. 따라서 <code>create_todo_ticket</code>은 <code>Ticket</code>이 비공개임에도 불구하고 문제 없이 <code>Ticket</code>에 접근할 수 있습니다.</li>
-<li>모든 단위 테스트는 테스트 대상 코드의 하위 모듈에 정의되어 있으므로 제한 없이 모든 것에 접근할 수 있습니다.</li>
+<li><code>create_todo_ticket</code> 함수가 작동했던 이유는, 이 함수가 포함된 <code>helpers</code> 모듈이 <code>Ticket</code>이 정의된 크레이트 루트의 하위 모듈이었기 때문입니다. 그래서 <code>Ticket</code>이 비공개였음에도 불구하고 문제없이 접근할 수 있었던 거죠.</li>
+<li>마찬가지로 단위 테스트들도 보통 테스트하려는 코드의 하위 모듈로 정의되기 때문에, 제약 없이 모든 요소에 접근할 수 있습니다.</li>
 </ul>
-<h2 id="가시성-한정자"><a class="header" href="#가시성-한정자">가시성 한정자</a></h2>
-<p><strong>가시성 한정자</strong>를 사용하여 엔티티의 기본 가시성을 수정할 수 있습니다. 일반적인 가시성 한정자는 다음과 같습니다:</p>
+<h2 id="가시성-한정자visibility-modifier"><a class="header" href="#가시성-한정자visibility-modifier">가시성 한정자(Visibility Modifier)</a></h2>
+<p>**가시성 한정자(Visibility Modifier)**를 사용하면 이러한 기본 비공개 설정을 바꿀 수 있습니다. 자주 쓰이는 한정자들은 다음과 같습니다:</p>
 <ul>
-<li><code>pub</code>: 엔티티를 <strong>공개</strong>로 만듭니다. 즉, 정의된 모듈 외부에서, 잠재적으로 다른 크레이트에서 접근할 수 있습니다.</li>
-<li><code>pub(crate)</code>: 엔티티를 동일한 <strong>크레이트</strong> 내에서 공개로 만들지만 외부에서는 공개하지 않습니다.</li>
-<li><code>pub(super)</code>: 엔티티를 부모 모듈 내에서 공개로 만듭니다.</li>
-<li><code>pub(in path::to::module)</code>: 엔티티를 지정된 모듈 내에서 공개로 만듭니다.</li>
+<li><code>pub</code>: 해당 요소를 **공개(Public)**로 설정합니다. 모듈 밖은 물론, 다른 크레이트에서도 접근할 수 있게 됩니다.</li>
+<li><code>pub(crate)</code>: 같은 <strong>크레이트</strong> 안에서는 자유롭게 접근할 수 있지만, 크레이트 밖으로는 노출하지 않습니다.</li>
+<li><code>pub(super)</code>: 부모 모듈 안에서만 접근할 수 있도록 공개 범위를 제한합니다.</li>
+<li><code>pub(in path::to::module)</code>: 지정한 특정 모듈 내부에서만 접근할 수 있게 합니다.</li>
 </ul>
-<p>이러한 한정자를 모듈, 구조체, 함수, 필드 등에 사용할 수 있습니다. 예를 들어:</p>
+<p>이 한정자들은 모듈, 구조체, 함수, 필드 등 어디에나 붙일 수 있습니다. 예를 하나 볼까요?</p>
 <pre><code class="language-rust">pub struct Configuration {
     pub(crate) version: u32,
     active: bool,
 }</code></pre>
-<p><code>Configuration</code>은 공개이지만 <code>version</code> 필드는 동일한 크레이트 내에서만 접근할 수 있습니다. <code>active</code> 필드는 비공개이며 동일한 모듈 또는 하위 모듈 중 하나에서만 접근할 수 있습니다.</p>
+<p>여기서 <code>Configuration</code> 구조체 자체는 공개(<code>pub</code>)입니다. 하지만 <code>version</code> 필드는 같은 크레이트 안에서만 볼 수 있고(<code>pub(crate)</code>), <code>active</code> 필드는 한정자가 없으므로 비공개입니다. 따라서 <code>active</code> 필드는 이 구조체가 정의된 모듈 혹은 그 하위 모듈 안에서만 접근할 수 있습니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f23"><code>03_ticket_v1/04_visibility</code></a></p>
 

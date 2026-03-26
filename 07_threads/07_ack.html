@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Ack 패턴 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>응답(Ack) 패턴 - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,15 +178,13 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="양방향-통신"><a class="header" href="#양방향-통신">양방향 통신</a></h1>
-<p>현재 클라이언트-서버 구현에서 통신은 한 방향으로 흐릅니다: 클라이언트에서 서버로.
-클라이언트는 서버가 메시지를 받았는지, 성공적으로 실행했는지, 아니면 실패했는지 알 방법이 없습니다.
-이것은 이상적이지 않습니다.</p>
-<p>이 문제를 해결하기 위해 양방향 통신 시스템을 도입할 수 있습니다.</p>
-<h2 id="응답-채널"><a class="header" href="#응답-채널">응답 채널</a></h2>
-<p>서버가 클라이언트에게 응답을 다시 보낼 방법이 필요합니다.
-이를 수행하는 다양한 방법이 있지만, 가장 간단한 옵션은 클라이언트가 서버로 보내는 메시지에 <code>Sender</code> 채널을 포함하는 것입니다. 메시지를 처리한 후 서버는 이 채널을 사용하여 클라이언트에게 응답을 다시 보낼 수 있습니다.</p>
-<p>이것은 메시지 전달 프리미티브를 기반으로 구축된 Rust 애플리케이션에서 상당히 일반적인 패턴입니다.</p>
+                        <h1 id="양방향-통신bi-directional-communication"><a class="header" href="#양방향-통신bi-directional-communication">양방향 통신(Bi-directional communication)</a></h1>
+<p>현재 우리가 구현한 클라이언트-서버 구조에서는 통신이 클라이언트에서 서버로만 흐르는 일방통행 방식입니다. 클라이언트 입장에서는 서버가 메시지를 잘 받았는지, 요청한 작업을 성공적으로 마쳤는지 알 길이 없죠.</p>
+<p>이런 답답한 상황을 해결하려면 서로 데이터를 주고받을 수 있는 <strong>양방향 통신(Bi-directional communication)</strong> 시스템이 필요합니다.</p>
+<h2 id="응답ack-패턴ack-pattern"><a class="header" href="#응답ack-패턴ack-pattern">응답(Ack) 패턴(Ack pattern)</a></h2>
+<p>서버가 클라이언트에게 응답을 돌려줄 수 있는 가장 간단하고 명확한 방법은, 클라이언트가 서버에 메시지를 보낼 때 **답장을 받을 수 있는 송신자(<code>Sender</code>)**를 함께 실어 보내는 것입니다.</p>
+<p>이를 <strong>응답(Ack) 패턴(Ack pattern)</strong> 또는 응답 채널 방식이라고 부릅니다. 서버는 요청받은 작업을 처리한 뒤, 메시지에 포함된 이 응답용 채널을 통해 클라이언트에게 결과를 다시 보내주면 됩니다.</p>
+<p>이는 **메시지 전달 프리미티브(Message passing primitives)**를 활용하는 Rust 애플리케이션에서 아주 흔하게 볼 수 있는 설계 패턴입니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fxp"><code>07_threads/07_ack</code></a></p>
 

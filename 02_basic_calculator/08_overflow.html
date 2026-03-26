@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>오버플로우와 언더플로우 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>오버플로우와 언더플로우(Overflow &amp; Underflow) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,60 +178,62 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="오버플로"><a class="header" href="#오버플로">오버플로</a></h1>
-<p>숫자의 팩토리얼은 매우 빠르게 증가합니다.\n예를 들어, 20의 팩토리얼은 2,432,902,008,176,640,000입니다. 이는 이미 32비트 정수의 최대값인 2,147,483,647보다 큽니다.</p>
-<p>산술 연산의 결과가 주어진 정수 타입의 최대값보다 클 때, 우리는 <strong>정수 오버플로</strong>에 대해 이야기합니다.</p>
-<p>정수 오버플로는 산술 연산에 대한 계약을 위반하기 때문에 문제입니다.\n주어진 타입의 두 정수 간의 산술 연산 결과는 동일한 타입의 다른 정수여야 합니다.
-하지만 _수학적으로 올바른 결과_는 해당 정수 타입에 맞지 않습니다!</p>
+                        <h1 id="오버플로우overflow"><a class="header" href="#오버플로우overflow">오버플로우(Overflow)</a></h1>
+<p>팩토리얼 값은 숫자가 커질수록 아주 빠르게 증가합니다. 예를 들어, 20의 팩토리얼은 무려 2,432,902,008,176,640,000이나 되죠. 이 숫자는 이미 32비트 정수(<code>i32</code>)가 담을 수 있는 최대값인 2,147,483,647을 훌쩍 넘어버립니다.</p>
+<p>산술 연산 결과가 해당 정수 타입이 담을 수 있는 최대값보다 커지는 상황을 **정수 오버플로우(Integer overflow)**라고 부릅니다.</p>
+<p>정수 오버플로우는 프로그래밍 규칙을 위반하는 문제이기 때문에 주의해야 합니다. 컴퓨터 입장에서 어떤 정수 타입끼리 연산한 결과는 반드시 그 타입에 맞는 값이어야 하는데, <em>수학적으로는 맞는 답</em>이 정해진 크기를 초과해서 담을 수 없게 되기 때문입니다.</p>
 <blockquote>
-<p>결과가 주어진 정수 타입의 최소값보다 작으면 <strong>정수 언더플로</strong>라고 합니다.\n&gt; 간결성을 위해 이 섹션의 나머지 부분에서는 정수 오버플로에 대해서만 이야기하지만, 우리가 말하는 모든 것이 정수 언더플로에도 적용된다는 점을 명심하십시오.</p>
-<p><a href="02_variables.html">“변수” 섹션</a>에서 작성한 <code>speed</code> 함수는 일부 입력 조합에 대해 언더플로가 발생했습니다.
-예를 들어, <code>end</code>가 <code>start</code>보다 작으면 <code>end - start</code>는 결과가 음수여야 하지만 <code>u32</code>는 음수를 나타낼 수 없으므로 <code>u32</code> 타입을 언더플로합니다.</p>
+<p>반대로 결과가 해당 정수 타입의 최소값보다 작아지는 상황은 **정수 언더플로우(Integer underflow)**라고 합니다.
+이 섹션에서는 편의상 오버플로우를 위주로 설명하겠지만, 모든 내용은 언더플로우에도 똑같이 적용된다는 사실을 기억해 주세요.</p>
+<p>이전에 <a href="02_variables.html">“변수” 섹션</a>에서 작성했던 <code>speed</code> 함수도 사실 일부 입력값에서 언더플로우가 발생할 가능성이 있었습니다.
+만약 <code>end</code> 값이 <code>start</code>보다 작다면 <code>end - start</code>는 음수가 되어야 하는데, 우리가 썼던 <code>u32</code> 타입은 음수를 담을 수 없으므로 언더플로우가 발생하게 되죠.</p>
 </blockquote>
-<h2 id="자동-승격-없음"><a class="header" href="#자동-승격-없음">자동 승격 없음</a></h2>
-<p>한 가지 가능한 접근 방식은 결과를 더 큰 정수 타입으로 자동 승격하는 것입니다.
-예를 들어, 두 개의 <code>u8</code> 정수를 더하고 결과가 256(<code>u8::MAX + 1</code>)인 경우 Rust는 결과를 256을 담을 수 있을 만큼 큰 다음 정수 타입인 <code>u16</code>으로 해석하도록 선택할 수 있습니다.</p>
-<p>하지만 이전에 논의했듯이 Rust는 타입 변환에 대해 매우 까다롭습니다. 자동 정수 승격은 정수 오버플로 문제에 대한 Rust의 해결책이 아닙니다.</p>
-<h2 id="대안"><a class="header" href="#대안">대안</a></h2>
-<p>자동 승격을 배제했으므로 정수 오버플로가 발생했을 때 무엇을 할 수 있을까요?\n이는 두 가지 다른 접근 방식으로 요약됩니다:</p>
+<h2 id="자동-타입-승격은-없습니다"><a class="header" href="#자동-타입-승격은-없습니다">자동 타입 승격은 없습니다</a></h2>
+<p>오버플로우 문제에 대응하는 한 가지 방법은 결과를 더 큰 타입으로 자동으로 바꿔주는 것입니다. 예를 들어 <code>u8</code> 타입 두 개를 더했는데 결과가 256(<code>u8::MAX + 1</code>)이 나왔다면, Rust가 알아서 더 큰 타입인 <code>u16</code>으로 결과를 처리해 줄 수도 있겠죠.</p>
+<p>하지만 이미 살펴보았듯이, Rust는 타입 변환에 매우 엄격합니다. 따라서 이런 자동 승격은 Rust가 오버플로우 문제를 해결하는 방식이 아닙니다.</p>
+<h2 id="어떻게-처리할까요"><a class="header" href="#어떻게-처리할까요">어떻게 처리할까요?</a></h2>
+<p>자동 승격을 하지 않는다면, 오버플로우가 났을 때 어떤 선택을 할 수 있을까요? 크게 두 가지 방향이 있습니다.</p>
 <ul>
-<li>연산 거부</li>
-<li>예상 정수 타입에 맞는 “합리적인” 결과 도출</li>
+<li>연산을 거부하기 (프로그램 중단)</li>
+<li>어떻게든 정해진 타입 범위 안에서 “합리적인” 값을 내놓기</li>
 </ul>
-<h3 id="연산-거부"><a class="header" href="#연산-거부">연산 거부</a></h3>
-<p>이것은 가장 보수적인 접근 방식입니다: 정수 오버플로가 발생하면 프로그램을 중지합니다.\n이는 <a href="04_panics.html">“패닉” 섹션</a>에서 이미 본 메커니즘인 패닉을 통해 수행됩니다.</p>
-<h3 id="합리적인-결과-도출"><a class="header" href="#합리적인-결과-도출">“합리적인” 결과 도출</a></h3>
-<p>산술 연산의 결과가 주어진 정수 타입의 최대값보다 클 때 **래핑(wrapping around)**을 선택할 수 있습니다.\n주어진 정수 타입에 대한 모든 가능한 값을 원으로 생각하면, 래핑은 최대값에 도달했을 때 최소값에서 다시 시작하는 것을 의미합니다.</p>
-<p>예를 들어, 1과 255(=<code>u8::MAX</code>) 사이에 <strong>래핑 덧셈</strong>을 수행하면 결과는 0(=<code>u8::MIN</code>)입니다.
-부호 있는 정수로 작업하는 경우에도 동일한 원칙이 적용됩니다. 예를 들어, 래핑으로 127(=<code>i8::MAX</code>)에 1을 더하면 -128(=<code>i8::MIN</code>)이 됩니다.</p>
-<h2 id="overflow-checks"><a class="header" href="#overflow-checks"><code>overflow-checks</code></a></h2>
-<p>Rust는 정수 오버플로가 발생했을 때 사용할 접근 방식을 개발자인 당신이 선택할 수 있도록 합니다.
-동작은 <code>overflow-checks</code> 프로필 설정에 의해 제어됩니다.</p>
-<p><code>overflow-checks</code>가 <code>true</code>로 설정되면 정수 연산이 오버플로될 때 Rust는 <strong>런타임에 패닉</strong>을 일으킵니다.
-<code>overflow-checks</code>가 <code>false</code>로 설정되면 정수 연산이 오버플로될 때 Rust는 <strong>래핑</strong>합니다.</p>
-<p>프로필 설정이 무엇인지 궁금할 것입니다. 그것에 대해 알아봅시다!</p>
-<h2 id="프로필"><a class="header" href="#프로필">프로필</a></h2>
-<p><a href="https://ruex.io/ffc"><strong>프로필</strong></a>은 Rust 코드가 컴파일되는 방식을 사용자 정의하는 데 사용할 수 있는 구성 옵션 집합입니다.</p>
-<p>Cargo는 <code>dev</code>, <code>release</code>, <code>test</code>, <code>bench</code>의 4가지 내장 프로필을 제공합니다.\n<code>dev</code> 프로필은 <code>cargo build</code>, <code>cargo run</code> 또는 <code>cargo test</code>를 실행할 때마다 사용됩니다. 로컬 개발을 목표로 하므로 런타임 성능을 희생하는 대신 더 빠른 컴파일 시간과 더 나은 디버깅 환경을 제공합니다.\n<code>release</code> 프로필은 런타임 성능에 최적화되어 있지만 컴파일 시간이 더 깁니다. <code>--release</code> 플래그를 통해 명시적으로 요청해야 합니다(예: <code>cargo build --release</code> 또는 <code>cargo run --release</code>).
-<code>test</code> 프로필은 <code>cargo test</code>에서 사용하는 기본 프로필입니다. <code>test</code> 프로필은 <code>dev</code> 프로필의 설정을 상속합니다.
-<code>bench</code> 프로필은 <code>cargo bench</code>에서 사용하는 기본 프로필입니다. <code>bench</code> 프로필은 <code>release</code> 프로필에서 상속됩니다.
-반복적인 개발 및 디버깅에는 <code>dev</code>를 사용하고, 최적화된 프로덕션 빌드에는 <code>release</code>를 사용하고,
-정확성 테스트에는 <code>test</code>를 사용하고, 성능 벤치마킹에는 <code>bench</code>를 사용하십시오.</p>
+<h3 id="연산-거부-패닉"><a class="header" href="#연산-거부-패닉">연산 거부 (패닉)</a></h3>
+<p>가장 보수적이고 안전한 방식입니다. 오버플로우가 발생하면 즉시 프로그램을 멈추는 것이죠. 앞서 <a href="04_panics.html">“패닉” 섹션</a>에서 보았던 패닉(Panic) 메커니즘이 바로 이럴 때 쓰입니다.</p>
+<h3 id="합리적인-값-내놓기-래핑"><a class="header" href="#합리적인-값-내놓기-래핑">“합리적인” 값 내놓기 (래핑)</a></h3>
+<p>산술 연산 결과가 최대값을 넘었을 때, 마치 원형 궤도처럼 다시 최소값부터 시작하게 만드는 방식입니다. 이를 **래핑(Wrapping around)**이라고 합니다.</p>
+<p>예를 들어, <code>u8</code> 타입에서 1과 255(<code>u8::MAX</code>)를 <strong>래핑 덧셈</strong>하면 결과는 0(<code>u8::MIN</code>)이 됩니다. 부호 있는 정수도 마찬가지입니다. <code>i8</code> 타입에서 127(<code>i8::MAX</code>)에 1을 더하면 -128(<code>i8::MIN</code>)이 됩니다.</p>
+<h2 id="overflow-checks-설정"><a class="header" href="#overflow-checks-설정"><code>overflow-checks</code> 설정</a></h2>
+<p>Rust는 오버플로우 상황에서 어떤 방식으로 동작할지 개발자가 선택할 수 있게 해줍니다. 이 동작은 <code>overflow-checks</code>라는 프로필(Profile) 설정에 의해 결정됩니다.</p>
+<ul>
+<li><code>overflow-checks</code>가 <code>true</code>이면, 오버플로우 발생 시 <strong>런타임에 패닉</strong>을 일으킵니다.</li>
+<li><code>overflow-checks</code>가 <code>false</code>이면, 오버플로우 발생 시 값을 <strong>래핑</strong>합니다.</li>
+</ul>
+<p>그런데 ’프로필’이 무엇인지 궁금하시죠? 한번 자세히 알아볼까요?</p>
+<h2 id="프로필profiles"><a class="header" href="#프로필profiles">프로필(Profiles)</a></h2>
+<p><a href="https://ruex.io/ffc"><strong>프로필</strong></a>은 Rust 코드가 컴파일되는 방식을 결정하는 여러 옵션들의 모음입니다.</p>
+<p>Cargo에는 크게 4가지 내장 프로필이 있습니다.</p>
+<ul>
+<li><code>dev</code> 프로필: <code>cargo build</code>, <code>cargo run</code>, <code>cargo test</code>를 실행할 때 기본적으로 사용됩니다. 로컬 개발을 위한 용도이며, 런타임 성능보다는 컴파일 속도와 풍부한 디버깅 정보를 우선시합니다.</li>
+<li><code>release</code> 프로필: 실제 배포용(Production) 빌드를 위해 런타임 성능을 극한으로 최적화합니다. 대신 컴파일 시간은 훨씬 오래 걸립니다. <code>--release</code> 플래그를 붙여야만 활성화됩니다. (예: <code>cargo build --release</code>)</li>
+<li><code>test</code> 프로필: <code>cargo test</code>에서 사용되며 <code>dev</code> 프로필의 설정을 그대로 물려받습니다.</li>
+<li><code>bench</code> 프로필: 성능 측정용인 <code>cargo bench</code>에서 사용되며 <code>release</code> 프로필 설정을 물려받습니다.</li>
+</ul>
 <blockquote>
-<p>“프로젝트를 릴리스 모드로 빌드했습니까?“는 Rust 커뮤니티에서 거의 밈입니다.\n&gt; Rust에 익숙하지 않고 소셜 미디어(예: Reddit, Twitter)에서 성능에 대해 불평하는 개발자를 가리키는 말입니다. 프로젝트를 릴리스 모드로 빌드하지 않았다는 사실을 깨닫기 전까지 말입니다.</p>
+<p>Rust 커뮤니티에는 “릴리스 모드로 빌드하셨나요?“라는 유명한 밈(Meme)이 있습니다.
+Rust에 입문한 지 얼마 안 된 개발자가 소셜 미디어 등에 “Rust 성능이 왜 이렇게 안 나오죠?“라며 투덜대는데, 알고 보니 <code>--release</code> 플래그 없이 빌드했던 상황을 비꼬는 표현이죠.</p>
 </blockquote>
-<p>사용자 정의 프로필을 정의하거나 내장 프로필을 사용자 정의할 수도 있습니다.</p>
-<h3 id="overflow-check"><a class="header" href="#overflow-check"><code>overflow-check</code></a></h3>
-<p>기본적으로 <code>overflow-checks</code>는 다음과 같이 설정됩니다:</p>
+<p>물론 기본 프로필 외에 나만의 설정을 추가하거나 기존 프로필 내용을 직접 수정할 수도 있습니다.</p>
+<h3 id="프로필별-오버플로우-체크-설정"><a class="header" href="#프로필별-오버플로우-체크-설정">프로필별 오버플로우 체크 설정</a></h3>
+<p>기본적으로 <code>overflow-checks</code>는 다음과 같이 설정되어 있습니다.</p>
 <ul>
-<li><code>dev</code> 프로필의 경우 <code>true</code></li>
-<li><code>release</code> 프로필의 경우 <code>false</code></li>
+<li><code>dev</code> 프로필: <code>true</code></li>
+<li><code>release</code> 프로필: <code>false</code></li>
 </ul>
-<p>이는 두 프로필의 목표와 일치합니다.\n<code>dev</code>는 로컬 개발을 목표로 하므로 가능한 한 빨리 잠재적인 문제를 강조하기 위해 패닉을 일으킵니다.\n<code>release</code>는 런타임 성능을 위해 조정되었습니다. 오버플로를 확인하면 프로그램이 느려지므로 래핑하는 것을 선호합니다.</p>
-<p>동시에 두 프로필에 대해 다른 동작을 갖는 것은 미묘한 버그로 이어질 수 있습니다.\n우리의 권장 사항은 두 프로필 모두에 대해 <code>overflow-checks</code>를 활성화하는 것입니다. 조용히 잘못된 결과를 생성하는 것보다 충돌하는 것이 좋습니다. 런타임 성능 저하는 대부분의 경우 무시할 수 있습니다. 성능이 중요한 애플리케이션에서 작업하는 경우 벤치마크를 실행하여 감당할 수 있는지 결정할 수 있습니다.</p>
-<h2 id="추가-자료"><a class="header" href="#추가-자료">추가 자료</a></h2>
+<p>각 프로필의 목적에 맞게 합리적으로 정해진 것이죠. <code>dev</code>는 개발 중에 문제를 빨리 찾을 수 있게 패닉을 일으키고, <code>release</code>는 오버플로우 체크로 인해 속도가 느려지는 것을 방지하기 위해 래핑을 허용합니다.</p>
+<p>하지만 두 프로필의 동작이 서로 다르면, 개발할 때는 몰랐던 버그가 실제 서비스 중에 튀어나올 수도 있습니다. 그래서 저희는 가급적 <strong>두 프로필 모두에서 <code>overflow-checks</code>를 활성화(True)하는 것을 추천</strong>합니다. 잘못된 계산 결과를 조용히 남기는 것보다는, 차라리 프로그램이 죽는 것이 문제 해결에 훨씬 도움이 되기 때문입니다. 오버플로우 체크로 인한 성능 저하는 대부분의 경우 무시할 수 있는 수준이며, 정말 성능이 중요한 부분이라면 직접 벤치마크를 해보고 결정하면 됩니다.</p>
+<h2 id="더-읽어보기"><a class="header" href="#더-읽어보기">더 읽어보기</a></h2>
 <ul>
-<li>Rust의 정수 오버플로에 대한 심층적인 논의는 <a href="https://ruex.io/ffa">“Rust의 정수 오버플로에 대한 신화와 전설”</a>을 확인하십시오.</li>
+<li>Rust의 정수 오버플로우에 대해 더 깊이 알고 싶다면 <a href="https://ruex.io/ffa">“Rust의 정수 오버플로우에 대한 신화와 전설”</a>을 읽어보세요.</li>
 </ul>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f2f"><code>02_basic_calculator/08_overflow</code></a></p>

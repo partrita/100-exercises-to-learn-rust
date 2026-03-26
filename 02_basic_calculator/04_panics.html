@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>패닉 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>패닉(Panics) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,45 +178,43 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="패닉"><a class="header" href="#패닉">패닉</a></h1>
-<p><a href="02_variables.html">“변수” 섹션</a>에서 작성한 <code>speed</code> 함수로 돌아가 봅시다.
-아마 다음과 같을 것입니다:</p>
+                        <h1 id="패닉panics"><a class="header" href="#패닉panics">패닉(Panics)</a></h1>
+<p><a href="02_variables.html">“변수” 섹션</a>에서 구현한 <code>speed</code> 함수를 다시 한 번 살펴볼까요? 아마 코드는 다음과 같을 것입니다.</p>
 <pre><code class="language-rust">fn speed(start: u32, end: u32, time_elapsed: u32) -&gt; u32 {
     let distance = end - start;
     distance / time_elapsed
 }</code></pre>
-<p>예리한 눈을 가졌다면 한 가지 문제<sup class="footnote-reference" id="fr-one-1"><a href="#footnote-one">1</a></sup>를 발견했을 것입니다: <code>time_elapsed</code>가 0이면 어떻게 될까요?</p>
-<p><a href="https://ruex.io/ffp">Rust 플레이그라운드</a>에서 직접 시도해 볼 수 있습니다!\n프로그램은 다음 오류 메시지와 함께 종료됩니다:</p>
+<p>혹시 눈썰미가 좋으신 분이라면 한 가지 문제점<sup class="footnote-reference" id="fr-one-1"><a href="#footnote-one">1</a></sup>을 발견하셨을지도 모릅니다. 만약 <code>time_elapsed</code>가 0이라면 어떻게 될까요?</p>
+<p><a href="https://ruex.io/ffp">Rust 플레이그라운드</a>에서 직접 실행해 보세요! 그러면 프로그램은 다음과 같은 오류 메시지를 남기며 즉시 종료됩니다.</p>
 <pre><code class="language-text">thread 'main' panicked at src/main.rs:3:5:
 attempt to divide by zero
 </code></pre>
-<p>이것은 <strong>패닉</strong>으로 알려져 있습니다.\n패닉은 프로그램이 계속 실행될 수 없을 정도로 심각한 문제가 발생했음을 알리는 Rust의 방식이며, <strong>복구 불가능한 오류</strong><sup class="footnote-reference" id="fr-catching-1"><a href="#footnote-catching">2</a></sup>입니다. 0으로 나누기는 이러한 오류로 분류됩니다.</p>
-<h2 id="panic-매크로"><a class="header" href="#panic-매크로">panic! 매크로</a></h2>
-<p><code>panic!</code> 매크로<sup class="footnote-reference" id="fr-macro-1"><a href="#footnote-macro">3</a></sup>를 호출하여 의도적으로 패닉을 유발할 수 있습니다:</p>
+<p>이것을 바로 **패닉(Panic)**이라고 부릅니다. 패닉은 프로그램이 더 이상 정상적으로 실행될 수 없을 정도로 심각한 상황이 발생했음을 알리는 Rust의 신호이자, <strong>복구 불가능한 오류</strong><sup class="footnote-reference" id="fr-catching-1"><a href="#footnote-catching">2</a></sup>를 처리하는 방식입니다. ’0으로 나누기’가 바로 이런 오류에 해당하죠.</p>
+<h2 id="panic-매크로"><a class="header" href="#panic-매크로"><code>panic!</code> 매크로</a></h2>
+<p>우리가 직접 <code>panic!</code> 매크로<sup class="footnote-reference" id="fr-macro-1"><a href="#footnote-macro">3</a></sup>를 호출해서 의도적으로 패닉을 일으킬 수도 있습니다.</p>
 <pre><code class="language-rust">fn main() {
-    panic!("This is a panic!");
-    // 아래 줄은 절대 실행되지 않습니다
+    panic!("여기는 패닉 지점입니다!");
+    // 아래 줄은 절대 실행되지 않습니다.
     let x = 1 + 2;
 }</code></pre>
-<p>Rust에는 복구 가능한 오류를 처리하기 위한 다른 메커니즘이 있으며, 이는 <a href="../05_ticket_v2/06_fallibility.html">나중에 다룰 것입니다</a>.
-당분간은 잔인하지만 간단한 임시방편으로 패닉을 사용할 것입니다.</p>
-<h2 id="추가-자료"><a class="header" href="#추가-자료">추가 자료</a></h2>
+<p>Rust에는 복구 가능한 오류를 세련되게 처리하는 별도의 메커니즘이 있으며, 이는 <a href="../05_ticket_v2/06_fallibility.html">나중에</a> 자세히 다룰 예정입니다. 지금은 조금 거칠더라도 확실한 오류 알림 수단인 패닉을 사용해 보겠습니다.</p>
+<h2 id="더-읽어보기"><a class="header" href="#더-읽어보기">더 읽어보기</a></h2>
 <ul>
-<li><a href="https://ruex.io/ffl">panic! 매크로 문서</a></li>
+<li><a href="https://ruex.io/ffl"><code>panic!</code> 매크로 공식 문서</a></li>
 </ul>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/ffk"><code>02_basic_calculator/04_panics</code></a></p>
 <hr>
 <ol class="footnote-definition">
 <li id="footnote-one">
-<p><code>speed</code>에는 곧 다룰 또 다른 문제가 있습니다. 발견할 수 있나요? <a href="#fr-one-1">↩</a></p>
+<p>사실 <code>speed</code> 함수에는 아직 다루지 않은 또 다른 잠재적인 문제가 있습니다. 무엇인지 눈치채셨나요? <a href="#fr-one-1">↩</a></p>
 </li>
 <li id="footnote-catching">
-<p>패닉을 잡으려고 시도할 수 있지만, 매우 특정한 상황에 예약된 최후의 수단이어야 합니다. <a href="#fr-catching-1">↩</a></p>
+<p>패닉을 잡아내어 복구하려고 시도할 수도 있지만, 이는 매우 특수한 상황에서만 제한적으로 사용되는 최후의 수단입니다. <a href="#fr-catching-1">↩</a></p>
 </li>
 <li id="footnote-macro">
-<p><code>!</code>가 뒤따르면 매크로 호출입니다. 지금은 매크로를 특별한 함수라고 생각하세요. 과정의 뒷부분에서 더 자세히 다룰 것입니다.</p>
-<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
- <a href="#fr-macro-1">↩</a></li>
+<p>이름 뒤에 느낌표(<code>!</code>)가 붙으면 함수가 아닌 매크로 호출을 의미합니다. 지금은 매크로를 아주 똑똑하고 특별한 함수 정도로 이해하셔도 좋습니다. 과정 뒷부분에서 더 자세히 배울 것입니다. <a href="#fr-macro-1">↩</a></p>
+</li>
 </ol>
 
                     </main>

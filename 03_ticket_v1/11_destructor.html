@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>소멸자 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>소멸자(Destructors) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,121 +178,102 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="소멸자"><a class="header" href="#소멸자">소멸자</a></h1>
-<p>힙을 소개할 때, 할당한 메모리를 해제할 책임이 있다고 언급했습니다.<br>차용 검사기를 소개할 때, Rust에서는 메모리를 직접 관리할 필요가 거의 없다고도 말했습니다.</p>
-<p>이 두 진술은 처음에는 모순적으로 보일 수 있습니다.
-<strong>스코프</strong>와 <strong>소멸자</strong>를 도입하여 어떻게 함께 맞는지 살펴봅시다.</p>
-<h2 id="스코프"><a class="header" href="#스코프">스코프</a></h2>
-<p>변수의 <strong>스코프</strong>는 해당 변수가 유효하거나 <strong>살아있는</strong> Rust 코드 영역입니다.</p>
-<p>변수의 스코프는 선언과 함께 시작됩니다.
-다음 중 하나가 발생하면 끝납니다:</p>
+                        <h1 id="소멸자-destructor"><a class="header" href="#소멸자-destructor">소멸자 (Destructor)</a></h1>
+<p>앞서 힙 메모리를 설명할 때, 할당받은 메모리는 반드시 직접 해제해야 할 책임이 있다고 말씀드렸습니다. 그런데 차용 검사기(Borrow checker)를 소개할 때는 Rust에서 메모리를 직접 관리할 일이 거의 없다고도 했죠.</p>
+<p>얼핏 들으면 모순처럼 느껴질 수 있는 이 두 이야기가 어떻게 양립할 수 있는지, **스코프(Scope)**와 <strong>소멸자(Destructor)</strong> 개념을 통해 알아보겠습니다.</p>
+<h2 id="스코프-scope"><a class="header" href="#스코프-scope">스코프 (Scope)</a></h2>
+<p>변수의 <strong>스코프</strong>란 해당 변수가 프로그램 내에서 유효하게 살아있는 코드 영역을 말합니다.</p>
+<p>변수의 스코프는 선언되는 시점부터 시작됩니다. 그리고 다음 두 가지 경우 중 하나에 해당할 때 끝이 납니다.</p>
 <ol>
 <li>
-<p>변수가 선언된 블록(즉, <code>{}</code> 사이의 코드)이 끝날 때</p>
+<p>변수가 선언된 <strong>블록</strong>(즉, <code>{}</code>로 감싸진 영역)이 끝날 때</p>
 <pre><code class="language-rust">fn main() {
-   // `x`는 아직 여기 범위에 없습니다
+   // `x`는 아직 태어나지 않았습니다.
    let y = "Hello".to_string();
-   let x = "World".to_string(); // &lt;-- x의 범위는 여기서 시작됩니다...
-   let h = "!".to_string(); //   |
-} //  &lt;-------------- ...그리고 여기서 끝납니다</code></pre>
+   let x = "World".to_string(); // &lt;-- x의 스코프 시작...
+   let h = "!".to_string();     //   |
+} //  &lt;------------------------------- ...그리고 여기서 끝납니다.</code></pre>
 </li>
 <li>
-<p>변수의 소유권이 다른 사람(예: 함수 또는 다른 변수)에게 이전될 때</p>
+<p>변수의 <strong>소유권</strong>이 다른 곳(함수나 다른 변수)으로 옮겨갈 때</p>
 <pre><code class="language-rust">fn compute(t: String) {
-   // 무언가 수행 [...]
+   // 무언가 처리 중...
 }
 
 fn main() {
-    let s = "Hello".to_string(); // &lt;-- s의 범위는 여기서 시작됩니다...
+    let s = "Hello".to_string(); // &lt;-- s의 스코프 시작...
                 //                    |
-    compute(s); // &lt;------------------- ..그리고 여기서 끝납니다
-                //   `s`가 `compute`로 이동되었기 때문입니다
+    compute(s); // &lt;------------------- ...그리고 여기서 끝납니다.
+                //   소유권이 `compute` 함수로 넘어갔기 때문입니다.
 }</code></pre>
 </li>
 </ol>
-<h2 id="소멸자-1"><a class="header" href="#소멸자-1">소멸자</a></h2>
-<p>값의 소유자가 범위를 벗어나면 Rust는 해당 <strong>소멸자</strong>를 호출합니다.<br>소멸자는 해당 값이 사용한 리소스, 특히 할당한 모든 메모리를 정리하려고 시도합니다.</p>
-<p><code>std::mem::drop</code>에 전달하여 값의 소멸자를 수동으로 호출할 수 있습니다.<br>이것이 Rust 개발자들이 값이 범위를 벗어나고 소멸자가 호출되었음을 나타내는 방법으로 “해당 값이 <strong>삭제</strong>되었습니다“라고 자주 말하는 이유입니다.</p>
-<h3 id="삭제-지점-시각화"><a class="header" href="#삭제-지점-시각화">삭제 지점 시각화</a></h3>
-<p>컴파일러가 우리를 위해 수행하는 작업을 “명시“하기 위해 명시적인 <code>drop</code> 호출을 삽입할 수 있습니다. 이전 예제로 돌아가 보겠습니다:</p>
+<h2 id="소멸자-destructor-1"><a class="header" href="#소멸자-destructor-1">소멸자 (Destructor)</a></h2>
+<p>값의 소유권을 가진 변수가 스코프를 벗어나면, Rust는 자동으로 해당 값의 <strong>소멸자</strong>를 호출합니다. 소멸자는 그 값이 점유하고 있던 리소스, 특히 할당받았던 힙 메모리를 깔끔하게 정리해 줍니다.</p>
+<p>우리는 <code>std::mem::drop</code> 함수를 사용하여 소멸자를 수동으로 호출할 수도 있습니다. 그래서 Rust 개발자들은 어떤 값이 스코프를 벗어나 소멸자가 실행되는 것을 흔히 “해당 값이 **드롭(Drop)**되었다“라고 표현합니다.</p>
+<h3 id="드롭-시점-시각화하기"><a class="header" href="#드롭-시점-시각화하기">드롭 시점 시각화하기</a></h3>
+<p>컴파일러가 우리 대신 해주는 작업을 눈으로 확인하기 위해, 명시적으로 <code>drop</code>을 호출하는 코드로 바꿔보겠습니다. 앞선 예제를 다시 볼까요?</p>
 <pre><code class="language-rust">fn main() {
    let y = "Hello".to_string();
    let x = "World".to_string();
    let h = "!".to_string();
 }</code></pre>
-<p>다음과 같습니다:</p>
+<p>이 코드는 컴파일 시점에 사실상 다음과 같이 바뀝니다.</p>
 <pre><code class="language-rust">fn main() {
    let y = "Hello".to_string();
    let x = "World".to_string();
    let h = "!".to_string();
-   // 변수는 선언의 역순으로 삭제됩니다
+   // 변수는 선언된 순서의 '역순'으로 드롭됩니다.
    drop(h);
    drop(x);
    drop(y);
 }</code></pre>
-<p><code>s</code>의 소유권이 <code>compute</code>로 이전되는 두 번째 예제를 살펴봅시다:</p>
+<p>소유권이 이동하는 두 번째 예제도 살펴봅시다.</p>
 <pre><code class="language-rust">fn compute(s: String) {
-   // 무언가 수행 [...]
+   // 무언가 처리 중...
 }
 
 fn main() {
    let s = "Hello".to_string();
    compute(s);
 }</code></pre>
-<p>다음과 같습니다:</p>
+<p>이 코드는 내부적으로 다음과 같이 처리됩니다.</p>
 <pre><code class="language-rust">fn compute(t: String) {
-    // 무언가 수행 [...]
-    drop(t); // &lt;-- `t`가 이 지점 이전에 삭제되거나 이동되지 않았다고 가정하면,
-             //     컴파일러는 범위를 벗어날 때 여기서 `drop`을 호출합니다
+    // 무언가 처리 중...
+    drop(t); // &lt;-- 함수가 끝날 때 t가 드롭됩니다.
 }
 
 fn main() {
     let s = "Hello".to_string();
     compute(s);
+    // 여기서 s를 드롭하지 않습니다! 소유권이 이미 넘어갔기 때문이죠.
 }</code></pre>
-<p>차이점을 주목하십시오: <code>main</code>에서 <code>compute</code>가 호출된 후 <code>s</code>가 더 이상 유효하지 않더라도 <code>main</code>에는 <code>drop(s)</code>가 없습니다.
-값의 소유권을 함수에 이전하면 <strong>정리 책임도 이전</strong>하는 것입니다.</p>
-<p>이렇게 하면 값에 대한 소멸자가 <strong>최대<sup class="footnote-reference" id="fr-leak-1"><a href="#footnote-leak">1</a></sup> 한 번</strong> 호출되도록 보장하여 <a href="https://ruex.io/f2k">이중 해제 버그</a>를 설계상 방지합니다.</p>
-<h3 id="삭제-후-사용"><a class="header" href="#삭제-후-사용">삭제 후 사용</a></h3>
-<p>삭제된 값을 사용하려고 하면 어떻게 될까요?</p>
+<p>중요한 차이점을 발견하셨나요? <code>main</code> 함수가 끝날 때 <code>s</code>가 드롭되지 않습니다. 소유권을 함수로 넘긴다는 것은 <strong>메모리 정리 책임까지 함께 넘긴다</strong>는 뜻이기 때문입니다.</p>
+<p>이러한 메커니즘 덕분에 소멸자는 항상 **단 한 번<sup class="footnote-reference" id="fr-leak-1"><a href="#footnote-leak">1</a></sup>**만 호출됩니다. 결과적으로 C/C++에서 흔히 발생하는 <a href="https://ruex.io/fv4">이중 해제(Double free)</a> 버그를 언어 차원에서 원천적으로 방지합니다.</p>
+<h3 id="드롭된-값-다시-사용하기"><a class="header" href="#드롭된-값-다시-사용하기">드롭된 값 다시 사용하기</a></h3>
+<p>이미 드롭된 값을 다시 사용하려고 하면 어떻게 될까요?</p>
 <pre><code class="language-rust">let x = "Hello".to_string();
 drop(x);
 println!("{}", x);</code></pre>
-<p>이 코드를 컴파일하려고 하면 오류가 발생합니다:</p>
-<pre><code class="language-rust">error[E0382]: use of moved value: `x`
- --&gt; src/main.rs:4:20
-  | 
-3 |     drop(x);
-  |          - value moved here
-4 |     println!("{}", x);
-  |                    ^ value used here after move</code></pre>
-<p>Drop은 호출된 값을 <strong>소비</strong>합니다. 즉, 호출 후에는 값이 더 이상 유효하지 않습니다.<br>따라서 컴파일러는 사용을 방지하여 <a href="https://ruex.io/f2s">해제 후 사용 버그</a>를 방지합니다.</p>
-<h3 id="참조-삭제"><a class="header" href="#참조-삭제">참조 삭제</a></h3>
-<p>변수에 참조가 포함되어 있으면 어떻게 될까요?\n예를 들어:</p>
+<p>이 코드를 컴파일하면 다음과 같은 오류를 만나게 됩니다.</p>
+<pre><code class="language-rust">error[E0382]: use of moved value: `x`</code></pre>
+<p><code>drop</code> 함수는 값을 <strong>소비</strong>합니다. 즉, 호출된 직후 그 값은 더 이상 유효하지 않게 됩니다. 컴파일러는 이미 정리된 메모리에 접근하는 <a href="https://ruex.io/fvx">해제 후 사용(Use-after-free)</a> 버그를 미리 차단합니다.</p>
+<h3 id="참조와-드롭"><a class="header" href="#참조와-드롭">참조와 드롭</a></h3>
+<p>만약 변수가 소유권이 없는 <strong>참조</strong>를 담고 있다면 어떻게 될까요?</p>
 <pre><code class="language-rust">let x = 42i32;
 let y = &amp;x;
 drop(y);</code></pre>
-<p><code>drop(y)</code>를 호출하면… 아무 일도 일어나지 않습니다.<br>실제로 이 코드를 컴파일하려고 하면 경고가 발생합니다:</p>
-<pre><code class="language-text">warning: calls to `std::mem::drop` with a reference 
-         instead of an owned value does nothing
- --&gt; src/main.rs:4:5
-  | 
-4 |     drop(y);
-  |     ^^^^^-^
-  |          |
-  |          argument has type `&amp;i32`
-  | 
+<p>이 경우 <code>drop(y)</code>를 호출해도 아무런 일도 일어나지 않습니다. 컴파일러는 다음과 같은 경고를 띄워줍니다.</p>
+<pre><code class="language-text">warning: calls to `std::mem::drop` with a reference instead of an owned value does nothing
 </code></pre>
-<p>이것은 우리가 이전에 말한 것으로 돌아갑니다: 우리는 소멸자를 한 번만 호출하고 싶습니다.<br>동일한 값에 대한 여러 참조를 가질 수 있습니다. 그 중 하나가 범위를 벗어날 때 가리키는 값에 대한 소멸자를 호출하면 다른 참조는 어떻게 될까요?
-더 이상 유효하지 않은 메모리 위치를 참조하게 됩니다. 소위 <a href="https://ruex.io/f2h"><strong>댕글링 포인터</strong></a>는 <a href="https://ruex.io/f2s"><strong>해제 후 사용 버그</strong></a>의 가까운 친척입니다.
-Rust의 소유권 시스템은 이러한 종류의 버그를 설계상 배제합니다.</p>
+<p>이는 소멸자가 단 한 번만 호출되어야 한다는 원칙 때문입니다. 같은 데이터에 대해 여러 개의 참조가 있을 수 있는데, 그중 하나가 범위를 벗어난다고 데이터를 지워버리면 다른 참조들은 순식간에 유효하지 않은 메모리를 가리키게 되겠죠? 이를 <a href="https://ruex.io/fv6"><strong>댕글링 포인터(Dangling pointer)</strong></a>라고 합니다. Rust의 소유권 시스템은 이러한 치명적인 버그를 설계 단계에서부터 배제합니다.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f2g"><code>03_ticket_v1/11_destructor</code></a></p>
 <hr>
 <ol class="footnote-definition">
 <li id="footnote-leak">
-<p>Rust는 소멸자가 실행될 것이라고 보장하지 않습니다. 예를 들어, 명시적으로 <a href="../07_threads/03_leak.html">메모리 누수</a>를 선택하면 실행되지 않습니다.</p>
-<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
- <a href="#fr-leak-1">↩</a></li>
+<p>Rust는 소멸자 실행을 100% 보장하지는 않습니다. 예를 들어 의도적으로 <a href="../07_threads/03_leak.html">메모리 누수(Memory leak)</a>를 발생시키는 경우에는 실행되지 않을 수 있습니다. <a href="#fr-leak-1">↩</a></p>
+</li>
 </ol>
 
                     </main>

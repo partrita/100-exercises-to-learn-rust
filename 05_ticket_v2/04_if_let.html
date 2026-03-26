@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>분기: if let 및 let/else - 100개의 연습 문제로 Rust 배우기</title>
+        <title>조건문: if let 및 let/else - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,59 +178,53 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="간결한-분기"><a class="header" href="#간결한-분기">간결한 분기</a></h1>
-<p>이전 연습 문제에 대한 여러분의 해결책은 아마 다음과 같을 것입니다:</p>
+                        <h1 id="간결한-제어-흐름"><a class="header" href="#간결한-제어-흐름">간결한 제어 흐름</a></h1>
+<p>이전 연습 문제에서 작성한 코드는 아마 다음과 비슷한 모습일 것입니다.</p>
 <pre><code class="language-rust">impl Ticket {
     pub fn assigned_to(&amp;self) -&gt; &amp;str {
         match &amp;self.status {
             Status::InProgress { assigned_to } =&gt; assigned_to,
             Status::Done | Status::ToDo =&gt; {
                 panic!(
-                    "Only `In-Progress` tickets can be \
-                    assigned to someone"
+                    "진행 중(`In-Progress`)인 티켓만 담당자를 가질 수 있습니다."
                 )
             }
         }
     }
 }</code></pre>
-<p>여러분은 <code>Status::InProgress</code> 베리언트에만 관심이 있습니다.
-정말로 다른 모든 베리언트를 매치해야 할까요?</p>
-<p>새로운 구문이 구출에 나섭니다!</p>
-<h2 id="if-let"><a class="header" href="#if-let"><code>if let</code></a></h2>
-<p><code>if let</code> 구문은 다른 모든 베리언트를 처리할 필요 없이 열거형의 단일 베리언트에 대해 매치할 수 있게 해줍니다.</p>
-<p><code>if let</code>을 사용하여 <code>assigned_to</code> 메소드를 단순화하는 방법은 다음과 같습니다:</p>
+<p>여기서 우리는 오직 <code>Status::InProgress</code> 베리언트에만 관심이 있습니다. 그런데도 나머지 모든 베리언트를 일일이 매칭해야 할까요?</p>
+<p>이런 상황을 위해 Rust는 더 간결한 구문을 제공합니다.</p>
+<h2 id="if-let"><a class="header" href="#if-let">if let</a></h2>
+<p><code>if let</code> 구문을 사용하면 다른 베리언트들을 일일이 처리할 필요 없이, 관심 있는 <strong>단 하나의 베리언트</strong>에 대해서만 패턴 매칭을 수행할 수 있습니다.</p>
+<p><code>if let</code>을 사용하여 <code>assigned_to</code> 메서드를 단순하게 고쳐보겠습니다.</p>
 <pre><code class="language-rust">impl Ticket {
     pub fn assigned_to(&amp;self) -&gt; &amp;str {
         if let Status::InProgress { assigned_to } = &amp;self.status {
             assigned_to
         } else {
             panic!(
-                "Only `In-Progress` tickets can be assigned to someone"
+                "진행 중(`In-Progress`)인 티켓만 담당자를 가질 수 있습니다."
             );
         }
     }
 }</code></pre>
-<h2 id="letelse"><a class="header" href="#letelse"><code>let/else</code></a></h2>
-<p><code>else</code> 분기가 조기 반환을 의미하는 경우(패닉은 조기 반환으로 간주됩니다!),
-<code>let/else</code> 구문을 사용할 수 있습니다:</p>
+<h2 id="let-else"><a class="header" href="#let-else">let-else</a></h2>
+<p>만약 <code>else</code> 분기에서 조기 반환(Early return)을 해야 하는 경우라면(패닉도 조기 반환의 일종입니다), <code>let-else</code> 구문을 사용하는 것이 가장 깔끔합니다.</p>
 <pre><code class="language-rust">impl Ticket {
     pub fn assigned_to(&amp;self) -&gt; &amp;str {
         let Status::InProgress { assigned_to } = &amp;self.status else {
             panic!(
-                "Only `In-Progress` tickets can be assigned to someone"
+                "진행 중(`In-Progress`)인 티켓만 담당자를 가질 수 있습니다."
             );
         };
         assigned_to
     }
 }</code></pre>
-<p>구조 분해된 변수를 “오른쪽으로 밀림” 없이 할당할 수 있게 해줍니다. 즉, 변수는 그 앞의 코드와 동일한 들여쓰기 수준에서 할당됩니다.</p>
-<h2 id="스타일"><a class="header" href="#스타일">스타일</a></h2>
-<p><code>if let</code>과 <code>let/else</code>는 모두 관용적인 Rust 구문입니다.
-코드의 가독성을 향상시키기 위해 적절하게 사용하되, 과용하지 마십시오: 필요할 때는 항상 <code>match</code>가 있습니다.</p>
-<pre><code>## Exercise
-
-The exercise for this section is located in [`05_ticket_v2/04_if_let`](https://github.com/mainmatter/100-exercises-to-learn-rust/tree/main/exercises/05_ticket_v2/04_if_let)
-</code></pre>
+<p><code>let-else</code>를 사용하면 구조 분해된 변수를 들여쓰기 수준의 변화 없이(오른쪽으로 밀리지 않고) 그대로 사용할 수 있어 가독성이 좋아집니다.</p>
+<h2 id="스타일-팁"><a class="header" href="#스타일-팁">스타일 팁</a></h2>
+<p><code>if let</code>과 <code>let-else</code>는 모두 관용적인(Idiomatic) Rust 표현입니다. 코드의 가독성을 높이기 위해 상황에 맞게 적절히 사용하세요. 다만, 로직이 복잡해진다면 언제나 우리에겐 든든한 <code>match</code>가 있다는 사실을 잊지 마세요!</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
+<p>The exercise for this section is located in <a href="https://ruex.io/f44"><code>05_ticket_v2/04_if_let</code></a></p>
 
                     </main>
 

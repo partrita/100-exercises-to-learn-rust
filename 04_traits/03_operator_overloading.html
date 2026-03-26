@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>연산자 오버로딩 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>연산자 오버로딩(Operator overloading) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,48 +178,41 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="연산자-오버로딩"><a class="header" href="#연산자-오버로딩">연산자 오버로딩</a></h1>
-<p>이제 트레이트가 무엇인지 기본적으로 이해했으니 <strong>연산자 오버로딩</strong>으로 다시 돌아가 봅시다.
-연산자 오버로딩은 <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>==</code>, <code>!=</code> 등과 같은 연산자에 대한 사용자 정의 동작을 정의하는 기능입니다.</p>
-<h2 id="연산자는-트레이트입니다"><a class="header" href="#연산자는-트레이트입니다">연산자는 트레이트입니다</a></h2>
-<p>Rust에서 연산자는 트레이트입니다.
-각 연산자에 대해 해당 연산자의 동작을 정의하는 해당 트레이트가 있습니다.
-타입에 대해 해당 트레이트를 구현하면 해당 연산자의 사용을 <strong>잠금 해제</strong>할 수 있습니다.</p>
-<p>예를 들어, <a href="https://ruex.io/fzz"><code>PartialEq</code> 트레이트</a>는 <code>==</code> 및 <code>!=</code> 연산자의 동작을 정의합니다:</p>
-<pre><code class="language-rust">// Rust의 표준 라이브러리에서 가져온 `PartialEq` 트레이트 정의
-// (지금은 *약간* 단순화되었습니다)
+                        <h1 id="연산자-오버로딩-operator-overloading"><a class="header" href="#연산자-오버로딩-operator-overloading">연산자 오버로딩 (Operator Overloading)</a></h1>
+<p>이제 트레이트에 대한 기본적인 이해가 생겼으니, 다시 **연산자 오버로딩(Operator Overloading)**에 대해 이야기해 봅시다. 연산자 오버로딩은 <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>==</code>, <code>!=</code> 등의 연산자에 대해 사용자 정의 동작을 부여하는 기능입니다.</p>
+<h2 id="연산자는-트레이트입니다-operators-are-traits"><a class="header" href="#연산자는-트레이트입니다-operators-are-traits">연산자는 트레이트입니다 (Operators are Traits)</a></h2>
+<p>Rust에서 모든 연산자는 사실 트레이트입니다. 각 연산자의 동작은 특정 트레이트에 정의되어 있으며, 우리가 만든 타입에 해당 트레이트를 구현하면 연산자 사용을 **해제(unlock)**할 수 있습니다.</p>
+<p>예를 들어, <a href="https://ruex.io/fzz"><code>PartialEq</code> 트레이트</a>는 <code>==</code>와 <code>!=</code> 연산자의 동작을 정의합니다.</p>
+<pre><code class="language-rust">// Rust 표준 라이브러리의 `PartialEq` 트레이트 정의(단순화됨)
 pub trait PartialEq {
-    // 필수 메소드
-    //
-    // `Self`는 "트레이트를 구현하는 타입"을 의미하는 Rust 키워드입니다.
+    // 필수 메서드
+    // `Self`는 "해당 트레이트를 구현하는 타입"을 의미하는 키워드입니다.
     fn eq(&amp;self, other: &amp;Self) -&gt; bool;
 
-    // 제공되는 메소드
+    // 기본 제공 메서드
     fn ne(&amp;self, other: &amp;Self) -&gt; bool { ... }
 }</code></pre>
-<p><code>x == y</code>를 작성하면 컴파일러는 <code>x</code>와 <code>y</code>의 타입에 대한 <code>PartialEq</code> 트레이트 구현을 찾고 <code>x == y</code>를 <code>x.eq(y)</code>로 바꿉니다. 이것은 문법적 설탕입니다!</p>
-<p>주요 연산자에 대한 대응 관계는 다음과 같습니다:</p>
+<p>여러분이 코드에 <code>x == y</code>라고 적으면, 컴파일러는 <code>x</code>와 <code>y</code>의 타입에 대해 <code>PartialEq</code> 트레이트 구현을 찾습니다. 그리고 <code>x == y</code>를 <code>x.eq(y)</code>로 변환해 줍니다. 일종의 **구문 설탕(Syntactic sugar)**인 셈이죠!</p>
+<p>주요 연산자와 그에 대응하는 트레이트는 다음과 같습니다:</p>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>연산자</th><th>트레이트</th></tr>
+<tr><th style="text-align: left">연산자</th><th style="text-align: left">트레이트</th></tr>
 </thead>
 <tbody>
-<tr><td><code>+</code></td><td><a href="https://ruex.io/fz4"><code>Add</code></a></td></tr>
-<tr><td><code>-</code></td><td><a href="https://ruex.io/fzx"><code>Sub</code></a></td></tr>
-<tr><td><code>*</code></td><td><a href="https://ruex.io/fz6"><code>Mul</code></a></td></tr>
-<tr><td><code>/</code></td><td><a href="https://ruex.io/fzv"><code>Div</code></a></td></tr>
-<tr><td><code>%</code></td><td><a href="https://ruex.io/fz8"><code>Rem</code></a></td></tr>
-<tr><td><code>==</code> 및 <code>!=</code></td><td><a href="https://ruex.io/fzz"><code>PartialEq</code></a></td></tr>
-<tr><td><code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, 및 <code>&gt;=</code></td><td><a href="https://ruex.io/fzb"><code>PartialOrd</code></a></td></tr>
+<tr><td style="text-align: left"><code>+</code></td><td style="text-align: left"><a href="https://ruex.io/fz4"><code>Add</code></a></td></tr>
+<tr><td style="text-align: left"><code>-</code></td><td style="text-align: left"><a href="https://ruex.io/fzx"><code>Sub</code></a></td></tr>
+<tr><td style="text-align: left"><code>*</code></td><td style="text-align: left"><a href="https://ruex.io/fz6"><code>Mul</code></a></td></tr>
+<tr><td style="text-align: left"><code>/</code></td><td style="text-align: left"><a href="https://ruex.io/fzv"><code>Div</code></a></td></tr>
+<tr><td style="text-align: left"><code>%</code></td><td style="text-align: left"><a href="https://ruex.io/fz8"><code>Rem</code></a></td></tr>
+<tr><td style="text-align: left"><code>==</code> 및 <code>!=</code></td><td style="text-align: left"><a href="https://ruex.io/fzz"><code>PartialEq</code></a></td></tr>
+<tr><td style="text-align: left"><code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></td><td style="text-align: left"><a href="https://ruex.io/fzb"><code>PartialOrd</code></a></td></tr>
 </tbody>
 </table>
 </div>
-<p>산술 연산자는 <a href="https://ruex.io/fzn"><code>std::ops</code></a> 모듈에 있고, 비교 연산자는 <a href="https://ruex.io/fzm"><code>std::cmp</code></a> 모듈에 있습니다.</p>
-<h2 id="기본-구현"><a class="header" href="#기본-구현">기본 구현</a></h2>
-<p><code>PartialEq::ne</code>에 대한 주석에는 “<code>ne</code>는 제공되는 메소드입니다“라고 명시되어 있습니다.
-이는 <code>PartialEq</code>가 트레이트 정의에서 <code>ne</code>에 대한 <strong>기본 구현</strong>을 제공한다는 것을 의미합니다. 정의 스니펫에서 생략된 <code>{ ... }</code> 블록입니다.
-생략된 블록을 확장하면 다음과 같습니다:</p>
+<p>산술 연산자는 <a href="https://ruex.io/fzn"><code>std::ops</code></a> 모듈에, 비교 연산자는 <a href="https://ruex.io/fzm"><code>std::cmp</code></a> 모듈에 위치해 있습니다.</p>
+<h2 id="기본-구현-default-implementation"><a class="header" href="#기본-구현-default-implementation">기본 구현 (Default Implementation)</a></h2>
+<p><code>PartialEq::ne</code> 메서드 정의를 보면 <code>{ ... }</code> 블록이 이미 있는 것을 볼 수 있습니다. 이는 <code>PartialEq</code> 트레이트가 <code>ne</code>에 대한 **기본 구현(Default Implementation)**을 제공한다는 뜻입니다. 생략된 블록을 확장해 보면 다음과 같습니다.</p>
 <pre><code class="language-rust">pub trait PartialEq {
     fn eq(&amp;self, other: &amp;Self) -&gt; bool;
 
@@ -227,9 +220,7 @@ pub trait PartialEq {
         !self.eq(other)
     }
 }</code></pre>
-<p>예상대로입니다: <code>ne</code>는 <code>eq</code>의 부정입니다.
-기본 구현이 제공되므로 타입에 대해 <code>PartialEq</code>를 구현할 때 <code>ne</code> 구현을 건너뛸 수 있습니다.
-<code>eq</code>를 구현하는 것으로 충분합니다:</p>
+<p>우리가 예상할 수 있듯이, <code>ne</code>는 단순히 <code>eq</code> 결과를 반전시킨 것입니다. 이렇게 기본 구현이 제공되는 경우, 타입에 대해 트레이트를 구현할 때 해당 메서드를 직접 구현하지 않아도 됩니다. <code>eq</code>만 구현해도 충분하죠:</p>
 <pre><code class="language-rust">struct WrappingU8 {
     inner: u8,
 }
@@ -238,20 +229,18 @@ impl PartialEq for WrappingU8 {
     fn eq(&amp;self, other: &amp;WrappingU8) -&gt; bool {
         self.inner == other.inner
     }
-    
-    // 여기에 `ne` 구현 없음
+    // `ne` 구현은 생략 가능!
 }</code></pre>
-<p>하지만 기본 구현을 사용하도록 강제되지는 않습니다.
-트레이트를 구현할 때 재정의하도록 선택할 수 있습니다:</p>
+<p>물론 원한다면 기본 구현을 재정의(Override)할 수도 있습니다.</p>
 <pre><code class="language-rust">struct MyType;
 
 impl PartialEq for MyType {
     fn eq(&amp;self, other: &amp;MyType) -&gt; bool {
-        // 사용자 정의 구현
+        // 사용자 정의 eq 구현
     }
 
     fn ne(&amp;self, other: &amp;MyType) -&gt; bool {
-        // 사용자 정의 구현
+        // 사용자 정의 ne 구현
     }
 }</code></pre>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>

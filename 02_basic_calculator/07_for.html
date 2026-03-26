@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>루프: for - 100개의 연습 문제로 Rust 배우기</title>
+        <title>반복문: for - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,54 +178,51 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="루프-2부-for"><a class="header" href="#루프-2부-for">루프, 2부: <code>for</code></a></h1>
-<p>카운터 변수를 수동으로 증가시켜야 하는 것은 다소 지루합니다. 이 패턴은 또한 매우 일반적입니다! 이를 더 쉽게 만들기 위해 Rust는 값의 범위에 대해 반복하는 더 간결한 방법인 <code>for</code> 루프를 제공합니다.</p>
+                        <h1 id="반복문loops---2부-for"><a class="header" href="#반복문loops---2부-for">반복문(Loops) - 2부: <code>for</code></a></h1>
+<p>매번 카운터 변수를 직접 만들고 1씩 증가시키는 과정은 조금 번거로울 수 있습니다. 사실 이런 작업은 프로그래밍에서 매우 자주 일어나는 일이죠. Rust에서는 값의 범위를 따라 더 간결하게 반복할 수 있는 <code>for</code> 루프를 제공합니다.</p>
 <h2 id="for-루프"><a class="header" href="#for-루프"><code>for</code> 루프</a></h2>
-<p><code>for</code> 루프는 반복자<sup class="footnote-reference" id="fr-iterator-1"><a href="#footnote-iterator">1</a></sup>의 각 요소에 대해 코드 블록을 실행하는 방법입니다.</p>
-<p>일반적인 구문은 다음과 같습니다:</p>
+<p><code>for</code> 루프는 반복자(Iterator)<sup class="footnote-reference" id="fr-iterator-1"><a href="#footnote-iterator">1</a></sup>에 들어있는 각 요소에 대해 코드 블록을 실행하는 방식입니다. 일반적인 형태는 다음과 같습니다.</p>
 <pre><code class="language-rust">for &lt;요소&gt; in &lt;반복자&gt; {
-    // 실행할 코드
+    // 반복 실행할 코드
 }</code></pre>
-<h2 id="범위"><a class="header" href="#범위">범위</a></h2>
-<p>Rust의 표준 라이브러리는 숫자 시퀀스를 반복하는 데 사용할 수 있는 <strong>범위</strong> 타입을 제공합니다<sup class="footnote-reference" id="fr-weird-ranges-1"><a href="#footnote-weird-ranges">2</a></sup>.</p>
-<p>예를 들어, 1부터 5까지의 숫자를 더하고 싶다면:</p>
+<h2 id="범위ranges"><a class="header" href="#범위ranges">범위(Ranges)</a></h2>
+<p>Rust 표준 라이브러리는 일련의 숫자들을 차례대로 훑을 때 사용할 수 있는 <strong>범위(Range)</strong> 타입을 제공합니다<sup class="footnote-reference" id="fr-weird-ranges-1"><a href="#footnote-weird-ranges">2</a></sup>.</p>
+<p>예를 들어, 1부터 5까지의 숫자를 모두 더하고 싶다면 다음과 같이 작성할 수 있습니다.</p>
 <pre><code class="language-rust">let mut sum = 0;
 for i in 1..=5 {
     sum += i;
 }</code></pre>
-<p>루프가 실행될 때마다 <code>i</code>는 코드 블록을 실행하기 전에 범위의 다음 값에 할당됩니다.</p>
-<p>Rust에는 다섯 가지 종류의 범위가 있습니다:</p>
+<p>루프가 돌 때마다 <code>i</code>에는 범위에 정의된 다음 값이 차례로 들어가며 본문 코드가 실행됩니다.</p>
+<p>Rust에는 다섯 가지 종류의 범위 표현이 있습니다.</p>
 <ul>
-<li><code>1..5</code>: (반개) 범위. 1부터 4까지의 모든 숫자를 포함합니다. 마지막 값인 5는 포함하지 않습니다.</li>
-<li><code>1..=5</code>: 포함 범위. 1부터 5까지의 모든 숫자를 포함합니다. 마지막 값인 5를 포함합니다.</li>
-<li><code>1..</code>: 무한 범위. 1부터 무한대까지의 모든 숫자를 포함합니다(정수 타입의 최대값까지).</li>
-<li><code>..5</code>: 정수 타입의 최소값에서 시작하여 4에서 끝나는 범위. 마지막 값인 5는 포함하지 않습니다.</li>
-<li><code>..=5</code>: 정수 타입의 최소값에서 시작하여 5에서 끝나는 범위. 마지막 값인 5를 포함합니다.</li>
+<li><code>1..5</code>: 1부터 4까지 포함하는 범위입니다. 마지막 값인 5는 포함되지 않습니다. (반열린 범위)</li>
+<li><code>1..=5</code>: 1부터 5까지 모두 포함하는 범위입니다. 마지막 값인 5도 포함됩니다. (닫힌 범위)</li>
+<li><code>1..</code>: 1부터 해당 데이터 타입의 최대값까지 포함하는 무한 범위입니다.</li>
+<li><code>..5</code>: 해당 데이터 타입의 최소값부터 시작하여 4까지 포함하는 범위입니다. 5는 포함되지 않습니다.</li>
+<li><code>..=5</code>: 해당 데이터 타입의 최소값부터 시작하여 5까지 모두 포함하는 범위입니다.</li>
 </ul>
-<p>시작점이 명시적으로 지정된 처음 세 종류의 범위와 함께 <code>for</code> 루프를 사용할 수 있습니다. 마지막 두 범위 타입은 나중에 다룰 다른 컨텍스트에서 사용됩니다.</p>
-<p>범위의 극단값은 정수 리터럴일 필요는 없습니다. 변수나 표현식일 수도 있습니다!</p>
-<p>예를 들어:</p>
+<p>시작값이 명시된 앞의 세 가지 범위는 <code>for</code> 루프에서 바로 사용할 수 있습니다. 나머지 두 가지는 나중에 다른 상황에서 쓰이는 것을 보게 될 것입니다.</p>
+<p>참고로, 범위의 경계값에는 꼭 숫자 리터럴만 쓸 수 있는 것은 아닙니다. 변수나 표현식을 사용할 수도 있습니다.</p>
 <pre><code class="language-rust">let end = 5;
 let mut sum = 0;
 
 for i in 1..(end + 1) {
     sum += i;
 }</code></pre>
-<h2 id="추가-자료"><a class="header" href="#추가-자료">추가 자료</a></h2>
+<h2 id="더-읽어보기"><a class="header" href="#더-읽어보기">더 읽어보기</a></h2>
 <ul>
-<li><a href="https://ruex.io/ffj"><code>for</code> 루프 문서</a></li>
+<li><a href="https://ruex.io/ffj"><code>for</code> 루프 공식 문서</a></li>
 </ul>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/ffd"><code>02_basic_calculator/07_for</code></a></p>
 <hr>
 <ol class="footnote-definition">
 <li id="footnote-iterator">
-<p>과정의 뒷부분에서 “반복자“로 간주되는 것에 대한 정확한 정의를 제공할 것입니다.
-지금은 반복할 수 있는 값의 시퀀스로 생각하세요. <a href="#fr-iterator-1">↩</a></p>
+<p>과정의 뒷부분에서 “반복자“가 정확히 무엇인지 배우게 될 것입니다. 지금은 반복할 수 있는 값들이 모여 있는 것으로 생각하셔도 충분합니다. <a href="#fr-iterator-1">↩</a></p>
 </li>
 <li id="footnote-weird-ranges">
-<p>다른 타입(예: 문자 및 IP 주소)과 함께 범위를 사용할 수도 있지만, 일상적인 Rust 프로그래밍에서는 정수가 가장 일반적인 경우입니다.</p>
-<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
- <a href="#fr-weird-ranges-1">↩</a></li>
+<p>정수뿐만 아니라 문자(Characters)나 IP 주소 등 다른 타입들과 함께 범위를 쓸 수도 있습니다. 하지만 일상적인 프로그래밍에서는 정수 범위가 가장 흔하게 쓰입니다. <a href="#fr-weird-ranges-1">↩</a></p>
+</li>
 </ol>
 
                     </main>

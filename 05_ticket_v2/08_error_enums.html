@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>오류 열거형 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>오류 열거형(Error enums) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,27 +178,25 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="오류-열거형"><a class="header" href="#오류-열거형">오류 열거형</a></h1>
-<p>이전 연습 문제에 대한 여러분의 해결책은 어색하게 느껴졌을 수 있습니다: 문자열에 대해 매칭하는 것은 이상적이지 않습니다!
-동료가 <code>Ticket::new</code>가 반환하는 오류 메시지를 (예: 가독성 향상을 위해) 재작업하면 갑자기 호출 코드가 깨질 수 있습니다.</p>
-<p>이 문제를 해결하는 데 필요한 메커니즘을 이미 알고 있습니다: 열거형입니다!</p>
-<h2 id="오류에-대응하기"><a class="header" href="#오류에-대응하기">오류에 대응하기</a></h2>
-<p>발생한 특정 오류에 따라 호출자가 다르게 동작하도록 허용하려면, 열거형을 사용하여 다른 오류 케이스를 나타낼 수 있습니다:</p>
+                        <h1 id="오류-열거형-error-enums"><a class="header" href="#오류-열거형-error-enums">오류 열거형 (Error Enums)</a></h1>
+<p>이전 연습 문제에서 작성한 해결책이 조금 어색하게 느껴졌을 수도 있습니다. 문자열을 패턴 매칭(Pattern matching)에 직접 사용하는 것은 좋은 방법이 아니기 때문이죠! 만약 동료가 가독성을 높이기 위해 <code>Ticket::new</code>가 반환하는 오류 메시지를 수정한다면, 그 함수를 호출하던 여러분의 코드는 갑자기 작동하지 않게 될 것입니다(Breaking changes).</p>
+<p>이 문제를 해결할 수 있는 도구는 이미 우리가 배운 것에 있습니다. 바로 **열거형(Enum)**입니다!</p>
+<h2 id="오류에-대처하기"><a class="header" href="#오류에-대처하기">오류에 대처하기</a></h2>
+<p>발생한 특정 오류 상황에 따라 호출자가 다르게 동작하도록 만들고 싶다면, 열거형을 사용해 다양한 오류 케이스를 정의할 수 있습니다.</p>
 <pre><code class="language-rust">// 문자열에서 `u32`를 파싱할 때 발생할 수 있는
-// 다른 오류 케이스를 나타내는 오류 열거형.
+// 다양한 오류 상황을 나타내는 오류 열거형.
 enum U32ParseError {
     NotANumber,
     TooLarge,
     Negative,
 }</code></pre>
-<p>오류 열거형을 사용하면 타입 시스템에 다른 오류 케이스를 인코딩하게 됩니다. 이는 실패 가능한 함수의 시그니처의 일부가 됩니다.
-호출자는 <code>match</code> 표현식을 사용하여 다른 오류 케이스에 대응할 수 있으므로 오류 처리가 단순화됩니다:</p>
+<p>오류 열거형을 사용하면 발생 가능한 오류 상황들을 타입 시스템에 직접 인코딩하게 됩니다. 이는 실패할 가능성이 있는 함수의 **시그니처(Signature)**의 일부가 되죠. 이제 호출하는 쪽에서는 <code>match</code> 표현식을 사용해 각각의 오류 케이스에 맞게 대응할 수 있어, 오류 처리가 훨씬 명확하고 간결해집니다.</p>
 <pre><code class="language-rust">match s.parse_u32() {
     Ok(n) =&gt; n,
     Err(U32ParseError::Negative) =&gt; 0,
     Err(U32ParseError::TooLarge) =&gt; u32::MAX,
     Err(U32ParseError::NotANumber) =&gt; {
-        panic!("Not a number: {}", s);
+        panic!("숫자가 아닙니다: {}", s);
     }
 }</code></pre>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>

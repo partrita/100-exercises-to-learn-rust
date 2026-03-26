@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,16 +178,16 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="from-및-into"><a class="header" href="#from-및-into"><code>From</code> 및 <code>Into</code></a></h1>
-<p>문자열 여정이 시작된 곳으로 돌아가 봅시다:</p>
+                        <h1 id="from-및-into-변환-트레이트"><a class="header" href="#from-및-into-변환-트레이트"><code>From</code> 및 <code>Into</code> (변환 트레이트)</a></h1>
+<p>우리가 처음 문자열을 다루기 시작했던 코드로 다시 돌아가 봅시다.</p>
 <pre><code class="language-rust">let ticket = Ticket::new(
     "A title".into(), 
     "A description".into(), 
     "To-Do".into()
 );</code></pre>
-<p>이제 <code>.into()</code>가 여기서 무엇을 하는지 분석할 만큼 충분히 알고 있습니다.</p>
-<h2 id="문제점"><a class="header" href="#문제점">문제점</a></h2>
-<p><code>new</code> 메소드의 시그니처는 다음과 같습니다:</p>
+<p>이제 우리는 여기서 <code>.into()</code>가 정확히 어떤 역할을 하는지 분석할 수 있는 충분한 지식을 갖추었습니다.</p>
+<h2 id="문제의-발단"><a class="header" href="#문제의-발단">문제의 발단</a></h2>
+<p><code>new</code> 메서드의 시그니처는 다음과 같이 정의되어 있습니다.</p>
 <pre><code class="language-rust">impl Ticket {
     pub fn new(
         title: String, 
@@ -197,11 +197,9 @@
         // [...]
     }
 }</code></pre>
-<p>또한 문자열 리터럴(예: <code>"A title"</code>)이 <code>&amp;str</code> 타입이라는 것도 보았습니다.
-여기서 타입 불일치가 있습니다: <code>String</code>이 예상되지만 <code>&amp;str</code>이 있습니다.
-이번에는 마법 같은 강제 변환이 우리를 구해주지 않을 것입니다. <strong>변환을 수행해야 합니다</strong>.</p>
-<h2 id="from-및-into-1"><a class="header" href="#from-및-into-1"><code>From</code> 및 <code>Into</code></a></h2>
-<p>Rust 표준 라이브러리는 <code>std::convert</code> 모듈에서 <strong>실패하지 않는 변환</strong>을 위한 두 가지 트레이트인 <code>From</code>과 <code>Into</code>를 정의합니다.</p>
+<p>우리는 앞서 <code>"A title"</code>과 같은 문자열 리터럴이 <code>&amp;str</code> 타입이라는 것을 배웠습니다. 여기서 <strong>타입 불일치</strong>가 발생합니다. 메서드는 <code>String</code>을 요구하는데, 우리는 <code>&amp;str</code>을 전달하고 있기 때문입니다. 이번에는 컴파일러가 알아서 해주는 마법 같은 강제 변환이 일어나지 않습니다. 즉, 우리가 직접 <strong>타입 변환</strong>을 수행해야 합니다.</p>
+<h2 id="from-및-into"><a class="header" href="#from-및-into"><code>From</code> 및 <code>Into</code></a></h2>
+<p>Rust 표준 라이브러리의 <code>std::convert</code> 모듈에는 <strong>실패할 가능성이 없는 변환</strong>을 처리하기 위한 두 가지 트레이트인 <code>From</code>과 <code>Into</code>가 정의되어 있습니다.</p>
 <pre><code class="language-rust">pub trait From&lt;T&gt;: Sized {
     fn from(value: T) -&gt; Self;
 }
@@ -209,43 +207,39 @@
 pub trait Into&lt;T&gt;: Sized {
     fn into(self) -&gt; T;
 }</code></pre>
-<p>이러한 트레이트 정의는 이전에 보지 못했던 몇 가지 개념을 보여줍니다: <strong>슈퍼트레이트</strong>와 <strong>암시적 트레이트 바운드</strong>입니다.
-먼저 그것들을 풀어봅시다.</p>
-<h3 id="슈퍼트레이트--서브트레이트"><a class="header" href="#슈퍼트레이트--서브트레이트">슈퍼트레이트 / 서브트레이트</a></h3>
-<p><code>From: Sized</code> 구문은 <code>From</code>이 <code>Sized</code>의 <strong>서브트레이트</strong>임을 의미합니다: <code>From</code>을 구현하는 모든 타입은 <code>Sized</code>도 구현해야 합니다.
-또는 <code>Sized</code>가 <code>From</code>의 <strong>슈퍼트레이트</strong>라고 말할 수도 있습니다.</p>
+<p>이 트레이트 정의에는 지금까지 보지 못했던 새로운 개념인 **슈퍼트레이트(supertrait)**와 **암시적 트레이트 바운드(implicit trait bound)**가 포함되어 있습니다. 하나씩 살펴봅시다.</p>
+<h3 id="슈퍼트레이트supertrait와-서브트레이트subtrait"><a class="header" href="#슈퍼트레이트supertrait와-서브트레이트subtrait">슈퍼트레이트(Supertrait)와 서브트레이트(Subtrait)</a></h3>
+<p><code>From: Sized</code> 구문은 <code>From</code>이 <code>Sized</code>의 <strong>서브트레이트</strong>임을 나타냅니다. 즉, <code>From</code>을 구현하는 모든 타입은 반드시 <code>Sized</code>도 구현해야 합니다. 반대로 <code>Sized</code>는 <code>From</code>의 <strong>슈퍼트레이트</strong>라고 부릅니다.</p>
 <h3 id="암시적-트레이트-바운드"><a class="header" href="#암시적-트레이트-바운드">암시적 트레이트 바운드</a></h3>
-<p>제네릭 타입 매개변수가 있을 때마다 컴파일러는 암시적으로 그것이 <code>Sized</code>라고 가정합니다.</p>
-<p>예를 들어:</p>
+<p>Rust 컴파일러는 제네릭 타입 매개변수가 사용될 때마다, 별도의 명시가 없으면 해당 타입이 <code>Sized</code>일 것이라고 암시적으로 가정합니다.</p>
+<p>예를 들어, 다음과 같은 구조체 정의는</p>
 <pre><code class="language-rust">pub struct Foo&lt;T&gt; {
     inner: T,
 }</code></pre>
-<p>는 실제로 다음과 동일합니다:</p>
+<p>실제로는 다음과 동일하게 취급됩니다.</p>
 <pre><code class="language-rust">pub struct Foo&lt;T: Sized&gt; 
 {
     inner: T,
 }</code></pre>
-<p><code>From&lt;T&gt;</code>의 경우, 트레이트 정의는 다음과 동일합니다:</p>
+<p>따라서 <code>From&lt;T&gt;</code>의 정의 역시 실제로는 다음과 같습니다.</p>
 <pre><code class="language-rust">pub trait From&lt;T: Sized&gt;: Sized {
     fn from(value: T) -&gt; Self;
 }</code></pre>
-<p>즉, <code>T</code>와 <code>From&lt;T&gt;</code>를 구현하는 타입 <em>모두</em> <code>Sized</code>여야 합니다. 전자의 바운드는 암시적이지만 말입니다.</p>
-<h3 id="부정-트레이트-바운드"><a class="header" href="#부정-트레이트-바운드">부정 트레이트 바운드</a></h3>
-<p><strong>부정 트레이트 바운드</strong>를 사용하여 암시적인 <code>Sized</code> 바운드를 선택 해제할 수 있습니다:</p>
+<p>이는 <code>T</code>와 <code>From&lt;T&gt;</code>를 구현하는 타입 <strong>모두</strong> 반드시 <code>Sized</code>여야 함을 의미합니다. (<code>T</code>에 대한 바운드는 명시하지 않아도 자동으로 적용됩니다.)</p>
+<h3 id="물음표-트레이트-바운드-question-mark-trait-bound"><a class="header" href="#물음표-트레이트-바운드-question-mark-trait-bound">물음표 트레이트 바운드 (Question Mark Trait Bound)</a></h3>
+<p>만약 암시적인 <code>Sized</code> 제약을 해제하고 싶다면, <strong>물음표 트레이트 바운드</strong>를 사용하면 됩니다.</p>
 <pre><code class="language-rust">pub struct Foo&lt;T: ?Sized&gt; {
     //            ^^^^^^^
-    //            이것은 부정 트레이트 바운드입니다
+    //            이것이 Sized 제약을 해제하는 구문입니다.
     inner: T,
 }</code></pre>
-<p>이 구문은 “<code>T</code>는 <code>Sized</code>일 수도 있고 아닐 수도 있다“로 읽히며, <code>T</code>를 DST에 바인딩할 수 있게 해줍니다(예: <code>Foo&lt;str&gt;</code>). 하지만 이것은 특별한 경우입니다: 부정 트레이트 바운드는 <code>Sized</code>에만 국한되며, 다른 트레이트와 함께 사용할 수 없습니다.</p>
-<h2 id="str에서-string으로"><a class="header" href="#str에서-string으로"><code>&amp;str</code>에서 <code>String</code>으로</a></h2>
-<p><a href="https://ruex.io/fzp"><code>std</code>의 문서</a>에서 어떤 <code>std</code> 타입이 <code>From</code> 트레이트를 구현하는지 볼 수 있습니다.
-<code>String</code>이 <code>From&lt;&amp;str&gt; for String</code>을 구현한다는 것을 알 수 있습니다. 따라서 다음과 같이 작성할 수 있습니다:</p>
+<p>이 구문은 “<code>T</code>는 <code>Sized</code>일 수도 있고 아닐 수도 있다“는 뜻으로 해석됩니다. 이를 통해 <code>T</code>에 <code>str</code>과 같은 DST를 대입할 수 있게 됩니다(예: <code>Foo&lt;str&gt;</code>). 단, 이 특수한 구문은 <code>Sized</code> 트레이트에만 사용할 수 있습니다.</p>
+<h2 id="str에서-string으로의-변환"><a class="header" href="#str에서-string으로의-변환"><code>&amp;str</code>에서 <code>String</code>으로의 변환</a></h2>
+<p><a href="https://ruex.io/fzp"><code>std</code> 문서</a>를 보면 어떤 타입들이 <code>From</code> 트레이트를 구현하고 있는지 확인할 수 있습니다. 거기서 <code>String</code>이 <code>From&lt;&amp;str&gt;</code>을 구현하고 있다는 사실을 찾을 수 있죠. 따라서 우리는 다음과 같이 쓸 수 있습니다.</p>
 <pre><code class="language-rust">let title = String::from("A title");</code></pre>
-<p>하지만 우리는 주로 <code>.into()</code>를 사용해 왔습니다.
-<a href="https://ruex.io/fzl"><code>Into</code>의 구현자</a>를 확인하면 <code>Into&lt;String&gt; for &amp;str</code>을 찾을 수 없습니다. 무슨 일일까요?</p>
-<p><code>From</code>과 <code>Into</code>는 <strong>이중 트레이트</strong>입니다.
-특히, <code>Into</code>는 <strong>블랭킷 구현</strong>을 사용하여 <code>From</code>을 구현하는 모든 타입에 대해 구현됩니다:</p>
+<p>그런데 우리는 그동안 주로 <code>.into()</code>를 사용해 왔습니다.
+<a href="https://ruex.io/fzl"><code>Into</code> 구현 목록</a>을 찾아봐도 <code>&amp;str</code>에 대해 <code>Into&lt;String&gt;</code>이 직접 구현된 것은 보이지 않습니다. 어떻게 된 걸까요?</p>
+<p>사실 <code>From</code>과 <code>Into</code>는 서로 짝을 이루는 <strong>대칭적인 트레이트</strong>입니다. 특히 <code>Into</code>는 **블랭킷 구현(blanket implementation)**을 통해, <code>From</code>을 구현하는 모든 타입에 대해 자동으로 구현됩니다.</p>
 <pre><code class="language-rust">impl&lt;T, U&gt; Into&lt;U&gt; for T
 where
     U: From&lt;T&gt;,
@@ -254,16 +248,15 @@ where
         U::from(self)
     }
 }</code></pre>
-<p>타입 <code>U</code>가 <code>From&lt;T&gt;</code>를 구현하면 <code>Into&lt;U&gt; for T</code>가 자동으로 구현됩니다. 이것이 <code>let title = "A title".into();</code>라고 쓸 수 있는 이유입니다.</p>
-<h2 id="into"><a class="header" href="#into"><code>.into()</code></a></h2>
-<p><code>.into()</code>를 볼 때마다 타입 간의 변환을 목격하는 것입니다.
-하지만 대상 타입은 무엇일까요?</p>
-<p>대부분의 경우 대상 타입은 다음 중 하나입니다:</p>
+<p>즉, 어떤 타입 <code>U</code>가 <code>From&lt;T&gt;</code>를 구현하면, 타입 <code>T</code>에 대해 <code>Into&lt;U&gt;</code>가 자동으로 구현됩니다. 이것이 우리가 <code>let title = "A title".into();</code>라고 자연스럽게 쓸 수 있었던 이유입니다.</p>
+<h2 id="into-활용하기"><a class="header" href="#into-활용하기"><code>.into()</code> 활용하기</a></h2>
+<p>코드에서 <code>.into()</code>를 본다면, 그것은 한 타입에서 다른 타입으로의 변환이 일어나고 있다는 신호입니다. 그렇다면 변환될 목적지 타입은 어떻게 결정될까요?</p>
+<p>대부분의 경우 목적지 타입은 다음 중 하나를 통해 결정됩니다.</p>
 <ul>
-<li>함수/메소드의 시그니처에 의해 지정됨 (예: 위 예제의 <code>Ticket::new</code>)</li>
-<li>타입 어노테이션이 있는 변수 선언에 지정됨 (예: <code>let title: String = "A title".into();</code>)</li>
+<li>함수나 메서드의 시그니처 (예: 앞서 본 <code>Ticket::new</code>의 매개변수 타입)</li>
+<li>타입 명시가 포함된 변수 선언 (예: <code>let title: String = "A title".into();</code>)</li>
 </ul>
-<p>컴파일러가 모호함 없이 컨텍스트에서 대상 타입을 추론할 수 있는 한 <code>.into()</code>는 즉시 작동합니다.</p>
+<p>컴파일러가 주변 맥락을 통해 목적지 타입을 명확히 추론할 수 있다면, <code>.into()</code>는 별도의 추가 설정 없이 바로 작동합니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fzk"><code>04_traits/09_from</code></a></p>
 

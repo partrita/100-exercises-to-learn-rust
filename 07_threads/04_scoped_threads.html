@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>스코프 스레드 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>스코프 스레드(Scoped threads) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,60 +178,52 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="스코프-스레드"><a class="header" href="#스코프-스레드">스코프 스레드</a></h1>
-<p>지금까지 논의한 모든 라이프타임 문제는 공통된 원인을 가집니다:
-생성된 스레드가 부모 스레드보다 오래 살 수 있다는 것입니다.
-<strong>스코프 스레드</strong>를 사용하여 이 문제를 피할 수 있습니다.</p>
+                        <h1 id="스코프-스레드scoped-threads"><a class="header" href="#스코프-스레드scoped-threads">스코프 스레드(Scoped threads)</a></h1>
+<p>지금까지 우리가 겪었던 모든 라이프타임 문제의 원인은 결국 하나였습니다. 바로 생성된 스레드가 부모 스레드보다 <strong>더 오래 살 가능성</strong>이 있다는 점이죠.</p>
+<p>이를 해결해 주는 마법 같은 기능이 바로 **스코프 스레드(Scoped threads)**입니다.</p>
 <pre><code class="language-rust">let v = vec![1, 2, 3];
 let midpoint = v.len() / 2;
 
 std::thread::scope(|scope| {
     scope.spawn(|| {
         let first = &amp;v[..midpoint];
-        println!("Here's the first half of v: {first:?}");
+        println!("벡터 v의 전반부: {first:?}");
     });
     scope.spawn(|| {
         let second = &amp;v[midpoint..];
-        println!("Here's the second half of v: {second:?}");
+        println!("벡터 v의 후반부: {second:?}");
     });
 });
 
-println!("Here's v: {v:?}");</code></pre>
-<p>무슨 일이 일어나고 있는지 풀어봅시다.</p>
-<h2 id="scope"><a class="header" href="#scope"><code>scope</code></a></h2>
-<p><code>std::thread::scope</code> 함수는 새로운 <strong>스코프</strong>를 생성합니다.
-<code>std::thread::scope</code>는 단일 인수인 <code>Scope</code> 인스턴스를 가진 클로저를 입력으로 받습니다.</p>
-<h2 id="스코프-생성"><a class="header" href="#스코프-생성">스코프 생성</a></h2>
-<p><code>Scope</code>는 <code>spawn</code> 메소드를 노출합니다.
-<code>std::thread::spawn</code>과 달리, <code>Scope</code>를 사용하여 생성된 모든 스레드는
-스코프가 끝날 때 <strong>자동으로 조인</strong>됩니다.</p>
-<p>이전 예제를 <code>std::thread::spawn</code>으로 “번역“한다면,
-다음과 같을 것입니다:</p>
+println!("원본 벡터 v: {v:?}");</code></pre>
+<p>코드가 어떻게 동작하는지 자세히 들여다볼까요?</p>
+<h2 id="scope-함수"><a class="header" href="#scope-함수"><code>scope</code> 함수</a></h2>
+<p><code>std::thread::scope</code> 함수는 새로운 **스코프(Scope)**를 생성합니다. 이 함수는 인자로 클로저를 받으며, 그 클로저 내부에서 <code>Scope</code> 인스턴스를 활용할 수 있게 해줍니다.</p>
+<h2 id="자동-조인auto-join"><a class="header" href="#자동-조인auto-join">자동 조인(Auto-join)</a></h2>
+<p><code>Scope</code> 인스턴스는 <code>spawn</code> 메서드를 제공합니다. 일반적인 <code>std::thread::spawn</code>과 결정적으로 다른 점은, <strong>스코프 안에서 생성된 모든 스레드는 스코프가 끝나는 시점에 자동으로 조인(Join)된다</strong>는 것입니다.</p>
+<p>위 예제 코드를 <code>std::thread::spawn</code>을 사용하는 방식으로 “번역“해 보면 다음과 같은 형태가 됩니다.</p>
 <pre><code class="language-rust">let v = vec![1, 2, 3];
 let midpoint = v.len() / 2;
 
 let handle1 = std::thread::spawn(|| {
     let first = &amp;v[..midpoint];
-    println!("Here's the first half of v: {first:?}");
+    println!("벡터 v의 전반부: {first:?}");
 });
 let handle2 = std::thread::spawn(|| {
     let second = &amp;v[midpoint..];
-    println!("Here's the second half of v: {second:?}");
+    println!("벡터 v의 후반부: {second:?}");
 });
 
+// 명시적으로 조인합니다.
 handle1.join().unwrap();
 handle2.join().unwrap();
 
-println!("Here's v: {v:?}");</code></pre>
-<h2 id="환경에서-빌림"><a class="header" href="#환경에서-빌림">환경에서 빌림</a></h2>
-<p>하지만 번역된 예제는 컴파일되지 않을 것입니다: 컴파일러는
-<code>&amp;v</code>의 라이프타임이 <code>'static</code>이 아니므로 생성된 스레드에서 사용할 수 없다고 불평할 것입니다.</p>
-<p><code>std::thread::scope</code>의 문제는 아닙니다. <strong>환경에서 안전하게 빌릴 수 있습니다</strong>.</p>
-<p>우리 예제에서 <code>v</code>는 생성 지점 이전에 생성됩니다.
-<code>scope</code>가 반환된 <em>후에야</em> 삭제됩니다. 동시에,
-<code>scope</code> 내에서 생성된 모든 스레드는 <code>scope</code>가 반환되기 <em>전에</em> 완료되는 것이 보장되므로,
-댕글링 참조가 발생할 위험이 없습니다.</p>
-<p>컴파일러는 불평하지 않을 것입니다!</p>
+println!("원본 벡터 v: {v:?}");</code></pre>
+<h2 id="환경에서-빌려오기borrowing-from-the-environment"><a class="header" href="#환경에서-빌려오기borrowing-from-the-environment">환경에서 빌려오기(Borrowing from the environment)</a></h2>
+<p>하지만 위와 같이 번역한 코드는 컴파일되지 않습니다! 컴파일러는 <code>&amp;v</code>의 라이프타임이 <code>'static</code>이 아니므로 다른 스레드에서 안전하게 사용할 수 없다고 경고할 것입니다.</p>
+<p>반면, <code>std::thread::scope</code>는 다릅니다. 이 안에서는 <strong>주변 환경의 데이터를 안전하게 빌려올 수 있습니다</strong>.</p>
+<p>우리 예제에서 <code>v</code>는 <code>scope</code>가 만들어지기 전에 생성되었습니다. 그리고 <code>v</code>가 메모리에서 사라지는(Drop) 시점은 <code>scope</code>가 실행을 마치고 반환된 <strong>이후</strong>입니다. 동시에 <code>scope</code> 내에서 생성된 모든 스레드는 <code>scope</code>가 끝나기 전에 반드시 완료됨이 보장됩니다. 따라서 **댕글링 참조(Dangling reference)**가 발생할 위험이 원천적으로 차단되는 것이죠.</p>
+<p>컴파일러는 이러한 안전성을 이해하고 기꺼이 통과시켜 줍니다!</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fxr"><code>07_threads/04_scoped_threads</code></a></p>
 

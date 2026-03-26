@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,40 +178,36 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="drop-트레이트"><a class="header" href="#drop-트레이트"><code>Drop</code> 트레이트</a></h1>
-<p><a href="../03_ticket_v1/11_destructor.html">소멸자</a>를 소개할 때, <code>drop</code> 함수가 다음을 수행한다고 언급했습니다:</p>
+                        <h1 id="drop-트레이트-정리-트레이트"><a class="header" href="#drop-트레이트-정리-트레이트"><code>Drop</code> 트레이트 (정리 트레이트)</a></h1>
+<p>우리는 앞서 <a href="../03_ticket_v1/11_destructor.html">소멸자(Destructor)</a>에 대해 배우면서, 변수가 수명을 다해 사라질 때 <code>drop</code> 함수가 두 가지 일을 한다고 배웠습니다.</p>
 <ol>
-<li>타입이 차지하는 메모리를 회수합니다 (즉, <code>std::mem::size_of</code> 바이트).</li>
-<li>값이 관리할 수 있는 추가 리소스(예: <code>String</code>의 힙 버퍼)를 정리합니다.</li>
+<li>타입이 차지하고 있던 스택 메모리(즉, <code>std::mem::size_of</code> 바이트)를 회수합니다.</li>
+<li>해당 값이 관리하던 추가 리소스(예: <code>String</code>의 힙 버퍼)를 정리합니다.</li>
 </ol>
-<p>2단계가 바로 <code>Drop</code> 트레이트가 등장하는 부분입니다.</p>
+<p>이 중 두 번째 단계인 ’추가 리소스 정리’를 담당하는 것이 바로 <code>Drop</code> 트레이트입니다.</p>
 <pre><code class="language-rust">pub trait Drop {
     fn drop(&amp;mut self);
 }</code></pre>
-<p><code>Drop</code> 트레이트는 컴파일러가 자동으로 수행하는 것 외에, 타입에 대한 <em>추가적인</em> 정리 로직을 정의하기 위한 메커니즘입니다.
-<code>drop</code> 메소드에 넣는 모든 것은 값이 범위를 벗어날 때 실행됩니다.</p>
-<h2 id="drop과-copy"><a class="header" href="#drop과-copy"><code>Drop</code>과 <code>Copy</code></a></h2>
-<p><code>Copy</code> 트레이트에 대해 이야기할 때, 타입이 메모리에서 차지하는 <code>std::mem::size_of</code> 바이트를 넘어서는 추가 리소스를 관리하는 경우 <code>Copy</code>를 구현할 수 없다고 말했습니다.</p>
-<p>궁금할 수 있습니다: 컴파일러는 타입이 추가 리소스를 관리하는지 어떻게 알까요?
-맞습니다: <code>Drop</code> 트레이트 구현입니다!
-타입에 명시적인 <code>Drop</code> 구현이 있는 경우, 컴파일러는 해당 타입에 추가 리소스가 연결되어 있다고 가정하고 <code>Copy</code>를 구현하는 것을 허용하지 않습니다.</p>
-<pre><code class="language-rust">// 이것은 단위 구조체, 즉 필드가 없는 구조체입니다.
+<p><code>Drop</code> 트레이트는 컴파일러가 기본적으로 처리하는 메모리 회수 작업 외에, 우리가 직접 <strong>추가적인 정리 로직</strong>을 정의할 수 있게 해주는 도구입니다. <code>drop</code> 메서드 안에 작성한 코드는 해당 값이 범위를 벗어나 소멸되는 순간 자동으로 실행됩니다.</p>
+<h2 id="drop과-copy는-함께할-수-없습니다"><a class="header" href="#drop과-copy는-함께할-수-없습니다"><code>Drop</code>과 <code>Copy</code>는 함께할 수 없습니다</a></h2>
+<p>앞서 <code>Copy</code> 트레이트를 공부할 때, 스택 메모리 이상의 추가 리소스를 관리하는 타입은 <code>Copy</code>를 구현할 수 없다고 배웠습니다.</p>
+<p>그런데 컴파일러는 특정 타입이 추가 리소스를 관리하는지 아닌지 어떻게 알 수 있을까요? 바로 <strong><code>Drop</code> 트레이트의 구현 여부</strong>를 보고 판단합니다. 만약 어떤 타입에 명시적인 <code>Drop</code> 구현이 있다면, 컴파일러는 “아, 이 타입은 정리가 필요한 무거운 리소스를 들고 있구나“라고 생각합니다. 그래서 이런 타입에는 <code>Copy</code>를 구현하는 것을 허용하지 않습니다.</p>
+<pre><code class="language-rust">// 필드가 없는 빈 구조체(단위 구조체)입니다.
 #[derive(Clone, Copy)]
 struct MyType;
 
 impl Drop for MyType {
     fn drop(&amp;mut self) {
-       // 여기서 아무것도 할 필요가 없습니다.
-       // "빈" Drop 구현만 있으면 충분합니다.
+       // 아무 내용이 없는 빈 구현이라도 상관없습니다.
     }
 }</code></pre>
-<p>컴파일러는 다음 오류 메시지와 함께 불평할 것입니다:</p>
+<p>위의 코드를 컴파일하려고 하면, 컴파일러는 다음과 같은 오류를 띄우며 거절할 것입니다.</p>
 <pre><code class="language-text">error[E0184]: the trait `Copy` cannot be implemented for this type; 
               the type has a destructor
  --&gt; src/lib.rs:2:17
   |
 2 | #[derive(Clone, Copy)]
-  |                 ^^^^ `Copy` not allowed on types with destructors
+  |                 ^^^^ 소멸자가 있는 타입에는 `Copy`를 구현할 수 없습니다.
 </code></pre>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fzj"><code>04_traits/13_drop</code></a></p>

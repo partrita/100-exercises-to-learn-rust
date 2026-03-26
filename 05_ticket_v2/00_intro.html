@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>티켓 v2 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>티켓 관리 v2 - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,18 +178,17 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="티켓-모델링-2부"><a class="header" href="#티켓-모델링-2부">티켓 모델링, 2부</a></h1>
-<p>이전 챕터에서 작업한 <code>Ticket</code> 구조체는 좋은 시작이지만, 여전히 “저는 초보 Rustacean입니다!“라고 외치는 것 같습니다.</p>
-<p>이 챕터에서는 Rust 도메인 모델링 기술을 다듬는 데 사용할 것입니다.
-그 과정에서 몇 가지 개념을 더 소개해야 합니다:</p>
+                        <h1 id="티켓-모델링-2부"><a class="header" href="#티켓-모델링-2부">티켓 모델링 (2부)</a></h1>
+<p>이전 챕터에서 만든 <code>Ticket</code> 구조체는 기초를 다지기에 좋았지만, 아직은 “Rust 초보자입니다!“라고 외치는 듯한 느낌이 있습니다.</p>
+<p>이번 챕터에서는 Rust의 도메인 모델링 기술을 한 단계 더 정교하게 다듬어 보겠습니다. 이 과정에서 다음과 같은 핵심 개념들을 배우게 됩니다:</p>
 <ul>
-<li><code>enum</code>s, 데이터 모델링을 위한 Rust의 가장 강력한 기능 중 하나</li>
-<li><code>Option</code> 타입, 널 허용 값을 모델링하기 위해</li>
-<li><code>Result</code> 타입, 복구 가능한 오류를 모델링하기 위해</li>
-<li><code>Debug</code> 및 <code>Display</code> 트레이트, 출력을 위해</li>
-<li><code>Error</code> 트레이트, 오류 타입을 표시하기 위해</li>
-<li><code>TryFrom</code> 및 <code>TryInto</code> 트레이트, 실패 가능한 변환을 위해</li>
-<li>Rust의 패키지 시스템, 라이브러리가 무엇인지, 바이너리가 무엇인지, 타사 크레이트를 사용하는 방법을 설명합니다.</li>
+<li><strong>열거형(Enums)</strong>: 데이터 모델링을 위한 Rust의 가장 강력한 기능 중 하나입니다.</li>
+<li><strong>Option 타입</strong>: 널 허용성(Nullability)을 안전하게 다루기 위해 사용합니다.</li>
+<li><strong>Result 타입</strong>: 실패 가능성(Fallibility)이 있는, 즉 복구 가능한 오류를 모델링할 때 사용합니다.</li>
+<li><strong>Debug 및 Display 트레이트(Traits)</strong>: 데이터를 출력하고 형식을 지정하는 방법을 배웁니다.</li>
+<li><strong>Error 트레이트</strong>: 사용자 정의 오류 타입을 만드는 방법을 익힙니다.</li>
+<li><strong>TryFrom 및 TryInto 트레이트</strong>: 실패할 수도 있는 타입 변환을 안전하게 처리합니다.</li>
+<li><strong>Rust의 패키지 시스템</strong>: 라이브러리와 바이너리의 차이점, 그리고 외부 크레이트(Crate)를 사용하는 방법을 알아봅니다.</li>
 </ul>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fza"><code>05_ticket_v2/00_intro</code></a></p>

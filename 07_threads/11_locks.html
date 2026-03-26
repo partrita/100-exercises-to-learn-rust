@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,62 +178,38 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="잠금-send-및-arc"><a class="header" href="#잠금-send-및-arc">잠금, <code>Send</code> 및 <code>Arc</code></a></h1>
-<p>방금 구현한 패치 전략에는 큰 단점이 있습니다: 경쟁 상태입니다.
-두 클라이언트가 거의 동시에 동일한 티켓에 대한 패치를 보내면 서버는 임의의 순서로 이를 적용할 것입니다.
-패치를 마지막으로 큐에 넣은 클라이언트가 다른 클라이언트가 변경한 내용을 덮어쓸 것입니다.</p>
+                        <h1 id="잠금locks-send-그리고-arc"><a class="header" href="#잠금locks-send-그리고-arc">잠금(Locks), <code>Send</code> 그리고 <code>Arc</code></a></h1>
+<p>우리가 방금 구현한 패치(Patch) 전략에는 큰 약점이 있습니다. 바로 **경쟁 상태(Race condition)**죠. 두 클라이언트가 거의 동시에 같은 티켓에 패치를 보내면, 서버는 요청이 들어온 임의의 순서대로 이를 처리할 것입니다. 결국 나중에 패치를 보낸 클라이언트가 이전 클라이언트의 수정을 덮어쓰게 됩니다.</p>
 <h2 id="버전-번호"><a class="header" href="#버전-번호">버전 번호</a></h2>
-<p><strong>버전 번호</strong>를 사용하여 이 문제를 해결할 수 있습니다.
-각 티켓은 생성 시 버전 번호 <code>0</code>이 할당됩니다.
-클라이언트가 패치를 보낼 때마다 원하는 변경 사항과 함께 티켓의 현재 버전 번호를 포함해야 합니다. 서버는 버전 번호가 저장된 번호와 일치하는 경우에만 패치를 적용합니다.</p>
-<p>위에 설명된 시나리오에서 서버는 두 번째 패치를 거부할 것입니다. 첫 번째 패치에 의해 버전 번호가 증가하여 두 번째 클라이언트가 보낸 번호와 일치하지 않기 때문입니다.</p>
-<p>이 접근 방식은 분산 시스템(예: 클라이언트와 서버가 메모리를 공유하지 않는 경우)에서 상당히 일반적이며 <strong>낙관적 동시성 제어</strong>라고 알려져 있습니다.
-아이디어는 대부분의 경우 충돌이 발생하지 않으므로 일반적인 경우에 최적화할 수 있다는 것입니다.
-원한다면 보너스 연습으로 이 전략을 직접 구현할 만큼 Rust에 대해 충분히 알고 있습니다.</p>
-<h2 id="잠금"><a class="header" href="#잠금">잠금</a></h2>
-<p><strong>잠금</strong>을 도입하여 경쟁 상태를 해결할 수도 있습니다.
-클라이언트가 티켓을 업데이트하려면 먼저 티켓에 대한 잠금을 획득해야 합니다. 잠금이 활성화되어 있는 동안에는 다른 클라이언트가 티켓을 수정할 수 없습니다.</p>
-<p>Rust의 표준 라이브러리는 <code>Mutex&lt;T&gt;</code>와 <code>RwLock&lt;T&gt;</code>라는 두 가지 다른 잠금 프리미티브를 제공합니다.
-<code>Mutex&lt;T&gt;</code>부터 시작하겠습니다. 이것은 <strong>mut</strong>ual <strong>ex</strong>clusion의 약자이며, 가장 간단한 종류의 잠금입니다:
-읽기 또는 쓰기 여부에 관계없이 하나의 스레드만 데이터에 접근할 수 있도록 허용합니다.</p>
-<p><code>Mutex&lt;T&gt;</code>는 보호하는 데이터를 래핑하며, 따라서 데이터의 타입에 대해 제네릭입니다.
-데이터에 직접 접근할 수 없습니다: 타입 시스템은 <code>Mutex::lock</code> 또는 <code>Mutex::try_lock</code>을 사용하여 먼저 잠금을 획득하도록 강제합니다. 전자는 잠금이 획득될 때까지 차단하고, 후자는 잠금을 획득할 수 없으면 즉시 오류를 반환합니다.
-두 메소드 모두 데이터에 역참조하는 가드 객체를 반환하여 데이터를 수정할 수 있도록 합니다. 잠금은 가드가 삭제될 때 해제됩니다.</p>
+<p>이 문제를 해결하는 한 가지 방법은 <strong>버전 번호</strong>를 사용하는 것입니다. 티켓이 처음 생성될 때 버전 번호 <code>0</code>을 부여하고, 클라이언트가 패치를 보낼 때마다 현재 알고 있는 버전 번호를 같이 보내게 합니다. 서버는 버전 번호가 일치할 때만 패치를 적용하고 버전 번호를 올립니다.</p>
+<p>이런 방식은 분산 시스템에서 매우 흔하며, **낙관적 동시성 제어(Optimistic Concurrency Control)**라고 부릅니다. “대부분의 상황에서 충돌이 없을 것“이라고 가정하고 일반적인 상황에 최적화하는 전략이죠. 관심 있다면 나중에 보너스 문제로 직접 구현해 보셔도 좋습니다.</p>
+<h2 id="잠금locks"><a class="header" href="#잠금locks">잠금(Locks)</a></h2>
+<p>또 다른 방법은 **잠금(Locks)**을 도입하는 것입니다. 클라이언트가 티켓을 수정하기 전에 먼저 티켓에 대한 잠금을 획득하게 만드는 것이죠. 잠금이 활성화된 동안에는 다른 클라이언트가 해당 티켓을 수정할 수 없습니다.</p>
+<p>Rust의 표준 라이브러리는 두 가지 대표적인 잠금 기본형(primitive)을 제공합니다. 바로 <code>Mutex&lt;T&gt;</code>와 <code>RwLock&lt;T&gt;</code>입니다. 먼저 **뮤텍스(Mutex)**부터 시작해 봅시다. 뮤텍스는 **상호 배제(Mutual Exclusion)**의 줄임말로, 읽기든 쓰기든 상관없이 오직 하나의 스레드만 데이터에 접근할 수 있게 보장합니다.</p>
+<p><code>Mutex&lt;T&gt;</code>는 보호할 데이터를 감싸는(wrapping) 형태이며 제네릭 타입입니다. 데이터에 직접 접근하는 것은 불가능하며, <code>Mutex::lock</code>이나 <code>Mutex::try_lock</code> 메서드를 통해 먼저 잠금을 얻어야만 합니다. <code>lock</code>은 잠금을 얻을 때까지 스레드를 대기시키고, <code>try_lock</code>은 잠금을 얻을 수 없으면 바로 에러를 반환합니다.</p>
+<p>두 메서드 모두 데이터에 접근할 수 있게 해주는 <strong>가드(guard) 객체</strong>를 반환하며, 이 가드 객체가 스코프를 벗어나 삭제(drop)될 때 잠금이 자동으로 해제됩니다.</p>
 <pre><code class="language-rust">use std::sync::Mutex;
 
-// 뮤텍스 잠금으로 보호되는 정수
-let lock = Mutex::new(0);
+// 뮤텍스로 보호되는 정수형 변수 생성 let lock = Mutex::new(0);
 
-// 뮤텍스에 대한 잠금 획득
-let mut guard = lock.lock().unwrap();
+// 뮤텍스 잠금 획득 let mut guard = lock.lock().unwrap();
 
-// 가드를 통해 데이터 수정,
-// `Deref` 구현 활용
+// 가드를 통해 데이터 수정 (Deref 트레이트 활용)
 *guard += 1;
 
-// 잠금은 `data`가 범위를 벗어날 때 해제됩니다
-// 이것은 가드를 명시적으로 삭제하거나
-// 가드가 범위를 벗어날 때 암시적으로 발생할 수 있습니다
-drop(guard)</code></pre>
-<h2 id="잠금-세분성"><a class="header" href="#잠금-세분성">잠금 세분성</a></h2>
-<p><code>Mutex</code>는 무엇을 래핑해야 할까요?
-가장 간단한 옵션은 전체 <code>TicketStore</code>를 단일 <code>Mutex</code>로 래핑하는 것입니다.
-이것은 작동하겠지만, 시스템의 성능을 심각하게 제한할 것입니다: 모든 읽기가 잠금이 해제될 때까지 기다려야 하므로 티켓을 병렬로 읽을 수 없을 것입니다.
-이것은 <strong>조악한 잠금</strong>이라고 알려져 있습니다.</p>
-<p>각 티켓이 자체 잠금으로 보호되는 <strong>세분화된 잠금</strong>을 사용하는 것이 더 좋을 것입니다.
-이렇게 하면 클라이언트가 동일한 티켓에 접근하려고 시도하지 않는 한, 티켓으로 병렬로 계속 작업할 수 있습니다.</p>
-<pre><code class="language-rust">// 각 티켓에 대한 잠금이 있는 새로운 구조
-struct TicketStore {
+// guard가 범위를 벗어날 때 잠금이 자동으로 해제됩니다.
+// drop(guard)를 호출해 명시적으로 해제할 수도 있습니다.</code></pre>
+<h2 id="잠금의-입도lock-granularity"><a class="header" href="#잠금의-입도lock-granularity">잠금의 입도(Lock granularity)</a></h2>
+<p>뮤텍스로 무엇을 감싸야 할까요? 가장 간단한 방법은 전체 <code>TicketStore</code>를 하나의 뮤텍스로 감싸는 것입니다. 하지만 이 방법은 성능을 크게 저해합니다. 단순 읽기조차 잠금이 풀리기를 기다려야 해서 여러 티켓을 동시에 읽는 병렬 처리가 불가능해지기 때문입니다. 이를 **굵은 입자의 잠금(Coarse-grained locking)**이라고 부릅니다.</p>
+<p>그보다 좋은 방법은 각 티켓이 저마다의 잠금을 가지는 **세밀한 입자의 잠금(Fine-grained locking)**을 사용하는 것입니다. 이렇게 하면 클라이언트들이 서로 다른 티켓에 접근할 때 아무런 방해 없이 병렬로 작업할 수 있습니다.</p>
+<pre><code class="language-rust">struct TicketStore {
+    // 각 티켓마다 개별 뮤텍스를 둡니다.
     tickets: BTreeMap&lt;TicketId, Mutex&lt;Ticket&gt;&gt;,
 }</code></pre>
-<p>이 접근 방식은 더 효율적이지만 단점이 있습니다: <code>TicketStore</code>는 시스템의 다중 스레드 특성을 <strong>인식</strong>해야 합니다. 지금까지 <code>TicketStore</code>는 스레드의 존재를 행복하게 무시해 왔습니다.
-어쨌든 시도해 봅시다.</p>
-<h2 id="누가-잠금을-가지고-있나요"><a class="header" href="#누가-잠금을-가지고-있나요">누가 잠금을 가지고 있나요?</a></h2>
-<p>전체 계획이 작동하려면 잠금이 티켓을 수정하려는 클라이언트에게 전달되어야 합니다.
-클라이언트는 티켓을 직접 수정하고(<code>&amp;mut Ticket</code>을 가진 것처럼) 완료되면 잠금을 해제할 수 있습니다.</p>
-<p>이것은 약간 까다롭습니다.
-<code>Mutex</code>는 <code>Clone</code>이 아니며 <code>TicketStore</code>에서 이동할 수 없으므로 채널을 통해 <code>Mutex&lt;Ticket&gt;</code>을 보낼 수 없습니다. 대신 <code>MutexGuard</code>를 보낼 수 있을까요?</p>
-<p>작은 예제로 아이디어를 테스트해 봅시다:</p>
+<p>성능은 좋아지겠지만, 이제 <code>TicketStore</code> 자체가 다중 스레드 환경임을 의식해야 합니다. 이전까지 <code>TicketStore</code>는 스레드가 존재하는지조차 몰랐지만, 이제는 구조 자체가 변했죠.</p>
+<h2 id="누가-잠금을-소유하나"><a class="header" href="#누가-잠금을-소유하나">누가 잠금을 소유하나?</a></h2>
+<p>전체 계획이 작동하려면 잠금(Lock)을 티켓을 수정하려는 클라이언트에게 전달할 수 있어야 합니다. 하지만 여기서 문제가 생깁니다. <code>Mutex</code>는 <code>Clone</code>이 아니며 <code>TicketStore</code>에서 마음대로 꺼내 옮길 수도 없습니다. 채널을 통해 <code>Mutex&lt;Ticket&gt;</code>을 보내는 것은 불가능하죠. 그렇다면 잠금을 획득한 결과인 <code>MutexGuard</code>를 보내면 어떨까요?</p>
+<p>간단한 예시로 확인해 봅시다.</p>
 <pre><code class="language-rust">use std::thread::spawn;
 use std::sync::Mutex;
 use std::sync::mpsc::sync_channel;
@@ -247,96 +223,49 @@ fn main() {
         receiver.recv().unwrap();
     });
 
-    // 가드를 채널을 통해
-    // 다른 스레드로 보내려고 시도
+    // 가드(guard)를 다른 스레드로 보내려 시도합니다.
     sender.send(guard);
 }</code></pre>
-<p>컴파일러는 이 코드에 만족하지 않습니다:</p>
-<pre><code class="language-text">error[E0277]: `MutexGuard&lt;'_, i32&gt;` cannot be sent between 
-              threads safely
-   --&gt; src/main.rs:10:7
-    |
-10  |   spawn(move || {
-    |  _-----_^
-    | | |
-    | | required by a bound introduced by this call
-11  | |     receiver.recv().unwrap();
-12  | | });
-    | |_^ `MutexGuard&lt;'_, i32&gt;` cannot be sent between threads safely
-    |
-    = help: the trait `Send` is not implemented for 
-            `MutexGuard&lt;'_, i32&gt;`, which is required by 
-            `{closure@src/main.rs:10:7: 10:14}: Send`
-    = note: required for `Receiver&lt;MutexGuard&lt;'_, i32&gt;&gt;` 
-            to implement `Send`
-note: required because it's used within this closure
-</code></pre>
-<p><code>MutexGuard&lt;'_, i32&gt;</code>는 <code>Send</code>가 아닙니다: 이것은 무엇을 의미할까요?</p>
-<h2 id="send"><a class="header" href="#send"><code>Send</code></a></h2>
-<p><code>Send</code>는 타입이 한 스레드에서 다른 스레드로 안전하게 전송될 수 있음을 나타내는 마커 트레이트입니다.
-<code>Send</code>는 <code>Sized</code>와 마찬가지로 자동 트레이트입니다. 정의에 따라 컴파일러에 의해 타입에 대해 자동으로 구현되거나 구현되지 않습니다.
-타입에 대해 <code>Send</code>를 수동으로 구현할 수도 있지만, 컴파일러가 자동으로 확인할 수 없는 이유로 타입이 스레드 간에 실제로 안전하게 전송될 수 있음을 보장해야 하므로 <code>unsafe</code>가 필요합니다.</p>
-<h3 id="채널-요구-사항"><a class="header" href="#채널-요구-사항">채널 요구 사항</a></h3>
-<p><code>Sender&lt;T&gt;</code>, <code>SyncSender&lt;T&gt;</code> 및 <code>Receiver&lt;T&gt;</code>는 <code>T</code>가 <code>Send</code>인 경우에만 <code>Send</code>입니다.
-이는 스레드 간에 값을 보내는 데 사용되기 때문이며, 값 자체가 <code>Send</code>가 아니면 스레드 간에 보내는 것이 안전하지 않을 것입니다.</p>
-<h3 id="mutexguard"><a class="header" href="#mutexguard"><code>MutexGuard</code></a></h3>
-<p><code>MutexGuard</code>는 <code>Send</code>가 아닙니다. <code>Mutex</code>가 잠금을 구현하는 데 사용하는 기본 운영 체제 프리미티브가 (일부 플랫폼에서) 잠금이 획득된 스레드와 동일한 스레드에 의해 해제되어야 한다고 요구하기 때문입니다.
-<code>MutexGuard</code>를 다른 스레드로 보내면 잠금이 다른 스레드에 의해 해제되어 정의되지 않은 동작으로 이어질 것입니다.</p>
+<p>이 코드는 컴파일되지 않습니다. Rust 컴파일러가 <code>MutexGuard</code>는 스레드 간에 안전하게 보내질 수 없다고 경고하기 때문입니다.</p>
+<h2 id="send-트레이트"><a class="header" href="#send-트레이트"><code>Send</code> 트레이트</a></h2>
+<p><code>Send</code>는 특정 타입이 한 스레드에서 다른 스레드로 안전하게 이동할 수 있음을 나타내는 **마커 트레이트(Marker trait)**입니다. <code>Sized</code>와 마찬가지로 컴파일러가 자동으로 구현해 주죠. 만약 수동으로 구현하려면 해당 타입이 스레드 간 이동 시 정말 안전하다는 것을 개발자가 보장해야 하므로 <code>unsafe</code> 키워드가 필요합니다.</p>
+<h3 id="채널의-요구사항"><a class="header" href="#채널의-요구사항">채널의 요구사항</a></h3>
+<p><code>Sender&lt;T&gt;</code>나 <code>Receiver&lt;T&gt;</code>는 전송하려는 데이터 <code>T</code>가 <code>Send</code> 트레이트를 구현하고 있을 때만 자신도 <code>Send</code>가 됩니다. 스레드 사이를 넘나들어야 하는데, 담긴 물건 자체가 위험하다면 보낼 수 없는 것과 같죠.</p>
+<h3 id="mutexguard는-왜-send가-아닐까"><a class="header" href="#mutexguard는-왜-send가-아닐까"><code>MutexGuard</code>는 왜 <code>Send</code>가 아닐까?</a></h3>
+<p>일부 운영체제 환경에서는 잠금을 획득한 스레드가 반드시 그 잠금을 해제해야 한다는 규칙이 있습니다. 만약 <code>MutexGuard</code>를 다른 스레드로 보내버리면 잠금이 다른 곳에서 해제될 텐데, 이는 정의되지 않은 동작(undefined behavior)으로 이어질 수 있습니다. 그래서 <code>MutexGuard</code>는 <code>Send</code>가 아니도록 설계되었습니다.</p>
 <h2 id="우리의-도전-과제"><a class="header" href="#우리의-도전-과제">우리의 도전 과제</a></h2>
-<p>요약하자면:</p>
+<p>정리해 봅시다.</p>
 <ul>
-<li>채널을 통해 <code>MutexGuard</code>를 보낼 수 없습니다. 따라서 서버 측에서 잠금을 걸고 클라이언트 측에서 티켓을 수정할 수 없습니다.</li>
-<li><code>Mutex</code>는 보호하는 데이터가 <code>Send</code>인 한 <code>Send</code>이므로 채널을 통해 <code>Mutex</code>를 보낼 수 있습니다. <code>Ticket</code>의 경우 그렇습니다.
-동시에 <code>Mutex</code>를 <code>TicketStore</code>에서 이동하거나 복제할 수 없습니다.</li>
+<li>채널로 <code>MutexGuard</code>를 보낼 수 없으므로, 서버가 잠금을 걸고 클라이언트가 수정하는 방식은 불가능합니다.</li>
+<li><code>Mutex</code> 자체는 데이터가 <code>Send</code>라면 <code>Send</code>이므로 채널로 보낼 수 있지만, <code>TicketStore</code>에 담긴 뮤텍스를 복제하거나 꺼내올 수도 없습니다.</li>
 </ul>
-<p>이 딜레마를 어떻게 해결할 수 있을까요?
-문제를 다른 각도에서 봐야 합니다.
-<code>Mutex</code>를 잠그기 위해 소유된 값이 필요하지 않습니다. <code>Mutex</code>는 내부 가변성을 사용하므로 공유 참조만으로 충분합니다:</p>
+<p>이 딜레마를 어떻게 풀까요? 관점을 조금 바꿔 봅시다. 뮤텍스 잠금을 얻기 위해 반드시 소유권(ownership)이 필요한 것은 아닙니다. 뮤텍스는 **내부 가변성(Interior mutability)**을 사용하기 때문에 **공유 참조(&amp;self)**만으로도 잠금을 얻을 수 있죠.</p>
 <pre><code class="language-rust">impl&lt;T&gt; Mutex&lt;T&gt; {
-    // `&amp;self`, `self`가 아닙니다!
+    // self가 아니라 &amp;self를 받습니다!
     pub fn lock(&amp;self) -&gt; LockResult&lt;MutexGuard&lt;'_, T&gt;&gt; {
-        // 구현 세부 사항
+        // ...
     }
 }</code></pre>
-<p>따라서 클라이언트에게 공유 참조를 보내는 것으로 충분합니다.
-하지만 참조가 <code>'static</code>이어야 하는데 그렇지 않으므로 직접 그렇게 할 수는 없습니다.
-어떤 면에서 “소유된 공유 참조“가 필요합니다. Rust에는 이 요구 사항을 충족하는 타입인 <code>Arc</code>가 있습니다.</p>
+<p>따라서 클라이언트에게 공유 참조만 넘겨줄 수 있다면 해결됩니다. 하지만 일반적인 참조는 수명(lifetime) 문제로 스레드에 넘길 수 없죠. 우리에게 필요한 건 **“소유 가능한 공유 참조”**입니다. 바로 여기서 <code>Arc</code>가 등장합니다.</p>
 <h2 id="arc가-구원합니다"><a class="header" href="#arc가-구원합니다"><code>Arc</code>가 구원합니다</a></h2>
-<p><code>Arc</code>는 <strong>원자적 참조 카운팅</strong>의 약자입니다.
-<code>Arc</code>는 값을 래핑하고 값에 대한 참조 수를 추적합니다.
-마지막 참조가 삭제되면 값은 할당 해제됩니다.
-<code>Arc</code>에 래핑된 값은 불변입니다: 공유 참조만 얻을 수 있습니다.</p>
+<p><code>Arc</code>는 **원자적 참조 카운팅(Atomic Reference Counting)**의 줄임말입니다. 데이터를 <code>Arc</code>로 감싸면 참조 횟수를 추적하며, 마지막 참조가 사라질 때 비로소 메모리에서 해제됩니다. <code>Arc</code> 내부의 데이터는 불변이며 공유 참조만 얻을 수 있습니다.</p>
 <pre><code class="language-rust">use std::sync::Arc;
 
 let data: Arc&lt;u32&gt; = Arc::new(0);
+// 참조 카운트를 올리며 복제합니다.
 let data_clone = Arc::clone(&amp;data);
 
-// `Arc&lt;T&gt;`는 `Deref&lt;T&gt;`를 구현하므로,
-// 역참조 강제 변환을 사용하여 `&amp;Arc&lt;T&gt;`를 `&amp;T`로 변환할 수 있습니다.
+// Arc&lt;T&gt;는 Deref&lt;T&gt;를 구현하므로 &amp;T처럼 쓸 수 있습니다.
 let data_ref: &amp;u32 = &amp;data;</code></pre>
-<p>데자뷰를 느끼셨다면 맞습니다: <code>Arc</code>는 내부 가변성에 대해 이야기할 때 소개했던 참조 카운트 포인터인 <code>Rc</code>와 매우 유사하게 들립니다. 차이점은 스레드 안전성입니다: <code>Rc</code>는 <code>Send</code>가 아닌 반면, <code>Arc</code>는 <code>Send</code>입니다.
-이는 참조 카운트가 구현되는 방식에 달려 있습니다: <code>Rc</code>는 “일반” 정수를 사용하는 반면, <code>Arc</code>는 스레드 간에 안전하게 공유하고 수정할 수 있는 <strong>원자적</strong> 정수를 사용합니다.</p>
-<h2 id="arcmutext"><a class="header" href="#arcmutext"><code>Arc&lt;Mutex&lt;T&gt;&gt;</code></a></h2>
-<p><code>Arc</code>를 <code>Mutex</code>와 짝지으면 마침내 다음을 수행하는 타입을 얻게 됩니다:</p>
+<p>어디서 본 것 같나요? 네, 이전에 배운 <code>Rc</code>와 매우 비슷합니다. 결정적인 차이점은 <strong>스레드 안전성</strong>입니다. <code>Rc</code>는 스레드 간에 공유할 수 없지만(Not <code>Send</code>), <code>Arc</code>는 <strong>원자적(Atomic)</strong> 연산으로 참조 카운트를 관리하므로 스레드 간에 안전하게 공유할 수 있습니다.</p>
+<h2 id="arcmutext-조합"><a class="header" href="#arcmutext-조합"><code>Arc&lt;Mutex&lt;T&gt;&gt;</code> 조합</a></h2>
+<p><code>Arc</code>와 <code>Mutex</code>를 조합하면 우리가 원하던 모든 조건을 만족하게 됩니다.</p>
 <ul>
-<li>스레드 간에 전송될 수 있습니다. 왜냐하면:
-<ul>
-<li><code>Arc</code>는 <code>T</code>가 <code>Send</code>이면 <code>Send</code>이고,</li>
-<li><code>Mutex</code>는 <code>T</code>가 <code>Send</code>이면 <code>Send</code>입니다.</li>
-<li><code>T</code>는 <code>Ticket</code>이며, <code>Send</code>입니다.</li>
+<li>스레드 간에 보낼 수 있습니다 (<code>Arc</code>와 <code>Mutex</code> 모두 데이터가 <code>Send</code>라면 <code>Send</code>이므로).</li>
+<li>복제가 가능합니다 (<code>Arc</code>는 항상 <code>Clone</code>이며, 복제 시 데이터가 아닌 참조 카운트만 늘립니다).</li>
+<li>내부 데이터를 수정할 수 있습니다 (<code>Arc</code>를 통해 얻은 <code>Mutex</code>의 공유 참조로 잠금을 얻을 수 있으므로).</li>
 </ul>
-</li>
-<li><code>Arc</code>는 <code>T</code>가 무엇이든 <code>Clone</code>이므로 복제될 수 있습니다.
-복제하면 참조 카운트가 증가하며, 데이터는 복사되지 않습니다.</li>
-<li>래핑하는 데이터를 수정하는 데 사용될 수 있습니다. <code>Arc</code>를 사용하면 <code>Mutex&lt;T&gt;</code>에 대한 공유 참조를 얻을 수 있으며, 이는 다시 잠금을 획득하는 데 사용될 수 있기 때문입니다.</li>
-</ul>
-<p>티켓 저장소에 대한 잠금 전략을 구현하는 데 필요한 모든 조각을 갖추었습니다.</p>
-<h2 id="추가-자료"><a class="header" href="#추가-자료">추가 자료</a></h2>
-<ul>
-<li>이 과정에서는 원자적 작업의 세부 사항을 다루지 않지만,
-<a href="https://ruex.io/fxh"><code>std</code> 문서</a> 및
-<a href="https://ruex.io/fxg">“Rust atomics and locks” 책</a>에서 더 많은 정보를 찾을 수 있습니다.</li>
-</ul>
+<p>이제 티켓 저장소의 잠금 전략을 구현할 준비가 모두 끝났습니다!</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fxj"><code>07_threads/11_locks</code></a></p>
 

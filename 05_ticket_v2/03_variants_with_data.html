@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>데이터를 가진 베리언트 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>데이터를 가진 베리언트(Variants with data) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,19 +178,16 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="데이터를-가질-수-있는-베리언트"><a class="header" href="#데이터를-가질-수-있는-베리언트">데이터를 가질 수 있는 베리언트</a></h1>
+                        <h1 id="데이터를-가질-수-있는-베리언트variants"><a class="header" href="#데이터를-가질-수-있는-베리언트variants">데이터를 가질 수 있는 베리언트(Variants)</a></h1>
 <pre><code class="language-rust">enum Status {
     ToDo,
     InProgress,
     Done,
 }</code></pre>
-<p>우리의 <code>Status</code> 열거형은 보통 <strong>C-스타일 열거형</strong>이라고 불리는 것입니다.
-각 베리언트는 명명된 상수와 같이 간단한 레이블입니다. C, C++, Java, C#, Python 등 많은 프로그래밍 언어에서 이런 종류의 열거형을 찾을 수 있습니다.</p>
-<p>하지만 Rust 열거형은 더 나아갈 수 있습니다. <strong>각 베리언트에 데이터를 첨부</strong>할 수 있습니다.</p>
-<h2 id="베리언트"><a class="header" href="#베리언트">베리언트</a></h2>
-<p>티켓을 현재 작업 중인 사람의 이름을 저장하고 싶다고 가정해 봅시다.
-이 정보는 티켓이 진행 중일 때만 가질 수 있습니다. 할 일 티켓이나 완료된 티켓에는 없을 것입니다.
-<code>InProgress</code> 베리언트에 <code>String</code> 필드를 첨부하여 이를 모델링할 수 있습니다:</p>
+<p>우리가 만든 <code>Status</code> 열거형은 흔히 <strong>C 스타일 열거형</strong>이라고 부르는 형태입니다. 각 베리언트는 이름이 붙은 상수처럼 단순한 레이블 역할을 하죠. C, C++, Java, Python 등 많은 언어에서 볼 수 있는 방식입니다.</p>
+<p>하지만 Rust의 열거형은 여기서 한 걸음 더 나아갑니다. 바로 <strong>각 베리언트에 데이터를 담을 수 있다</strong>는 점입니다.</p>
+<h2 id="베리언트-데이터variant-data"><a class="header" href="#베리언트-데이터variant-data">베리언트 데이터(Variant Data)</a></h2>
+<p>예를 들어, 현재 티켓을 담당하고 있는 사람의 이름을 저장하고 싶다고 가정해 봅시다. 이 정보는 티켓이 ’진행 중’일 때만 필요하며, ’할 일’이나 ‘완료’ 상태일 때는 필요하지 않습니다. 이때 <code>InProgress</code> 베리언트에 <code>String</code> 필드를 추가하여 이를 모델링할 수 있습니다.</p>
 <pre><code class="language-rust">enum Status {
     ToDo,
     InProgress {
@@ -198,41 +195,37 @@
     },
     Done,
 }</code></pre>
-<p><code>InProgress</code>는 이제 <strong>구조체와 유사한 베리언트</strong>입니다.
-실제로 구문은 구조체를 정의하는 데 사용한 것과 유사합니다. 단지 열거형 내부에 베리언트로 “인라인“되어 있을 뿐입니다.</p>
-<h2 id="베리언트-데이터-접근"><a class="header" href="#베리언트-데이터-접근">베리언트 데이터 접근</a></h2>
-<p><code>Status</code> 인스턴스에서 <code>assigned_to</code>에 접근하려고 하면,</p>
+<p>이제 <code>InProgress</code>는 **구조체 형태의 베리언트(Struct-like variant)**가 되었습니다. 문법도 구조체를 정의할 때와 비슷하죠? 단지 열거형 내부에 ’인라인’으로 정의되었다는 점만 다릅니다.</p>
+<h2 id="베리언트-데이터-접근하기"><a class="header" href="#베리언트-데이터-접근하기">베리언트 데이터 접근하기</a></h2>
+<p><code>Status</code> 인스턴스에서 바로 <code>assigned_to</code> 필드에 접근하려고 하면 어떻게 될까요?</p>
 <pre><code class="language-rust">let status: Status = /* */;
 
-// 이것은 컴파일되지 않습니다
-println!("Assigned to: {}", status.assigned_to);</code></pre>
-<p>컴파일러가 우리를 막을 것입니다:</p>
+// 이 코드는 컴파일되지 않습니다.
+println!("담당자: {}", status.assigned_to);</code></pre>
+<p>컴파일러는 다음과 같은 에러를 발생시킵니다.</p>
 <pre><code class="language-text">error[E0609]: no field `assigned_to` on type `Status`
  --&gt; src/main.rs:5:40
   |
 5 |     println!("Assigned to: {}", status.assigned_to);
   |                                        ^^^^^^^^^^^ unknown field
 </code></pre>
-<p><code>assigned_to</code>는 <strong>베리언트별</strong>이며, 모든 <code>Status</code> 인스턴스에서 사용할 수 있는 것은 아닙니다.
-<code>assigned_to</code>에 접근하려면 <strong>패턴 매칭</strong>을 사용해야 합니다:</p>
+<p><code>assigned_to</code>는 **특정 베리언트(InProgress)**에만 속한 필드이기 때문에, 모든 <code>Status</code> 인스턴스에서 이 필드가 존재한다고 보장할 수 없기 때문입니다. 따라서 이 데이터에 접근하려면 반드시 <strong>패턴 매칭</strong>을 사용해야 합니다.</p>
 <pre><code class="language-rust">match status {
     Status::InProgress { assigned_to } =&gt; {
-        println!("Assigned to: {}", assigned_to);
+        println!("담당자: {}", assigned_to);
     },
     Status::ToDo | Status::Done =&gt; {
-        println!("ToDo or Done");
+        println!("할 일 또는 완료된 상태입니다.");
     }
 }</code></pre>
-<h2 id="바인딩"><a class="header" href="#바인딩">바인딩</a></h2>
-<p>매치 패턴 <code>Status::InProgress { assigned_to }</code>에서 <code>assigned_to</code>는 <strong>바인딩</strong>입니다.
-<code>Status::InProgress</code> 베리언트를 <strong>구조 분해</strong>하고 <code>assigned_to</code> 필드를 <code>assigned_to</code>라는 이름의 새 변수에 바인딩하고 있습니다.
-원한다면 필드를 다른 변수 이름에 바인딩할 수 있습니다:</p>
+<h2 id="바인딩binding"><a class="header" href="#바인딩binding">바인딩(Binding)</a></h2>
+<p>매치 패턴 <code>Status::InProgress { assigned_to }</code>에서 <code>assigned_to</code>는 <strong>바인딩(Binding)</strong> 역할을 합니다. <code>Status::InProgress</code> 베리언트를 **구조 분해(Destructuring)**하여, 그 안의 필드 값을 <code>assigned_to</code>라는 이름의 새로운 변수에 담는 것이죠. 원한다면 필드 이름을 다른 변수 이름으로 바꿀 수도 있습니다.</p>
 <pre><code class="language-rust">match status {
     Status::InProgress { assigned_to: person } =&gt; {
-        println!("Assigned to: {}", person);
+        println!("담당자: {}", person);
     },
     Status::ToDo | Status::Done =&gt; {
-        println!("ToDo or Done");
+        println!("할 일 또는 완료된 상태입니다.");
     }
 }</code></pre>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>

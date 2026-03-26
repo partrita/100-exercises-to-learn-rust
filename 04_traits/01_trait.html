@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>트레이트 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>트레이트(Traits) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,20 +178,20 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="트레이트"><a class="header" href="#트레이트">트레이트</a></h1>
-<p><code>Ticket</code> 타입을 다시 살펴봅시다:</p>
+                        <h1 id="트레이트-traits"><a class="header" href="#트레이트-traits">트레이트 (Traits)</a></h1>
+<p><code>Ticket</code> 타입을 다시 한번 살펴봅시다:</p>
 <pre><code class="language-rust">pub struct Ticket {
     title: String,
     description: String,
     status: String,
 }</code></pre>
-<p>지금까지 모든 테스트는 <code>Ticket</code>의 필드를 사용하여 단언을 수행했습니다.</p>
+<p>지금까지 우리는 <code>Ticket</code>의 각 필드에 접근해서 테스트를 수행해 왔습니다.</p>
 <pre><code class="language-rust">assert_eq!(ticket.title(), "A new title");</code></pre>
-<p>두 <code>Ticket</code> 인스턴스를 직접 비교하고 싶다면 어떻게 해야 할까요?</p>
+<p>그런데 만약 두 개의 <code>Ticket</code> 인스턴스를 직접 비교하고 싶다면 어떻게 해야 할까요?</p>
 <pre><code class="language-rust">let ticket1 = Ticket::new(/* ... */);
 let ticket2 = Ticket::new(/* ... */);
 ticket1 == ticket2</code></pre>
-<p>컴파일러가 우리를 막을 것입니다:</p>
+<p>이 코드를 실행하면 컴파일러가 다음과 같은 오류를 냅니다.</p>
 <pre><code class="language-text">error[E0369]: binary operation `==` cannot be applied to type `Ticket`
   --&gt; src/main.rs:18:13
    |
@@ -202,29 +202,28 @@ ticket1 == ticket2</code></pre>
    |
 note: an implementation of `PartialEq` might be missing for `Ticket`
 </code></pre>
-<p><code>Ticket</code>은 새로운 타입입니다. 기본적으로 <strong>어떠한 동작도 연결되어 있지 않습니다</strong>.
-Rust는 <code>String</code>을 포함하고 있다는 이유만으로 두 <code>Ticket</code> 인스턴스를 비교하는 방법을 마술처럼 추론하지 않습니다.</p>
-<p>하지만 Rust 컴파일러는 우리를 올바른 방향으로 이끌고 있습니다. <code>PartialEq</code>의 구현이 누락되었을 수 있다고 제안합니다. <code>PartialEq</code>는 <strong>트레이트</strong>입니다!</p>
+<p><code>Ticket</code>은 우리가 새롭게 정의한 타입입니다. 기본적으로 <strong>어떠한 동작도 정의되어 있지 않죠.</strong>
+내부에 <code>String</code> 필드가 있다고 해서 Rust가 마법처럼 두 <code>Ticket</code> 인스턴스를 비교하는 법을 알아서 추측해 주지는 않습니다.</p>
+<p>하지만 컴파일러의 힌트를 보면 <code>PartialEq</code>를 구현해보라고 제안하고 있습니다. 바로 이 <code>PartialEq</code>가 **트레이트(Trait)**입니다!</p>
 <h2 id="트레이트란-무엇인가요"><a class="header" href="#트레이트란-무엇인가요">트레이트란 무엇인가요?</a></h2>
-<p>트레이트는 Rust에서 <strong>인터페이스</strong>를 정의하는 방법입니다.
-트레이트는 타입이 트레이트의 계약을 만족시키기 위해 구현해야 하는 메소드 집합을 정의합니다.</p>
+<p>트레이트는 Rust에서 **인터페이스(Interfaces)**를 정의하는 방식입니다. 트레이트는 특정 타입이 가져야 할 기능을 명세하며, 해당 트레이트를 구현하고자 하는 타입은 명세된 메서드들을 반드시 정의해야 합니다.</p>
 <h3 id="트레이트-정의하기"><a class="header" href="#트레이트-정의하기">트레이트 정의하기</a></h3>
-<p>트레이트 정의 구문은 다음과 같습니다:</p>
+<p>트레이트를 정의하는 구문은 다음과 같습니다:</p>
 <pre><code class="language-rust">trait &lt;TraitName&gt; {
     fn &lt;method_name&gt;(&lt;parameters&gt;) -&gt; &lt;return_type&gt;;
 }</code></pre>
-<p>예를 들어, 구현자에게 <code>is_zero</code> 메소드를 정의하도록 요구하는 <code>MaybeZero</code>라는 트레이트를 정의할 수 있습니다:</p>
+<p>예를 들어, 어떤 값이 0인지 확인하는 기능을 요구하는 <code>MaybeZero</code> 트레이트를 만들어 봅시다:</p>
 <pre><code class="language-rust">trait MaybeZero {
     fn is_zero(self) -&gt; bool;
 }</code></pre>
 <h3 id="트레이트-구현하기"><a class="header" href="#트레이트-구현하기">트레이트 구현하기</a></h3>
-<p>타입에 대한 트레이트를 구현하려면 일반적인<sup class="footnote-reference" id="fr-inherent-1"><a href="#footnote-inherent">1</a></sup> 메소드와 마찬가지로 <code>impl</code> 키워드를 사용하지만 구문이 약간 다릅니다:</p>
+<p>특정 타입에 대해 트레이트를 구현할 때는 <code>impl</code> 키워드를 사용합니다. 구문은 일반적인 메서드 구현<sup class="footnote-reference" id="fr-inherent-1"><a href="#footnote-inherent">1</a></sup>과 약간 다릅니다:</p>
 <pre><code class="language-rust">impl &lt;TraitName&gt; for &lt;TypeName&gt; {
     fn &lt;method_name&gt;(&lt;parameters&gt;) -&gt; &lt;return_type&gt; {
-        // 메소드 본문
+        // 메서드 본문
     }
 }</code></pre>
-<p>예를 들어, 사용자 정의 숫자 타입인 <code>WrappingU32</code>에 대해 <code>MaybeZero</code> 트레이트를 구현하려면:</p>
+<p>사용자 정의 타입인 <code>WrappingU32</code>에 <code>MaybeZero</code> 트레이트를 구현하면 다음과 같습니다:</p>
 <pre><code class="language-rust">pub struct WrappingU32 {
     inner: u32,
 }
@@ -234,32 +233,34 @@ impl MaybeZero for WrappingU32 {
         self.inner == 0
     }
 }</code></pre>
-<h3 id="트레이트-메소드-호출하기"><a class="header" href="#트레이트-메소드-호출하기">트레이트 메소드 호출하기</a></h3>
-<p>트레이트 메소드를 호출하려면 일반적인 메소드와 마찬가지로 <code>.</code> 연산자를 사용합니다:</p>
+<h3 id="트레이트-메서드-호출하기"><a class="header" href="#트레이트-메서드-호출하기">트레이트 메서드 호출하기</a></h3>
+<p>트레이트 메서드도 일반 메서드와 마찬가지로 <code>.</code> 연산자를 사용하여 호출합니다.</p>
 <pre><code class="language-rust">let x = WrappingU32 { inner: 5 };
 assert!(!x.is_zero());</code></pre>
-<p>트레이트 메소드를 호출하려면 두 가지가 사실이어야 합니다:</p>
-<ul>
-<li>타입이 트레이트를 구현해야 합니다.</li>
-<li>트레이트가 범위 내에 있어야 합니다.</li>
-</ul>
-<p>후자를 만족시키려면 트레이트에 대한 <code>use</code> 문을 추가해야 할 수 있습니다:</p>
+<p>트레이트 메서드를 사용하려면 다음 두 가지 조건이 충족되어야 합니다.</p>
+<ol>
+<li>타입이 해당 트레이트를 구현하고 있어야 함.</li>
+<li>해당 트레이트가 현재 범위(Scope) 안에 있어야 함.</li>
+</ol>
+<p>두 번째 조건을 만족시키기 위해 <code>use</code> 문이 필요할 수도 있습니다:</p>
 <pre><code class="language-rust">use crate::MaybeZero;</code></pre>
-<p>다음과 같은 경우에는 필요하지 않습니다:</p>
+<p>단, 다음과 같은 경우에는 <code>use</code>가 필요 없습니다.</p>
 <ul>
-<li>트레이트가 호출이 발생하는 동일한 모듈에 정의된 경우.</li>
-<li>트레이트가 표준 라이브러리의 <strong>프렐류드</strong>에 정의된 경우.
-프렐류드는 모든 Rust 프로그램에 자동으로 가져오는 트레이트 및 타입 집합입니다.
-모든 Rust 모듈의 시작 부분에 <code>use std::prelude::*;</code>가 추가된 것과 같습니다.</li>
+<li>트레이트가 메서드를 호출하는 모듈 안에 정의된 경우</li>
+<li>트레이트가 표준 라이브러리의 **프렐류드(Prelude)**에 포함된 경우
+<ul>
+<li>프렐류드는 모든 Rust 프로그램에 자동으로 로드되는 트레이트와 타입들의 집합입니다. 마치 모든 Rust 파일 시작 부분에 <code>use std::prelude::*;</code>가 적혀있는 것과 같습니다.</li>
 </ul>
-<p>프렐류드의 트레이트 및 타입 목록은 <a href="https://ruex.io/f2c">Rust 문서</a>에서 찾을 수 있습니다.</p>
+</li>
+</ul>
+<p>프렐류드에 포함된 항목들은 <a href="https://ruex.io/f2c">Rust 공식 문서</a>에서 확인할 수 있습니다.</p>
+<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f2a"><code>04_traits/01_trait</code></a></p>
 <hr>
 <ol class="footnote-definition">
 <li id="footnote-inherent">
-<p>트레이트를 사용하지 않고 타입에 직접 정의된 메소드는 <strong>고유 메소드</strong>라고도 합니다.</p>
-<h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
- <a href="#fr-inherent-1">↩</a></li>
+<p>트레이트 없이 타입 자체에 직접 정의된 메서드는 **고유 메서드(Inherent methods)**라고 부릅니다. <a href="#fr-inherent-1">↩</a></p>
+</li>
 </ol>
 
                     </main>

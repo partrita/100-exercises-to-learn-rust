@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>채널 - 100개의 연습 문제로 Rust 배우기</title>
+        <title>채널(Channels) - 100개의 연습 문제로 Rust 배우기</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,48 +178,39 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="채널"><a class="header" href="#채널">채널</a></h1>
-<p>지금까지 생성된 모든 스레드는 상당히 짧은 수명을 가졌습니다.
-입력을 받고, 계산을 실행하고, 결과를 반환하고, 종료되었습니다.</p>
-<p>티켓 관리 시스템의 경우, 우리는 다른 것을 원합니다:
-클라이언트-서버 아키텍처입니다.</p>
-<p>우리는 상태, 즉 저장된 티켓을 관리하는 <strong>하나의 장기 실행 서버 스레드</strong>를 가질 것입니다.</p>
-<p>그런 다음 <strong>여러 클라이언트 스레드</strong>를 가질 것입니다.
-각 클라이언트는 상태를 변경하거나(예: 새 티켓 추가) 정보를 검색하기 위해(예: 티켓 상태 가져오기)
-상태 저장 스레드에 <strong>명령</strong>과 <strong>쿼리</strong>를 보낼 수 있습니다.
-클라이언트 스레드는 동시에 실행됩니다.</p>
-<h2 id="통신"><a class="header" href="#통신">통신</a></h2>
-<p>지금까지 우리는 매우 제한적인 부모-자식 통신만 가졌습니다:</p>
+                        <h1 id="채널channels"><a class="header" href="#채널channels">채널(Channels)</a></h1>
+<p>지금까지 우리가 만들었던 스레드들은 수명이 상당히 짧았습니다. 입력을 받고, 계산을 마친 뒤, 결과를 반환하고 곧바로 종료되는 식이었죠.</p>
+<p>하지만 우리가 만들 티켓 관리 시스템은 조금 다른 방식이 필요합니다. 바로 **클라이언트-서버 아키텍처(Client-server architecture)**입니다.</p>
+<p>우리는 티켓 데이터를 관리하는 **장기 실행 서버 스레드(Server thread)**를 하나 두고, 여러 개의 **클라이언트 스레드(Client threads)**가 이 서버에 접근하도록 할 것입니다. 클라이언트는 새로운 티켓을 추가하라는 **명령(Command)**이나 티켓 상태를 보여달라는 **쿼리(Query)**를 서버에 보낼 수 있어야 합니다. 물론 이 클라이언트 스레드들은 동시에 실행될 것입니다.</p>
+<h2 id="통신-방식의-변화"><a class="header" href="#통신-방식의-변화">통신 방식의 변화</a></h2>
+<p>지금까지 살펴본 부모-자식 간의 통신 방식은 매우 제한적이었습니다.</p>
 <ul>
-<li>생성된 스레드는 부모 컨텍스트에서 데이터를 빌리거나 소비했습니다.</li>
-<li>생성된 스레드는 조인될 때 부모에게 데이터를 반환했습니다.</li>
+<li>생성된 스레드가 부모의 데이터를 빌려오거나 소유권을 가져옴</li>
+<li>스레드가 종료(Join)될 때 부모에게 결과를 반환함</li>
 </ul>
-<p>이것으로는 클라이언트-서버 설계에 충분하지 않습니다.
-클라이언트는 서버 스레드가 시작된 <em>후에</em> 서버 스레드로부터 데이터를 보내고 받을 수 있어야 합니다.</p>
-<p><strong>채널</strong>을 사용하여 이 문제를 해결할 수 있습니다.</p>
-<h2 id="채널-1"><a class="header" href="#채널-1">채널</a></h2>
-<p>Rust의 표준 라이브러리는 <code>std::sync::mpsc</code> 모듈에서 <strong>다중 생산자, 단일 소비자</strong> (mpsc) 채널을 제공합니다.
-채널에는 바운드 및 언바운드 두 가지 종류가 있습니다. 지금은 언바운드 버전을 고수하겠지만, 나중에 장단점에 대해 논의할 것입니다.</p>
-<p>채널 생성은 다음과 같습니다:</p>
+<p>이 방식만으로는 클라이언트-서버 구조를 구현하기 어렵습니다. 서버 스레드가 이미 실행 중인 상태에서 클라이언트가 언제든 데이터를 주고받을 수 있어야 하기 때문이죠.</p>
+<p>이런 상황에서 구원투수로 등장하는 것이 바로 **채널(Channels)**입니다.</p>
+<h2 id="채널channels이란"><a class="header" href="#채널channels이란">채널(Channels)이란?</a></h2>
+<p>Rust 표준 라이브러리는 <code>std::sync::mpsc</code> 모듈을 통해 <strong>다중 생산자, 단일 소비자(Multiple Producer Single Consumer, MPSC)</strong> 채널을 제공합니다. 채널은 데이터를 담는 용량이 정해진 <strong>바운드(Bounded)</strong> 방식과 제한이 없는 <strong>언바운드(Unbounded)</strong> 방식이 있는데, 일단은 언바운드 방식을 먼저 살펴보겠습니다.</p>
+<p>채널은 다음과 같이 생성합니다.</p>
 <pre><code class="language-rust">use std::sync::mpsc::channel;
 
+// 송신자(sender)와 수신자(receiver) 한 쌍이 반환됩니다.
 let (sender, receiver) = channel();</code></pre>
-<p>보내는 사람과 받는 사람을 얻습니다.
-채널에 데이터를 푸시하려면 보내는 사람에서 <code>send</code>를 호출합니다.
-채널에서 데이터를 가져오려면 받는 사람에서 <code>recv</code>를 호출합니다.</p>
-<h3 id="여러-보내는-사람"><a class="header" href="#여러-보내는-사람">여러 보내는 사람</a></h3>
-<p><code>Sender</code>는 복제 가능합니다: 여러 보내는 사람을 만들 수 있으며(예: 각 클라이언트 스레드마다 하나씩) 모두 동일한 채널에 데이터를 푸시할 것입니다.</p>
-<p>반면에 <code>Receiver</code>는 복제할 수 없습니다: 주어진 채널에 대해 단일 받는 사람만 있을 수 있습니다.</p>
-<p>이것이 바로 <strong>mpsc</strong> (다중 생산자 단일 소비자)가 의미하는 바입니다!</p>
-<h3 id="메시지-타입"><a class="header" href="#메시지-타입">메시지 타입</a></h3>
-<p><code>Sender</code>와 <code>Receiver</code>는 모두 타입 매개변수 <code>T</code>에 대해 제네릭입니다.
-이것은 채널에서 이동할 수 있는 _메시지_의 타입입니다.</p>
-<p><code>u64</code>, 구조체, 열거형 등이 될 수 있습니다.</p>
-<h3 id="오류"><a class="header" href="#오류">오류</a></h3>
-<p><code>send</code>와 <code>recv</code>는 모두 실패할 수 있습니다.
-받는 사람이 삭제되면 <code>send</code>는 오류를 반환합니다.
-모든 보내는 사람이 삭제되고 채널이 비어 있으면 <code>recv</code>는 오류를 반환합니다.</p>
-<p>즉, 채널이 효과적으로 닫히면 <code>send</code>와 <code>recv</code>는 오류를 발생시킵니다.</p>
+<p>채널은 데이터를 보내는 **송신자(Sender)**와 데이터를 받는 **수신자(Receiver)**로 구성됩니다. 송신자에서 <code>send</code>를 호출해 데이터를 넣고, 수신자에서 <code>recv</code>를 호출해 데이터를 꺼냅니다.</p>
+<h3 id="다중-생산자multiple-producers"><a class="header" href="#다중-생산자multiple-producers">다중 생산자(Multiple Producers)</a></h3>
+<p><code>Sender</code>는 복제가 가능합니다. 즉, 여러 개의 송신자를 만들어 각 클라이언트 스레드에 하나씩 나눠줄 수 있고, 이들은 모두 동일한 채널로 데이터를 보낼 수 있습니다.</p>
+<p>반면, <code>Receiver</code>는 복제할 수 없습니다. 하나의 채널에는 오직 하나의 수신자만 존재할 수 있죠.</p>
+<p>이것이 바로 **MPSC(다중 생산자, 단일 소비자)**라는 이름이 붙은 이유입니다!</p>
+<h3 id="메시지-타입message-type"><a class="header" href="#메시지-타입message-type">메시지 타입(Message Type)</a></h3>
+<p><code>Sender</code>와 <code>Receiver</code>는 제네릭 타입 <code>T</code>를 사용합니다. 채널을 통해 주고받을 <strong>메시지의 타입</strong>을 자유롭게 정할 수 있다는 뜻입니다. <code>u64</code> 같은 기본 타입부터 복잡한 구조체나 열거형(Enum)까지 무엇이든 가능합니다.</p>
+<h3 id="채널의-오류-처리"><a class="header" href="#채널의-오류-처리">채널의 오류 처리</a></h3>
+<p><code>send</code>와 <code>recv</code> 메서드는 실패할 가능성이 있습니다.</p>
+<ul>
+<li>수신자(<code>Receiver</code>)가 메모리에서 사라지면(Drop), 송신자가 <code>send</code>를 할 때 오류가 발생합니다.</li>
+<li>모든 송신자(<code>Sender</code>)가 사라지고 채널이 비어 있다면, 수신자가 <code>recv</code>를 할 때 오류가 발생합니다.</li>
+</ul>
+<p>간단히 말해, 채널의 한쪽 끝이 닫히면 더 이상 정상적인 통신을 할 수 없다는 뜻입니다.</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/fxt"><code>07_threads/05_channels</code></a></p>
 

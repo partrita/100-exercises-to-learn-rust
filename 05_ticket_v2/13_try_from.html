@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-6ed3767c.js";
+            window.path_to_searchindex_js = "../searchindex-bcfdfdb3.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-5705bfe5.js"></script>
+        <script src="../toc-ccf9e766.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -178,12 +178,11 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="tryfrom-및-tryinto"><a class="header" href="#tryfrom-및-tryinto"><code>TryFrom</code> 및 <code>TryInto</code></a></h1>
-<p>이전 챕터에서 우리는 <strong>실패하지 않는</strong> 타입 변환을 위한 Rust의 관용적인 인터페이스인 <a href="../04_traits/09_from.html"><code>From</code> 및 <code>Into</code> 트레이트</a>를 살펴보았습니다.
-하지만 변환이 성공할 것이라고 보장되지 않는다면 어떻게 될까요?</p>
-<p>이제 오류에 대해 충분히 알았으므로 <code>From</code> 및 <code>Into</code>의 <strong>실패 가능한</strong> 대응물인 <code>TryFrom</code> 및 <code>TryInto</code>에 대해 논의할 수 있습니다.</p>
-<h2 id="tryfrom-및-tryinto-1"><a class="header" href="#tryfrom-및-tryinto-1"><code>TryFrom</code> 및 <code>TryInto</code></a></h2>
-<p><code>TryFrom</code>과 <code>TryInto</code>는 모두 <code>From</code> 및 <code>Into</code>와 마찬가지로 <code>std::convert</code> 모듈에 정의되어 있습니다.</p>
+                        <h1 id="tryfrom-및-tryinto-트레이트"><a class="header" href="#tryfrom-및-tryinto-트레이트"><code>TryFrom</code> 및 <code>TryInto</code> 트레이트</a></h1>
+<p>이전 장에서 우리는 <strong>실패할 리 없는</strong> 타입 변환을 위한 Rust의 표준 인터페이스인 <a href="../04_traits/09_from.html"><code>From</code> 및 <code>Into</code> 트레이트</a>를 살펴보았습니다. 하지만 만약 변환이 항상 성공하리라는 보장이 없다면 어떻게 해야 할까요?</p>
+<p>이제 우리는 오류(Error) 처리에 대해 충분히 알고 있으니, <code>From</code>과 <code>Into</code>에 대응하는 <strong>실패 가능성이 있는(Fallible)</strong> 변환 도구인 <code>TryFrom</code>과 <code>TryInto</code>에 대해 이야기해 볼 수 있습니다.</p>
+<h2 id="tryfrom-및-tryinto"><a class="header" href="#tryfrom-및-tryinto"><code>TryFrom</code> 및 <code>TryInto</code></a></h2>
+<p><code>TryFrom</code>과 <code>TryInto</code> 역시 <code>From</code>/<code>Into</code>와 마찬가지로 <code>std::convert</code> 모듈에 정의되어 있습니다.</p>
 <pre><code class="language-rust">pub trait TryFrom&lt;T&gt;: Sized {
     type Error;
     fn try_from(value: T) -&gt; Result&lt;Self, Self::Error&gt;;
@@ -193,15 +192,12 @@ pub trait TryInto&lt;T&gt;: Sized {
     type Error;
     fn try_into(self) -&gt; Result&lt;T, Self::Error&gt;;
 }</code></pre>
-<p><code>From</code>/<code>Into</code>와 <code>TryFrom</code>/<code>TryInto</code>의 주요 차이점은 후자가 <code>Result</code> 타입을 반환한다는 것입니다.
-이를 통해 변환이 실패할 수 있으며, 패닉을 일으키는 대신 오류를 반환할 수 있습니다.</p>
+<p>이 트레이트들과 <code>From</code>/<code>Into</code>의 가장 큰 차이점은 반환 타입이 <code>Result</code>라는 점입니다. 덕분에 변환에 실패하더라도 프로그램이 패닉(Panic)에 빠지지 않고, 대신 무엇이 잘못되었는지 알려주는 오류를 안전하게 반환할 수 있습니다.</p>
 <h2 id="selferror"><a class="header" href="#selferror"><code>Self::Error</code></a></h2>
-<p><code>TryFrom</code>과 <code>TryInto</code>는 모두 연관된 <code>Error</code> 타입을 가지고 있습니다.
-이를 통해 각 구현은 시도되는 변환에 가장 적합한 자체 오류 타입을 지정할 수 있습니다.</p>
-<p><code>Self::Error</code>는 트레이트 자체에 정의된 <code>Error</code> 연관 타입을 참조하는 방법입니다.</p>
-<h2 id="이중성"><a class="header" href="#이중성">이중성</a></h2>
-<p><code>From</code> 및 <code>Into</code>와 마찬가지로 <code>TryFrom</code> 및 <code>TryInto</code>는 이중 트레이트입니다.
-타입에 대해 <code>TryFrom</code>을 구현하면 <code>TryInto</code>를 무료로 얻을 수 있습니다.</p>
+<p><code>TryFrom</code>과 <code>TryInto</code>는 모두 **연관 타입(Associated type)**인 <code>Error</code>를 가지고 있습니다. 이것을 통해 트레이트를 구현하는 쪽에서는 해당 변환 상황에 가장 적절한 오류 타입을 자유롭게 지정할 수 있습니다.</p>
+<p><code>Self::Error</code>는 트레이트 내부에서 정의된 <code>Error</code> 연관 타입을 가리키는 방식입니다.</p>
+<h2 id="상호-관계duality"><a class="header" href="#상호-관계duality">상호 관계(Duality)</a></h2>
+<p><code>From</code> 및 <code>Into</code>와 마찬가지로, <code>TryFrom</code>과 <code>TryInto</code>도 긴밀하게 연결되어 있습니다. 특정 타입에 대해 <code>TryFrom</code>을 구현하면, Rust는 <code>TryInto</code> 구현체를 자동으로 제공해 줍니다. 그러니 보통은 <code>TryFrom</code>만 구현하면 된답니다!</p>
 <h2 id="exercise"><a class="header" href="#exercise">Exercise</a></h2>
 <p>The exercise for this section is located in <a href="https://ruex.io/f4e"><code>05_ticket_v2/13_try_from</code></a></p>
 
