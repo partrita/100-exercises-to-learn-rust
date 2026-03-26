@@ -16,8 +16,7 @@ after = ["exercise-linker"]
 [output.html]
 git-repository-url = "https://github.com/mainmatter/100-exercises-to-learn-rust"
 preferred-dark-theme = "navy"
-curly-quotes = true
-copy-fonts = true
+smart-punctuation = true
 default-theme = "light"
 additional-css = ["src/css/custom.css"]
 
@@ -33,8 +32,4 @@ boost-paragraph = 1
 expand = true
 heading-split-level = 3
 copy-js = true
-
-[output.html.sidebar]
-width = "250px"
-hidden = false
 

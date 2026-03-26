@@ -21,7 +21,6 @@ pub enum SubCommand {
 
 #[derive(clap::Parser, Debug)]
 pub struct Supports {
-    #[arg(long)]
     renderer: String,
 }
 
