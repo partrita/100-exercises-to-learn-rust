@@ -1,0 +1,29 @@
+/* Callout styles */
+.warning {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #faebcc;
+    border-radius: 4px;
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+}
+
+.warning::before {
+    content: "⚠️ ";
+    font-weight: bold;
+}
+
+/* GitHub Alert styles */
+blockquote.markdown-alert {
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+    border-left: 0.25rem solid #d0d7de;
+}
+
+blockquote.markdown-alert-note {
+    border-left-color: #0969da;
+}
+
+blockquote.markdown-alert-warning {
+    border-left-color: #9a6700;
+}
